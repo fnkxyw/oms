@@ -1,0 +1,43 @@
+[
+  {
+    "Data": {
+      "12": {
+        "12": {
+          "id": 12,
+          "user_id": 0,
+          "accept": true,
+          "date": "2024-12-12T00:00:00Z",
+          "issued": false,
+          "issued_date": "0001-01-01T00:00:00Z"
+        }
+      },
+      "13": {
+        "12": {
+          "id": 13,
+          "user_id": 0,
+          "accept": true,
+          "date": "2024-12-12T00:00:00Z",
+          "issued": false,
+          "issued_date": "0001-01-01T00:00:00Z"
+        }
+      }
+    }
+  },
+  {
+    "Data": {
+      "12": {
+        "13": {
+          "id": 12,
+          "user_id": 0,
+          "accept": true,
+          "date": "2024-12-12T00:00:00Z",
+          "issued": false,
+          "issued_date": "0001-01-01T00:00:00Z"
+        }
+      }
+    }
+  },
+  {
+    "Data": {}
+  }
+]

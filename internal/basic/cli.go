@@ -3,7 +3,10 @@ package basic
 import (
 	"bufio"
 	"fmt"
+	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service"
+	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
 	"os"
+	"strings"
 )
 
 var helpText = `
@@ -19,18 +22,25 @@ var helpText = `
 
 func Run() error {
 	ShowHelp()
+
 	var in *bufio.Reader
 	var out *bufio.Writer
 	out = bufio.NewWriter(os.Stdout)
 	in = bufio.NewReader(os.Stdin)
-	var imput string
-	fmt.Fscanln(in, &imput)
+	fmt.Fprint(out, ">")
+	out.Flush()
+	strg := storage.NewOrderStorage()
+
+	var input string
+	fmt.Fscanln(in, &input)
 	for {
-		switch imput {
+		fmt.Fprint(out, ">")
+		switch input {
 		case "exit":
+			storage.WriteToJSON("data/orders.json", strg)
 			return nil
 		case "acceptOrder":
-			fmt.Fprint(out, "acceptOrder command\n ")
+			service.WAcceptOrder(strg)
 			break
 		case "returnOrder":
 			fmt.Fprint(out, "returnOrder command\n ")
@@ -54,8 +64,11 @@ func Run() error {
 			fmt.Fprint(out, "Unknown command\n")
 			break
 		}
+
 		out.Flush()
-		fmt.Fscanln(in, &imput)
+
+		fmt.Fscanln(in, &input)
+		input = strings.TrimSpace(input)
 
 	}
 	return nil
