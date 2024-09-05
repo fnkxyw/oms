@@ -56,7 +56,7 @@ func Run(strg *storage.OrderStorage) error {
 			}
 			break
 		case "listOrders":
-			err = service.ListOrders(strg, 12, 3, false)
+			err = service.WListOrders(strg)
 			if err != nil {
 				fmt.Println(err)
 			}

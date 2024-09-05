@@ -72,3 +72,28 @@ func WPlaceOrder(s *storage.OrderStorage) error {
 	fmt.Println("Correct!")
 	return nil
 }
+
+func WListOrders(s *storage.OrderStorage) error {
+	var (
+		id   uint
+		n    int
+		temp int
+	)
+	fmt.Println("Input ClientID")
+	fmt.Scan(&id)
+	fmt.Println("1.List all orders witch consists on our PuP\n" +
+		"2.List last N orders")
+	fmt.Scan(&temp)
+	switch temp {
+	case 1:
+		err := ListOrders(s, id, 0, true)
+		return err
+	case 2:
+		fmt.Println("Input n")
+		fmt.Scan(&n)
+		err := ListOrders(s, id, n, false)
+		return err
+
+	}
+	return nil
+}
