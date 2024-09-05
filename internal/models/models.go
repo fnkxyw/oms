@@ -6,6 +6,7 @@ type Order struct {
 	ID         uint      `json:"id"`
 	UserID     uint      `json:"user_id"`
 	Accept     bool      `json:"accept"`
+	AcceptTime time.Time `json:"accept_time"`
 	Date       time.Time `json:"date"`
 	Issued     bool      `json:"issued"`
 	IssuedDate time.Time `json:"issued_date"`

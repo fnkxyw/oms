@@ -20,7 +20,7 @@ var helpText = `
      listReturns - allows you to get a list of returns (form is [listReturns ClientID])
 `
 
-func Run() error {
+func Run(strg *storage.OrderStorage) error {
 	ShowHelp()
 
 	var in *bufio.Reader
@@ -29,8 +29,7 @@ func Run() error {
 	in = bufio.NewReader(os.Stdin)
 	fmt.Fprint(out, ">")
 	out.Flush()
-	strg := storage.NewOrderStorage()
-
+	var err error
 	var input string
 	fmt.Fscanln(in, &input)
 	for {
@@ -40,16 +39,28 @@ func Run() error {
 			storage.WriteToJSON("data/orders.json", strg)
 			return nil
 		case "acceptOrder":
-			service.WAcceptOrder(strg)
+			err = service.WAcceptOrder(strg)
+			if err != nil {
+				fmt.Println(err)
+			}
 			break
 		case "returnOrder":
-			fmt.Fprint(out, "returnOrder command\n ")
+			err = service.WReturnOrder(strg)
+			if err != nil {
+				fmt.Println(err)
+			}
 			break
 		case "placeOrder":
-			fmt.Fprint(out, "placeOrder command\n ")
+			err = service.WPlaceOrder(strg)
+			if err != nil {
+				fmt.Print(err)
+			}
 			break
 		case "listOrders":
-			fmt.Fprint(out, "listOrders command\n ")
+			err = service.ListOrders(strg, 12, 2, false)
+			if err != nil {
+				fmt.Println(err)
+			}
 			break
 		case "returnCustomer":
 			fmt.Fprint(out, "returnCustomer command\n ")
