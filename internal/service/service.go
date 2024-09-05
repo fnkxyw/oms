@@ -64,7 +64,6 @@ func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 			}
 		}
 	}
-
 	sort.Slice(list, func(i, j int) bool {
 		return !(list[i].AcceptTime.Before(list[j].AcceptTime))
 	})
@@ -74,8 +73,5 @@ func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 	if inPuP == false {
 		list = list[:n]
 	}
-	for _, order := range list {
-		fmt.Printf("OrderID: %v, Reciver: %v, IssuedStatus: %v, Date until which it will be stored: %v \n", order.ID, order.UserID, order.Issued, order.Date)
-	}
-	return nil
+	return ScrollPagination(list, 1)
 }
