@@ -8,7 +8,7 @@ import (
 	"syscall"
 )
 
-func SygnalSearch(s *storage.OrderStorage) error {
+func SygnalSearch(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 	signalls := make(chan os.Signal, 1)
 
 	signal.Notify(signalls, syscall.SIGINT, syscall.SIGTERM)
@@ -18,7 +18,8 @@ func SygnalSearch(s *storage.OrderStorage) error {
 			<-signalls
 			fmt.Println()
 			fmt.Println("exit")
-			storage.WriteToJSON("data/orders.json", s)
+			storage.WriteToJSON("data/returns.json", rS)
+			storage.WriteToJSON("data/orders.json", oS)
 			os.Exit(1)
 
 		}

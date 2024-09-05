@@ -27,6 +27,14 @@ func (os *OrderStorage) AddOrderToStorage(or *models.Order) error {
 	return nil
 }
 
+func (o *OrderStorage) IsConsist(id uint) bool {
+	_, ok := o.Data[id]
+	if !ok {
+		return false
+	}
+	return true
+}
+
 func (o *OrderStorage) DeleteOrderFromStorage(id uint) {
 	delete(o.Data, id)
 }

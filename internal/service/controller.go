@@ -38,6 +38,9 @@ func WReturnOrder(s *storage.OrderStorage) error {
 	fmt.Println("Input OrderID")
 	fmt.Print(">")
 	fmt.Scan(&id)
+	if !s.IsConsist(id) {
+		return fmt.Errorf("We dont have order with that id ")
+	}
 	err := ReturnOrder(s, id)
 	if err != nil {
 		return err
@@ -58,10 +61,14 @@ func WPlaceOrder(s *storage.OrderStorage) error {
 	data := strings.Fields(temp)
 	var uintdata []uint
 	for _, v := range data {
+
 		uval, err := strconv.Atoi(v)
 		if err != nil {
-			fmt.Println("Wrond id in PlaceOrder")
+			fmt.Println("Wrong conv id in PlaceOrder")
 			return err
+		}
+		if !s.IsConsist(uint(uval)) {
+			return fmt.Errorf("We dont have order with that id\n")
 		}
 		uintdata = append(uintdata, uint(uval))
 	}

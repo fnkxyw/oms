@@ -9,15 +9,17 @@ import (
 )
 
 func main() {
-	strg := storage.NewOrderStorage()
-	err := strg.ReadFromJSON("data/orders.json")
+	orderStorage := storage.NewOrderStorage()
+	returnStorage := storage.NewReturnStorage()
+
+	err := orderStorage.ReadFromJSON("data/orders.json")
 	if err != nil {
 		return
 	}
-	sygnal.SygnalSearch(strg)
+	sygnal.SygnalSearch(orderStorage, returnStorage)
 	if len(os.Args) > 1 {
 		cli.Execute()
 	} else {
-		basic.Run(strg)
+		basic.Run(orderStorage, returnStorage)
 	}
 }

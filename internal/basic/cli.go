@@ -16,11 +16,11 @@ var helpText = `
      returnOrder - allows you to return the order to the courier
      placeOrder - allow the order to be released to the customer
      listOrders - allows you to get a list of orders  
-     returnCustomer - allows you to accept a return from a customer
+     returnUser - allows you to accept a return from a customer
      listReturns - allows you to get a list of returns 
 `
 
-func Run(strg *storage.OrderStorage) error {
+func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 	ShowHelp()
 
 	var in *bufio.Reader
@@ -35,34 +35,35 @@ func Run(strg *storage.OrderStorage) error {
 	for {
 		switch input {
 		case "exit":
-			storage.WriteToJSON("data/orders.json", strg)
+			storage.WriteToJSON("data/orders.json", oS)
+			storage.WriteToJSON("data/returns.json", rS)
 			return nil
 		case "acceptOrder":
-			err = service.WAcceptOrder(strg)
+			err = service.WAcceptOrder(oS)
 			if err != nil {
 				fmt.Println(err)
 			}
 			break
 		case "returnOrder":
-			err = service.WReturnOrder(strg)
+			err = service.WReturnOrder(oS)
 			if err != nil {
 				fmt.Println(err)
 			}
 			break
 		case "placeOrder":
-			err = service.WPlaceOrder(strg)
+			err = service.WPlaceOrder(oS)
 			if err != nil {
 				fmt.Print(err)
 			}
 			break
 		case "listOrders":
-			err = service.WListOrders(strg)
+			err = service.WListOrders(oS)
 			if err != nil {
 				fmt.Println(err)
 			}
 			break
-		case "returnCustomer":
-			fmt.Fprint(out, "returnCustomer command\n ")
+		case "returnUser":
+
 			break
 		case "listReturns":
 			fmt.Fprintln(out, "listReturns command\n ")
