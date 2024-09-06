@@ -29,6 +29,7 @@
 
 
 # Команды
+- <span style="color: rgba(207,102,102,0.83);"> help </span> - Показывает краткую сводку по командам
 - <span style="color: rgba(207,102,102,0.83);"> acceptOrder </span> - Позволяет принять заказ от курьера
 - <span style="color: rgba(207,102,102,0.83);"> returnOrder </span> - Позволяет вернуть заказ курьеру
 - <span style="color: rgba(207,102,102,0.83);"> placeOrder </span> - Позволяет доставить заказ клиенту
@@ -36,6 +37,9 @@
 - <span style="color: rgba(207,102,102,0.83);"> returnUser </span> - Позволяет клиенту вернуть заказ на ПВЗ
 - <span style="color: rgba(207,102,102,0.83);"> listReturns </span> - Позволяет показать список всех возвратов
 
+В качестве хранилища создаются два json файла
+returns.json 
+orders.json
 
 # Примеры работы команд
 - acceptOrder + listOrders

@@ -23,6 +23,7 @@ type State string
 
 // состояния заказа
 var (
+	SoftDelete    = State("SoftDelete")
 	AcceptState   = State("accept")
 	PlaceState    = State("place")
 	ReturnedState = State("returned")

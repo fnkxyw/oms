@@ -10,6 +10,9 @@ import (
 
 // принять заказ от курьера
 func AcceptOrder(s *storage.OrderStorage, or *models.Order) error {
+	if s.IsConsist(or.ID) {
+		return fmt.Errorf("We can`t accept this Order on PuP\n")
+	}
 	if or.Date.Before(time.Now()) {
 		return fmt.Errorf("Incorrect date \n")
 	}
@@ -26,7 +29,7 @@ func AcceptOrder(s *storage.OrderStorage, or *models.Order) error {
 // вернуть заказ курьеру
 func ReturnOrder(s *storage.OrderStorage, id uint) error {
 	if s.Data[id].State == models.ReturnedState || s.Data[id].Date.Before(time.Now()) {
-		s.DeleteOrderFromStorage(id)
+		s.Data[id].State = models.SoftDelete
 	} else {
 		return fmt.Errorf("Order can`t be returned\n")
 	}
@@ -49,6 +52,9 @@ func PlaceOrder(s *storage.OrderStorage, id []uint) error {
 			return fmt.Errorf("Order by id: %d already place\n", v)
 
 		}
+		if s.Data[v].State == models.SoftDelete {
+			return fmt.Errorf("This order was deleted frmo PuP")
+		}
 		if s.Data[v].Date.After(time.Now()) {
 			s.Data[v].State = models.PlaceState
 			s.Data[v].PlaceData = time.Now()
@@ -59,7 +65,6 @@ func PlaceOrder(s *storage.OrderStorage, id []uint) error {
 	return nil
 }
 
-// /показать список заказов
 func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 	var list []*models.Order
 	for _, v := range s.Data {
