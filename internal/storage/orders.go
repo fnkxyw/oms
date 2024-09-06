@@ -19,7 +19,7 @@ func NewOrderStorage() *OrderStorage {
 func (os *OrderStorage) AddOrderToStorage(or *models.Order) error {
 	_, ok := os.Data[or.ID]
 	if ok {
-		return fmt.Errorf("Order already accept ")
+		return fmt.Errorf("Order already accept\n")
 	} else {
 		os.Data[or.ID] = or
 	}
@@ -39,16 +39,17 @@ func (o *OrderStorage) DeleteOrderFromStorage(id uint) {
 	delete(o.Data, id)
 }
 
+// считываем с JSON-a
 func (o *OrderStorage) ReadFromJSON(path string) error {
 	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
 	if err != nil {
-		return fmt.Errorf("ошибка при открытии файла: %w", err)
+		return fmt.Errorf("Open file error: %w", err)
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("ошибка при чтении файла: %w", err)
+		return fmt.Errorf("Read file error: %w", err)
 	}
 
 	if len(data) == 0 {

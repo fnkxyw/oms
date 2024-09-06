@@ -6,6 +6,7 @@ import (
 	"os"
 )
 
+// запись в JSON
 func WriteToJSON[T any](path string, val T) error {
 
 	file, err := os.OpenFile(path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)

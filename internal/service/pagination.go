@@ -8,7 +8,8 @@ import (
 	"strings"
 )
 
-func ScrollPagination(orders []*models.Order, limit int) error {
+// пагинация скроллом
+func scrollPagination(orders []*models.Order, limit int) error {
 	total := len(orders)
 	lastIndex := 0
 
@@ -26,12 +27,13 @@ func ScrollPagination(orders []*models.Order, limit int) error {
 		}
 
 		for i := start; i < end; i++ {
-			fmt.Printf("OrderID: %v, Reciver: %v, State: %v, Date until which it will be stored: %v \n",
+			fmt.Printf("OrderID: %v, Reciver: %v, State: %v, Date until which it will be stored: %v ",
 				orders[i].ID, orders[i].UserID, orders[i].State, orders[i].Date)
 		}
 		lastIndex = end
 
 		if lastIndex >= total {
+			fmt.Println("")
 			fmt.Println("End.")
 			return nil
 		}
@@ -41,5 +43,28 @@ func ScrollPagination(orders []*models.Order, limit int) error {
 
 	}
 
+	return nil
+}
+
+// пагинация постраничная
+func pagePagination(returns []*models.Return, page, limit int) error {
+	if page < 1 || limit < 1 {
+		return fmt.Errorf("page and limit must be greater than 0")
+	}
+
+	offset := (page - 1) * limit
+
+	if offset >= len(returns) {
+		return fmt.Errorf("no more data")
+	}
+
+	end := offset + limit
+	if end > len(returns) {
+		end = len(returns)
+	}
+	returns = returns[offset:end]
+	for _, v := range returns {
+		fmt.Printf("OrderID: %v, UserID: %v, Date of return: %v \n", v.ID, v.UserID, v.DateOfReturn)
+	}
 	return nil
 }

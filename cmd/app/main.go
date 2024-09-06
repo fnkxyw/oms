@@ -1,25 +1,24 @@
 package main
 
 import (
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/cmd/sygnal"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/basic"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/cli"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
-	"os"
+	signals "gitlab.ozon.dev/akugnerevich/homework-1.git/cmd/signals"
+	c "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/cli"
+	s "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
 )
 
 func main() {
-	orderStorage := storage.NewOrderStorage()
-	returnStorage := storage.NewReturnStorage()
-
+	orderStorage := s.NewOrderStorage()
+	returnStorage := s.NewReturnStorage()
 	err := orderStorage.ReadFromJSON("data/orders.json")
 	if err != nil {
 		return
 	}
-	sygnal.SygnalSearch(orderStorage, returnStorage)
-	if len(os.Args) > 1 {
-		cli.Execute()
-	} else {
-		basic.Run(orderStorage, returnStorage)
+	err = returnStorage.ReadFromJSON("data/returns.json")
+	if err != nil {
+		return
 	}
+	signals.SygnalSearch(orderStorage, returnStorage)
+
+	c.Run(orderStorage, returnStorage)
+
 }

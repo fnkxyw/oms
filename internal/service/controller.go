@@ -12,9 +12,12 @@ import (
 	"time"
 )
 
+//Файл с обертками для организации входа данных
+
 func WAcceptOrder(s *storage.OrderStorage) error {
 	var order models.Order
 	fmt.Println("Input OrderID _ UserID _ Date(form[2024-12(m)-12(d)])")
+	fmt.Print(">")
 
 	var dateString string
 	_, err := fmt.Scan(&order.ID, &order.UserID, &dateString)
@@ -39,7 +42,7 @@ func WReturnOrder(s *storage.OrderStorage) error {
 	fmt.Print(">")
 	fmt.Scan(&id)
 	if !s.IsConsist(id) {
-		return fmt.Errorf("We dont have order with that id ")
+		return fmt.Errorf("We dont have order with that id\n ")
 	}
 	err := ReturnOrder(s, id)
 	if err != nil {
@@ -86,10 +89,12 @@ func WListOrders(s *storage.OrderStorage) error {
 		n    int
 		temp int
 	)
-	fmt.Println("Input ClientID")
+	fmt.Println("Input UserID")
+	fmt.Print(">")
 	fmt.Scan(&id)
 	fmt.Println("1.List all orders witch consists on our PuP\n" +
 		"2.List last N orders")
+	fmt.Print(">")
 	fmt.Scan(&temp)
 	switch temp {
 	case 1:
@@ -97,10 +102,39 @@ func WListOrders(s *storage.OrderStorage) error {
 		return err
 	case 2:
 		fmt.Println("Input n")
+		fmt.Print(">")
 		fmt.Scan(&n)
 		err := ListOrders(s, id, n, false)
 		return err
 
 	}
 	return nil
+}
+
+func WReturnUser(rS *storage.ReturnStorage, oS *storage.OrderStorage) error {
+	fmt.Println("Input OrderID and UserId")
+	fmt.Print(">")
+	var (
+		orderId uint
+		userdId uint
+	)
+	fmt.Scan(&orderId, &userdId)
+	err := ReturnUser(rS, oS, orderId, userdId)
+	if err == nil {
+		fmt.Println("Correct!")
+
+	}
+	return err
+}
+
+func WListReturns(rs *storage.ReturnStorage) error {
+	fmt.Println("Input max Returns on one page and Page")
+	var (
+		limit int
+		page  int
+	)
+	fmt.Print(">")
+	fmt.Scan(&limit, &page)
+
+	return ListReturns(rs, limit, page)
 }

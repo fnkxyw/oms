@@ -1,4 +1,4 @@
-package basic
+package cli
 
 import (
 	"bufio"
@@ -12,11 +12,11 @@ import (
 var helpText = `
 	 here is the available set of commands
      help - shows the available commands
-     acceptOrder - allows you to take the order from the courier
-     returnOrder - allows you to return the order to the courier
-     placeOrder - allow the order to be released to the customer
+     acceptOrder - allows you to take the order from the user
+     returnOrder - allows you to return the order to the user
+     placeOrder - allow the order to be released to the user
      listOrders - allows you to get a list of orders  
-     returnUser - allows you to accept a return from a customer
+     returnUser - allows you to accept a return from a user
      listReturns - allows you to get a list of returns 
 `
 
@@ -41,13 +41,13 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 		case "acceptOrder":
 			err = service.WAcceptOrder(oS)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Print(err)
 			}
 			break
 		case "returnOrder":
 			err = service.WReturnOrder(oS)
 			if err != nil {
-				fmt.Println(err)
+				fmt.Print(err)
 			}
 			break
 		case "placeOrder":
@@ -63,10 +63,16 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 			}
 			break
 		case "returnUser":
-
+			err = service.WReturnUser(rS, oS)
+			if err != nil {
+				fmt.Print(err)
+			}
 			break
 		case "listReturns":
-			fmt.Fprintln(out, "listReturns command\n ")
+			err = service.WListReturns(rS)
+			if err != nil {
+				fmt.Println(err)
+			}
 			break
 		case "help":
 			ShowHelp()

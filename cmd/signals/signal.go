@@ -8,6 +8,8 @@ import (
 	"syscall"
 )
 
+//файл для ловли сигналов завершения, чтобы не потерять данные
+
 func SygnalSearch(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 	signalls := make(chan os.Signal, 1)
 
