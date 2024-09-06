@@ -9,11 +9,11 @@ import (
 func main() {
 	orderStorage := s.NewOrderStorage()
 	returnStorage := s.NewReturnStorage()
-	err := orderStorage.ReadFromJSON("data/orders.json")
+	err := orderStorage.ReadFromJSON("api/orders.json")
 	if err != nil {
 		return
 	}
-	err = returnStorage.ReadFromJSON("data/returns.json")
+	err = returnStorage.ReadFromJSON("api/returns.json")
 	if err != nil {
 		return
 	}

@@ -55,7 +55,7 @@ func pagePagination(returns []*models.Return, page, limit int) error {
 	offset := (page - 1) * limit
 
 	if offset >= len(returns) {
-		return fmt.Errorf("no more data")
+		return fmt.Errorf("no more api")
 	}
 
 	end := offset + limit

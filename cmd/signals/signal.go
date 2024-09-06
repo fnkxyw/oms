@@ -20,8 +20,8 @@ func SygnalSearch(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 			<-signalls
 			fmt.Println()
 			fmt.Println("exit")
-			storage.WriteToJSON("data/returns.json", rS)
-			storage.WriteToJSON("data/orders.json", oS)
+			storage.WriteToJSON("api/returns.json", rS)
+			storage.WriteToJSON("api/orders.json", oS)
 			os.Exit(1)
 
 		}

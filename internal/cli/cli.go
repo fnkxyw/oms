@@ -35,8 +35,8 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 	for {
 		switch input {
 		case "exit":
-			storage.WriteToJSON("data/orders.json", oS)
-			storage.WriteToJSON("data/returns.json", rS)
+			storage.WriteToJSON("api/orders.json", oS)
+			storage.WriteToJSON("api/returns.json", rS)
 			return nil
 		case "acceptOrder":
 			err = service.WAcceptOrder(oS)

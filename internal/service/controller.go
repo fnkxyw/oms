@@ -22,7 +22,7 @@ func WAcceptOrder(s *storage.OrderStorage) error {
 	var dateString string
 	_, err := fmt.Scan(&order.ID, &order.UserID, &dateString)
 	if err != nil {
-		return fmt.Errorf("Input data error: %w", err)
+		return fmt.Errorf("Input api error: %w", err)
 	}
 
 	order.Date, err = time.Parse("2006-01-02", dateString)

@@ -111,7 +111,7 @@ func ReturnUser(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, us
 		})
 		os.Data[id].State = models.ReturnedState
 	} else {
-		return fmt.Errorf("Check input data\n")
+		return fmt.Errorf("Check input api\n")
 	}
 	return nil
 }

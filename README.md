@@ -44,13 +44,13 @@ orders.json
 # Примеры работы команд
 - acceptOrder + listOrders
 
-![img.png](datafiles/img.png)
+![img.png](assets/img.png)
 
 - returnOrder + placeOrder + returnUser
 
-![img_1.png](datafiles/img_1.png)
-![img_2.png](datafiles/img_2.png)
+![img_1.png](assets/img_1.png)
+![img_2.png](assets/img_2.png)
 
 - listReturns
 
-![img.png](datafiles/img.png)
+![img.png](assets/img.png)
