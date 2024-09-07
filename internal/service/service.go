@@ -98,21 +98,22 @@ func ReturnUser(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, us
 		return fmt.Errorf("Check input OrderId\n")
 	}
 	if os.Data[id].State != models.PlaceState {
-		return fmt.Errorf("Order are not placed \n")
+		return fmt.Errorf("Order are not placed\n")
 	}
 	if time.Now().After(os.Data[id].PlaceData.AddDate(0, 0, 2)) {
-		return fmt.Errorf("Return time has expired :( \n")
+		return fmt.Errorf("Return time has expired :(\n")
 	}
-	if os.IsConsist(id) && os.Data[id].UserID == userId && os.Data[id].State == models.PlaceState {
-		rs.AddReturnToStorage(&models.Return{
-			ID:           id,
-			UserID:       userId,
-			DateOfReturn: time.Now(),
-		})
-		os.Data[id].State = models.ReturnedState
-	} else {
+	if os.Data[id].UserID != userId {
 		return fmt.Errorf("Check input api\n")
 	}
+
+	rs.AddReturnToStorage(&models.Return{
+		ID:           id,
+		UserID:       userId,
+		DateOfReturn: time.Now(),
+	})
+	os.Data[id].State = models.ReturnedState
+
 	return nil
 }
 

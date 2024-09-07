@@ -16,15 +16,13 @@ func SygnalSearch(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 	signal.Notify(signalls, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		for {
-			<-signalls
-			fmt.Println()
-			fmt.Println("exit")
-			oS.WritoToJSON()
-			rS.WritoToJSON()
-			os.Exit(1)
+		<-signalls
+		fmt.Println()
+		fmt.Println("exit")
+		oS.WritoToJSON()
+		rS.WritoToJSON()
+		os.Exit(1)
 
-		}
 	}()
 	return nil
 }
