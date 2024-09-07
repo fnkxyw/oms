@@ -29,10 +29,7 @@ func (os *OrderStorage) AddOrderToStorage(or *models.Order) error {
 
 func (o *OrderStorage) IsConsist(id uint) bool {
 	_, ok := o.Data[id]
-	if !ok {
-		return false
-	}
-	return true
+	return ok
 }
 
 func (o *OrderStorage) DeleteOrderFromStorage(id uint) {
@@ -72,5 +69,22 @@ func (o *OrderStorage) ReadFromJSON(path string) error {
 		o.Data[orderID] = &orderCopy
 	}
 
+	return nil
+}
+
+func (o *OrderStorage) WritoToJSON() error {
+	file, err := os.OpenFile("api/orders.json", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	if err != nil {
+		fmt.Println("OpenFile eror in WriteToJSON", err)
+		return err
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent(" ", "  ")
+	if err := encoder.Encode(o); err != nil {
+		fmt.Println("Encoding error in WirteToJSON", err)
+		return err
+	}
 	return nil
 }
