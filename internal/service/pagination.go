@@ -28,7 +28,7 @@ func scrollPagination(orders []*models.Order, limit int) error {
 
 		for i := start; i < end; i++ {
 			fmt.Printf("OrderID: %v, Reciver: %v, State: %v, Date until which it will be stored: %v ",
-				orders[i].ID, orders[i].UserID, orders[i].State, orders[i].Date)
+				orders[i].ID, orders[i].UserID, orders[i].State, orders[i].KeepUntilDate)
 		}
 		lastIndex = end
 

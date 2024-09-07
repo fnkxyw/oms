@@ -25,7 +25,7 @@ func WAcceptOrder(s *storage.OrderStorage) error {
 		return fmt.Errorf("Input api error: %w\n", err)
 	}
 
-	order.Date, err = time.Parse("2006-01-02", dateString)
+	order.KeepUntilDate, err = time.Parse("2006-01-02", dateString)
 	if err != nil {
 		return fmt.Errorf("Date parse error: %w\n", err)
 	}
@@ -111,7 +111,7 @@ func WListOrders(s *storage.OrderStorage) error {
 	return nil
 }
 
-func WReturnUser(rS *storage.ReturnStorage, oS *storage.OrderStorage) error {
+func WRefundOrder(rS *storage.ReturnStorage, oS *storage.OrderStorage) error {
 	fmt.Println("Input OrderID and UserId")
 	fmt.Print(">")
 	var (
@@ -119,7 +119,7 @@ func WReturnUser(rS *storage.ReturnStorage, oS *storage.OrderStorage) error {
 		userdId uint
 	)
 	fmt.Scan(&orderId, &userdId)
-	err := ReturnUser(rS, oS, orderId, userdId)
+	err := RefundOrder(rS, oS, orderId, userdId)
 	if err == nil {
 		fmt.Println("Correct!")
 

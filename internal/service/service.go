@@ -13,7 +13,7 @@ func AcceptOrder(s *storage.OrderStorage, or *models.Order) error {
 	if s.IsConsist(or.ID) {
 		return fmt.Errorf("We can`t accept this Order on PuP\n")
 	}
-	if or.Date.Before(time.Now()) {
+	if or.KeepUntilDate.Before(time.Now()) {
 		return fmt.Errorf("Incorrect date \n")
 	}
 	or.State = models.AcceptState
@@ -28,40 +28,42 @@ func AcceptOrder(s *storage.OrderStorage, or *models.Order) error {
 
 // вернуть заказ курьеру
 func ReturnOrder(s *storage.OrderStorage, id uint) error {
-	if s.Data[id].State == models.ReturnedState || s.Data[id].Date.Before(time.Now()) {
-		s.Data[id].State = models.SoftDelete
-	} else {
-		return fmt.Errorf("Order can`t be returned\n")
-	}
-	return nil
+	return s.Data[id].CanReturned()
 }
 
 // доставить заказ юзеру
-func PlaceOrder(s *storage.OrderStorage, id []uint) error {
-	if len(id) == 0 {
-		return fmt.Errorf("Length of ids array is 0\n")
+func PlaceOrder(s *storage.OrderStorage, ids []uint) error {
+	if len(ids) == 0 {
+		return fmt.Errorf("Length of ids array is 0 ")
 	}
-	temp := s.Data[id[0]].UserID
-	for _, v := range id {
-		if s.Data[v].UserID != temp {
-			return fmt.Errorf("Not all orders for one user \n")
-		}
-	}
-	for _, v := range id {
-		if s.Data[v].State == models.PlaceState {
-			return fmt.Errorf("Order by id: %d already place\n", v)
 
-		}
-		if s.Data[v].State == models.SoftDelete {
-			return fmt.Errorf("This order was deleted frmo PuP")
-		}
-		if s.Data[v].Date.After(time.Now()) {
-			s.Data[v].State = models.PlaceState
-			s.Data[v].PlaceData = time.Now()
-		} else {
-			return fmt.Errorf("You cannot issue this item to the customer\n")
+	temp := s.Data[ids[0]].UserID
+
+	for _, id := range ids {
+		if s.Data[id].UserID != temp {
+			return fmt.Errorf("Not all orders are for the same user ")
 		}
 	}
+
+	for _, id := range ids {
+		order := s.Data[id]
+
+		if order.State == models.PlaceState {
+			return fmt.Errorf("Order by id: %d is already placed", id)
+		}
+
+		if order.State == models.SoftDelete {
+			return fmt.Errorf("Order by id: %d was deleted", id)
+		}
+
+		if !order.KeepUntilDate.After(time.Now()) {
+			return fmt.Errorf("Order by id: %d cannot be issued to the customer because the date is invalid", id)
+		}
+
+		order.State = models.PlaceState
+		order.PlaceDate = time.Now()
+	}
+
 	return nil
 }
 
@@ -93,14 +95,14 @@ func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 }
 
 // вернуть заказ юзеру
-func ReturnUser(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, userId uint) error {
+func RefundOrder(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, userId uint) error {
 	if !os.IsConsist(id) {
 		return fmt.Errorf("Check input OrderId\n")
 	}
 	if os.Data[id].State != models.PlaceState {
 		return fmt.Errorf("Order are not placed\n")
 	}
-	if time.Now().After(os.Data[id].PlaceData.AddDate(0, 0, 2)) {
+	if time.Now().After(os.Data[id].PlaceDate.AddDate(0, 0, 2)) {
 		return fmt.Errorf("Return time has expired :(\n")
 	}
 	if os.Data[id].UserID != userId {

@@ -16,7 +16,7 @@ var helpText = `
      returnOrder - allows you to return the order to the courier
      placeOrder - allow the order to be released to the user
      listOrders - allows you to get a list of orders  
-     returnUser - allows you to accept a return from a user
+     refundOrder - allows you to accept a return from a user
      listReturns - allows you to get a list of returns 
 `
 
@@ -62,8 +62,8 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 				fmt.Println(err)
 			}
 			break
-		case "returnUser":
-			err = service.WReturnUser(rS, oS)
+		case "refundOrder":
+			err = service.WRefundOrder(rS, oS)
 			if err != nil {
 				fmt.Print(err)
 			}
