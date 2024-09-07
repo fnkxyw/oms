@@ -13,6 +13,11 @@ type OrderStorage struct {
 	path string
 }
 
+func (o *OrderStorage) Create() error {
+	_, err := os.Create(o.path)
+	return err
+}
+
 func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{Data: make(map[uint]*models.Order), path: "api/orders.json"}
 }

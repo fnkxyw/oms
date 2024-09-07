@@ -13,6 +13,11 @@ type ReturnStorage struct {
 	path string
 }
 
+func (r *ReturnStorage) Create() error {
+	_, err := os.Create(r.path)
+	return err
+}
+
 func NewReturnStorage() *ReturnStorage {
 	return &ReturnStorage{Data: make(map[uint]*models.Return), path: "api/returns.json"}
 }
