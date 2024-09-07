@@ -10,10 +10,11 @@ import (
 
 type ReturnStorage struct {
 	Data map[uint]*models.Return
+	path string
 }
 
 func NewReturnStorage() *ReturnStorage {
-	return &ReturnStorage{Data: make(map[uint]*models.Return)}
+	return &ReturnStorage{Data: make(map[uint]*models.Return), path: "api/returns.json"}
 }
 
 func (rs *ReturnStorage) AddReturnToStorage(r *models.Return) error {
@@ -38,8 +39,8 @@ func (o *ReturnStorage) IsConsist(id uint) bool {
 }
 
 // считываем с JSON-a
-func (o *ReturnStorage) ReadFromJSON(path string) error {
-	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+func (o *ReturnStorage) ReadFromJSON() error {
+	file, err := os.OpenFile(o.path, os.O_RDONLY, 0666)
 	if err != nil {
 		return fmt.Errorf("Open file erorr: %w", err)
 	}

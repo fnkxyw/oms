@@ -10,10 +10,11 @@ import (
 
 type OrderStorage struct {
 	Data map[uint]*models.Order
+	path string
 }
 
 func NewOrderStorage() *OrderStorage {
-	return &OrderStorage{Data: make(map[uint]*models.Order)}
+	return &OrderStorage{Data: make(map[uint]*models.Order), path: "api/orders.json"}
 }
 
 func (os *OrderStorage) AddOrderToStorage(or *models.Order) error {
@@ -37,8 +38,8 @@ func (o *OrderStorage) DeleteOrderFromStorage(id uint) {
 }
 
 // считываем с JSON-a
-func (o *OrderStorage) ReadFromJSON(path string) error {
-	file, err := os.OpenFile(path, os.O_RDONLY, 0666)
+func (o *OrderStorage) ReadFromJSON() error {
+	file, err := os.OpenFile(o.path, os.O_RDONLY, 0666)
 	if err != nil {
 		return fmt.Errorf("Open file error: %w", err)
 	}
