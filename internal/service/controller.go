@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
 	"log"
 	"os"
@@ -42,7 +43,7 @@ func WReturnOrder(s *storage.OrderStorage) error {
 	fmt.Print(">")
 	fmt.Scan(&id)
 	if !s.IsConsist(id) {
-		return fmt.Errorf("We dont have order with that id\n ")
+		return e.ErrorNoConsist
 	}
 	err := ReturnOrder(s, id)
 	if err != nil {
@@ -71,7 +72,7 @@ func WPlaceOrder(s *storage.OrderStorage) error {
 			return err
 		}
 		if !s.IsConsist(uint(uval)) {
-			return fmt.Errorf("We dont have order with that id\n")
+			return e.ErrorNoConsist
 		}
 		uintdata = append(uintdata, uint(uval))
 	}

@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
 	"sort"
 	"time"
@@ -11,10 +12,10 @@ import (
 // принять заказ от курьера
 func AcceptOrder(s *storage.OrderStorage, or *models.Order) error {
 	if s.IsConsist(or.ID) {
-		return fmt.Errorf("We can`t accept this Order on PuP\n")
+		return e.ErrorIsConsist
 	}
 	if or.KeepUntilDate.Before(time.Now()) {
-		return fmt.Errorf("Incorrect date \n")
+		return e.ErrorDate
 	}
 	or.State = models.AcceptState
 	or.AcceptTime = time.Now()
@@ -41,7 +42,7 @@ func PlaceOrder(s *storage.OrderStorage, ids []uint) error {
 
 	for _, id := range ids {
 		if s.Data[id].UserID != temp {
-			return fmt.Errorf("Not all orders are for the same user ")
+			return e.ErrorNotAllIDs
 		}
 	}
 
@@ -97,16 +98,16 @@ func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 // вернуть заказ юзеру
 func RefundOrder(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, userId uint) error {
 	if !os.IsConsist(id) {
-		return fmt.Errorf("Check input OrderId\n")
+		return e.ErrorCheckOrderID
 	}
 	if os.Data[id].State != models.PlaceState {
-		return fmt.Errorf("Order are not placed\n")
+		return e.ErrorNotPlace
 	}
 	if time.Now().After(os.Data[id].PlaceDate.AddDate(0, 0, 2)) {
-		return fmt.Errorf("Return time has expired :(\n")
+		return e.ErrorTimeExpired
 	}
 	if os.Data[id].UserID != userId {
-		return fmt.Errorf("Check input api\n")
+		return e.ErrorIncorrectUserId
 	}
 
 	rs.AddReturnToStorage(&models.Return{

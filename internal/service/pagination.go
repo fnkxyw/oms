@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
 	"os"
 	"strings"
 )
@@ -49,13 +50,13 @@ func scrollPagination(orders []*models.Order, limit int) error {
 // пагинация постраничная
 func pagePagination(returns []*models.Return, page, limit int) error {
 	if page < 1 || limit < 1 {
-		return fmt.Errorf("page and limit must be greater than 0")
+		return e.ErrorLimitPage
 	}
 
 	offset := (page - 1) * limit
 
 	if offset >= len(returns) {
-		return fmt.Errorf("no more api")
+		return e.ErrorNoMoreItems
 	}
 
 	end := offset + limit
