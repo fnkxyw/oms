@@ -34,6 +34,9 @@ lint:
 	$(GOCYCLO) -over 5 . || true
 	$(GOCOGNIT) -over 5 . || true
 
+cleanstorages:
+	rm -f api/*.json
 
 
-.PHONY:all build deps run  build-linux build-mac build-windows сlean lint
+
+.PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages
