@@ -27,4 +27,4 @@ deps:
 
 
 
-.PHONY: build install run  build-linux build-mac build-windows сlean
+.PHONY: build deps run  build-linux build-mac build-windows сlean
