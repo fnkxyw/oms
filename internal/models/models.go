@@ -10,6 +10,9 @@ type Order struct {
 	AcceptTime    time.Time `json:"accept_time"`
 	KeepUntilDate time.Time `json:"date"`
 	PlaceDate     time.Time `json:"place_data"`
+	Weight        int
+	Price         int
+	IsPackaged    bool
 }
 
 // модель возврата

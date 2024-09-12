@@ -41,19 +41,19 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 		case "acceptOrder":
 			err = service.WAcceptOrder(oS)
 			if err != nil {
-				fmt.Print(err)
+				fmt.Println(err)
 			}
 			break
 		case "returnOrder":
 			err = service.WReturnOrder(oS)
 			if err != nil {
-				fmt.Print(err)
+				fmt.Println(err)
 			}
 			break
 		case "placeOrder":
 			err = service.WPlaceOrder(oS)
 			if err != nil {
-				fmt.Print(err)
+				fmt.Println(err)
 			}
 			break
 		case "listOrders":
@@ -65,7 +65,7 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 		case "refundOrder":
 			err = service.WRefundOrder(rS, oS)
 			if err != nil {
-				fmt.Print(err)
+				fmt.Println(err)
 			}
 			break
 		case "listReturns":
@@ -73,6 +73,7 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 			if err != nil {
 				fmt.Println(err)
 			}
+
 			break
 		case "help":
 			ShowHelp()

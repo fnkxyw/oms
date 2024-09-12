@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/packing"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
 	"log"
 	"os"
@@ -16,7 +17,9 @@ import (
 //Файл с обертками для организации входа данных
 
 func WAcceptOrder(s *storage.OrderStorage) error {
+
 	var order models.Order
+	var pacakgeType string
 	fmt.Println("Input OrderID _ UserID _ Date(form[2024-12(m)-12(d)])")
 	fmt.Print(">")
 
@@ -25,15 +28,29 @@ func WAcceptOrder(s *storage.OrderStorage) error {
 	if err != nil {
 		return fmt.Errorf("Input api error: %w\n", err)
 	}
+	if s.IsConsist(order.ID) {
+		return e.ErrorIsConsist
+	}
 
 	order.KeepUntilDate, err = time.Parse("2006-01-02", dateString)
 	if err != nil {
 		return fmt.Errorf("Date parse error: %w\n", err)
 	}
+
+	fmt.Println("Input weight, price, package type [box, bundle, wrap]")
+	fmt.Print(">")
+	_, err = fmt.Scan(&order.Weight, &order.Price, &pacakgeType)
+
+	err = packing.Packing(&order, pacakgeType)
+	if err != nil {
+		return err
+	}
+
 	err = AcceptOrder(s, &order)
 	if err != nil {
 		return err
 	}
+
 	return err
 }
 
