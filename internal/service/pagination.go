@@ -44,7 +44,6 @@ func scrollPagination(orders []*models.Order, limit int) error {
 
 	}
 
-	return nil
 }
 
 // пагинация постраничная

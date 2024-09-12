@@ -39,7 +39,7 @@ func WAcceptOrder(s *storage.OrderStorage) error {
 
 	fmt.Println("Input weight, price, package type [box, bundle, wrap]")
 	fmt.Print(">")
-	_, err = fmt.Scan(&order.Weight, &order.Price, &pacakgeType)
+	fmt.Scan(&order.Weight, &order.Price, &pacakgeType)
 
 	err = packing.Packing(&order, pacakgeType)
 	if err != nil {

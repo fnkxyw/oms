@@ -2,9 +2,13 @@ GOCMD = go
 GOBUILD = $(GOCMD) build
 GORUN = $(GOCMD) run
 GOMOD = $(GOCMD) mod
+GOCYCLO = $(GOPATH)/bin/gocyclo
+GOCOGNIT = $(GOPATH)/bin/gocognit
 
 GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
+
+all: lint build
 
 build:
 	$(GOBUILD) -o app cmd/app/main.go
@@ -25,6 +29,11 @@ run:
 deps:
 	$(GOMOD) tidy
 
+#true чтобы прога сбилдилась
+lint:
+	$(GOCYCLO) -over 5 . || true
+	$(GOCOGNIT) -over 5 . || true
 
 
-.PHONY: build deps run  build-linux build-mac build-windows сlean
+
+.PHONY:all build deps run  build-linux build-mac build-windows сlean lint

@@ -43,44 +43,43 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 			if err != nil {
 				fmt.Println(err)
 			}
-			break
+
 		case "returnOrder":
 			err = service.WReturnOrder(oS)
 			if err != nil {
 				fmt.Println(err)
 			}
-			break
+
 		case "placeOrder":
 			err = service.WPlaceOrder(oS)
 			if err != nil {
 				fmt.Println(err)
 			}
-			break
+
 		case "listOrders":
 			err = service.WListOrders(oS)
 			if err != nil {
 				fmt.Println(err)
 			}
-			break
+
 		case "refundOrder":
 			err = service.WRefundOrder(rS, oS)
 			if err != nil {
 				fmt.Println(err)
 			}
-			break
+
 		case "listReturns":
 			err = service.WListReturns(rS)
 			if err != nil {
 				fmt.Println(err)
 			}
 
-			break
 		case "help":
 			ShowHelp()
-			break
+
 		default:
 			fmt.Fprint(out, "Unknown command\n")
-			break
+
 		}
 
 		fmt.Fprint(out, ">")
@@ -90,7 +89,6 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 		input = strings.TrimSpace(input)
 
 	}
-	return nil
 }
 
 func ShowHelp() error {

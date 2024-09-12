@@ -17,7 +17,7 @@ func (b *BoxPackaging) Pack(o *models.Order) error {
 	if o.Weight > 30 {
 		return ErrorWeightBox
 	}
-	if o.IsPackaged == true {
+	if o.IsPackaged {
 		return ErrorIsPackaged
 	}
 	o.Price += 20
@@ -39,7 +39,7 @@ func (b *BundlePackaging) Pack(o *models.Order) error {
 	if o.Weight > 10 {
 		return ErrorWeightBundle
 	}
-	if o.IsPackaged == true {
+	if o.IsPackaged {
 		return ErrorIsPackaged
 	}
 
