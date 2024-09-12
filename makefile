@@ -8,11 +8,13 @@ GOCOGNIT = $(GOPATH)/bin/gocognit
 GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
 
+#стандартный ввод т.е просто "make"
 all: lint build
 
 build:
 	$(GOBUILD) -o app cmd/app/main.go
 
+#лишним не будет как посчитал
 build-linux:
 	GOOS=linux GOARCH=arm64 $(GOBUILD) -o appL cmd/app/main.go
 build-mac:
@@ -20,6 +22,7 @@ build-mac:
 build-windows:
 	GOOS=windows GOARCH=arm64 $(GOBUILD) -o appW.exe cmd/app/main.go
 
+#удалять бинарники
 clean:
 	rm -f ./app ./appL ./appM ./appW.exe
 
@@ -29,11 +32,12 @@ run:
 deps:
 	$(GOMOD) tidy
 
-#true чтобы прога сбилдилась
+#true чтобы прога сбилдилась даже если будут файлы   >5
 lint:
 	$(GOCYCLO) -over 5 . || true
 	$(GOCOGNIT) -over 5 . || true
 
+#очистить хранилища если будет необходимость
 cleanstorages:
 	rm -f api/*.json
 

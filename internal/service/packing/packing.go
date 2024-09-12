@@ -65,6 +65,7 @@ func (w *WrapPackaging) Pack(o *models.Order) error {
 	return nil
 }
 
+// рациональное решение в случае если в дальнейшем понадобиться добавить еще одну упаковку
 func GetPackager(pack string) (Packager, error) {
 	switch pack {
 	case "box":
@@ -78,6 +79,7 @@ func GetPackager(pack string) (Packager, error) {
 	}
 }
 
+// упаковка
 func Packing(o *models.Order, pack string) error {
 	packager, err := GetPackager(pack)
 	if err != nil {
