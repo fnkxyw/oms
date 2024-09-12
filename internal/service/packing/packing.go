@@ -65,20 +65,23 @@ func (w *WrapPackaging) Pack(o *models.Order) error {
 	return nil
 }
 
-// процесс упаковки
-func Packing(o *models.Order, pack string) error {
-	var packager Packager
-
+func GetPackager(pack string) (Packager, error) {
 	switch pack {
 	case "box":
-		packager = &BoxPackaging{}
+		return &BoxPackaging{}, nil
 	case "bundle":
-		packager = &BundlePackaging{}
+		return &BundlePackaging{}, nil
 	case "wrap":
-		packager = &WrapPackaging{}
+		return &WrapPackaging{}, nil
 	default:
-		return ErrorInvalidType
+		return nil, ErrorInvalidType
 	}
+}
 
+func Packing(o *models.Order, pack string) error {
+	packager, err := GetPackager(pack)
+	if err != nil {
+		return err
+	}
 	return packager.Pack(o)
 }
