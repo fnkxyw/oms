@@ -34,8 +34,7 @@ deps:
 
 #true чтобы прога сбилдилась даже если будут файлы   >5
 lint:
-	$(GOCYCLO) -over 5 . || true
-	$(GOCOGNIT) -over 5 . || true
+	golangci-lint run
 
 #очистить хранилища если будет необходимость
 cleanstorages:

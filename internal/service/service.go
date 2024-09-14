@@ -71,7 +71,7 @@ func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 	} else if n > len(list) {
 		n = len(list)
 	}
-	if inPuP == false {
+	if !inPuP {
 		list = list[:n]
 	}
 	return scrollPagination(list, 1)

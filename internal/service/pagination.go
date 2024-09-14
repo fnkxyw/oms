@@ -40,7 +40,7 @@ func scrollPagination(orders []*models.Order, limit int) error {
 		}
 
 		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
+		_ = strings.TrimSpace(input)
 
 	}
 
