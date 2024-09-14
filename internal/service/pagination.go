@@ -49,13 +49,13 @@ func scrollPagination(orders []*models.Order, limit int) error {
 // пагинация постраничная
 func pagePagination(returns []*models.Return, page, limit int) error {
 	if page < 1 || limit < 1 {
-		return e.ErrorLimitPage
+		return e.ErrLimitPage
 	}
 
 	offset := (page - 1) * limit
 
 	if offset >= len(returns) {
-		return e.ErrorNoMoreItems
+		return e.ErrNoMoreItems
 	}
 
 	end := offset + limit

@@ -26,15 +26,15 @@ func WAcceptOrder(s *storage.OrderStorage) error {
 	var dateString string
 	_, err := fmt.Scan(&order.ID, &order.UserID, &dateString)
 	if err != nil {
-		return fmt.Errorf("Input api error: %w\n", err)
+		return fmt.Errorf("Input api Err: %w\n", err)
 	}
 	if s.IsConsist(order.ID) {
-		return e.ErrorIsConsist
+		return e.ErrIsConsist
 	}
 
 	order.KeepUntilDate, err = time.Parse("2006-01-02", dateString)
 	if err != nil {
-		return fmt.Errorf("Date parse error: %w\n", err)
+		return fmt.Errorf("Date parse Err: %w\n", err)
 	}
 
 	fmt.Println("Input weight[kg], price[₽], package type [box, bundle, wrap]")
@@ -60,7 +60,7 @@ func WReturnOrder(s *storage.OrderStorage) error {
 	fmt.Print(">")
 	fmt.Scan(&id)
 	if !s.IsConsist(id) {
-		return e.ErrorNoConsist
+		return e.ErrNoConsist
 	}
 	err := ReturnOrder(s, id)
 	if err != nil {
@@ -89,7 +89,7 @@ func WPlaceOrder(s *storage.OrderStorage) error {
 			return err
 		}
 		if !s.IsConsist(uint(uval)) {
-			return e.ErrorNoConsist
+			return e.ErrNoConsist
 		}
 		uintdata = append(uintdata, uint(uval))
 	}

@@ -15,7 +15,7 @@ type BoxPackaging struct {
 
 func (b *BoxPackaging) Pack(o *models.Order) error {
 	if o.Weight > 30 {
-		return ErrorWeightBox
+		return ErrWeightBox
 	}
 
 	o.Price += 20
@@ -35,7 +35,7 @@ type BundlePackaging struct {
 
 func (b *BundlePackaging) Pack(o *models.Order) error {
 	if o.Weight > 10 {
-		return ErrorWeightBundle
+		return ErrWeightBundle
 	}
 
 	o.Price += 5
@@ -69,7 +69,7 @@ func GetPackager(pack string) (Packager, error) {
 	case "wrap":
 		return &WrapPackaging{}, nil
 	default:
-		return nil, ErrorInvalidType
+		return nil, ErrInvalidType
 	}
 }
 

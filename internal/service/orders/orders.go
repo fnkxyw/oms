@@ -30,7 +30,7 @@ func CheckIDsOrders(s *storage.OrderStorage, ids []uint) error {
 	temp := s.Data[ids[0]].UserID
 	for _, id := range ids {
 		if s.Data[id].UserID != temp {
-			return e.ErrorNotAllIDs
+			return e.ErrNotAllIDs
 		}
 	}
 	return nil

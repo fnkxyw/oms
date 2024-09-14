@@ -1,7 +1,9 @@
-package errors
+package Errs
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
-	ErrorNoConsist = errors.New("We dont have order with that id")
+	ErrNoConsist = errors.New("We dont have order with that id")
 )

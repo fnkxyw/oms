@@ -12,10 +12,10 @@ import (
 // принять заказ от курьера
 func AcceptOrder(s *storage.OrderStorage, or *models.Order) error {
 	if s.IsConsist(or.ID) {
-		return e.ErrorIsConsist
+		return e.ErrIsConsist
 	}
 	if or.KeepUntilDate.Before(time.Now()) {
-		return e.ErrorDate
+		return e.ErrDate
 	}
 	or.State = models.AcceptState
 	or.AcceptTime = time.Now()
@@ -80,16 +80,16 @@ func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 // вернуть заказ юзеру
 func RefundOrder(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, userId uint) error {
 	if !os.IsConsist(id) {
-		return e.ErrorCheckOrderID
+		return e.ErrCheckOrderID
 	}
 	if os.Data[id].State != models.PlaceState {
-		return e.ErrorNotPlace
+		return e.ErrNotPlace
 	}
 	if time.Now().After(os.Data[id].PlaceDate.AddDate(0, 0, 2)) {
-		return e.ErrorTimeExpired
+		return e.ErrTimeExpired
 	}
 	if os.Data[id].UserID != userId {
-		return e.ErrorIncorrectUserId
+		return e.ErrIncorrectUserId
 	}
 
 	rs.AddReturnToStorage(&models.Return{
@@ -102,7 +102,7 @@ func RefundOrder(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, u
 	return nil
 }
 
-// показать список возвратов с постраничной пагинацией
+// показать список возвратов с    пагинацией
 func ListReturns(rs *storage.ReturnStorage, limit, page int) error {
 	var list []*models.Return
 	for _, v := range rs.Data {

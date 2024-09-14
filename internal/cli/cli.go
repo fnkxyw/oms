@@ -44,17 +44,17 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 			rS.WritoToJSON()
 			return nil
 		case "acceptOrder":
-			handleError(service.WAcceptOrder(oS))
+			handleErr(service.WAcceptOrder(oS))
 		case "returnOrder":
-			handleError(service.WReturnOrder(oS))
+			handleErr(service.WReturnOrder(oS))
 		case "placeOrder":
-			handleError(service.WPlaceOrder(oS))
+			handleErr(service.WPlaceOrder(oS))
 		case "listOrders":
-			handleError(service.WListOrders(oS))
+			handleErr(service.WListOrders(oS))
 		case "refundOrder":
-			handleError(service.WRefundOrder(rS, oS))
+			handleErr(service.WRefundOrder(rS, oS))
 		case "listReturns":
-			handleError(service.WListReturns(rS))
+			handleErr(service.WListReturns(rS))
 		case "help":
 			showHelp()
 		default:
@@ -71,7 +71,7 @@ func readInput(in *bufio.Reader) (string, error) {
 	return strings.TrimSpace(input), nil
 }
 
-func handleError(err error) {
+func handleErr(err error) {
 	if err != nil {
 		fmt.Println(err)
 	}

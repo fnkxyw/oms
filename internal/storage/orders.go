@@ -46,13 +46,13 @@ func (o *OrderStorage) DeleteOrderFromStorage(id uint) {
 func (o *OrderStorage) ReadFromJSON() error {
 	file, err := os.OpenFile(o.path, os.O_RDONLY, 0666)
 	if err != nil {
-		return fmt.Errorf("Open file error: %w", err)
+		return fmt.Errorf("Open file Err: %w", err)
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("Read file error: %w", err)
+		return fmt.Errorf("Read file Err: %w", err)
 	}
 
 	if len(data) == 0 {
@@ -89,7 +89,7 @@ func (o *OrderStorage) WritoToJSON() error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent(" ", "  ")
 	if err := encoder.Encode(o); err != nil {
-		fmt.Println("Encoding error in WirteToJSON", err)
+		fmt.Println("Encoding Err in WirteToJSON", err)
 		return err
 	}
 	return nil
