@@ -17,11 +17,9 @@ func (b *BoxPackaging) Pack(o *models.Order) error {
 	if o.Weight > 30 {
 		return ErrorWeightBox
 	}
-	if o.IsPackaged {
-		return ErrorIsPackaged
-	}
+
 	o.Price += 20
-	o.IsPackaged = true
+
 	ans, err := controller.AddWrap()
 	if err != nil {
 		return err
@@ -39,11 +37,7 @@ func (b *BundlePackaging) Pack(o *models.Order) error {
 	if o.Weight > 10 {
 		return ErrorWeightBundle
 	}
-	if o.IsPackaged {
-		return ErrorIsPackaged
-	}
 
-	o.IsPackaged = true
 	o.Price += 5
 
 	ans, err := controller.AddWrap()

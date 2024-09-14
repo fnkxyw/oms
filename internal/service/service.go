@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/orders"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
-	"sort"
 	"time"
 )
 
@@ -38,13 +38,7 @@ func PlaceOrder(s *storage.OrderStorage, ids []uint) error {
 		return fmt.Errorf("Length of ids array is 0 ")
 	}
 
-	temp := s.Data[ids[0]].UserID
-
-	for _, id := range ids {
-		if s.Data[id].UserID != temp {
-			return e.ErrorNotAllIDs
-		}
-	}
+	orders.CheckIDsOrders(s, ids)
 
 	for _, id := range ids {
 		order := s.Data[id]
@@ -70,20 +64,8 @@ func PlaceOrder(s *storage.OrderStorage, ids []uint) error {
 
 func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 	var list []*models.Order
-	for _, v := range s.Data {
-		if inPuP == true {
-			if v.UserID == id && (v.State == models.AcceptState || v.State == models.ReturnedState) {
-				list = append(list, v)
-			}
-		} else {
-			if v.UserID == id {
-				list = append(list, v)
-			}
-		}
-	}
-	sort.Slice(list, func(i, j int) bool {
-		return !(list[i].AcceptTime.Before(list[j].AcceptTime))
-	})
+	list = orders.FilterOrders(s, id, inPuP)
+	orders.SortOrders(list)
 	if n < 1 {
 		n = 1
 	} else if n > len(list) {

@@ -12,7 +12,6 @@ type Order struct {
 	PlaceDate     time.Time `json:"place_data"`
 	Weight        int
 	Price         int
-	IsPackaged    bool
 }
 
 // модель возврата

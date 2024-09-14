@@ -37,7 +37,7 @@ func WAcceptOrder(s *storage.OrderStorage) error {
 		return fmt.Errorf("Date parse error: %w\n", err)
 	}
 
-	fmt.Println("Input weight, price, package type [box, bundle, wrap]")
+	fmt.Println("Input weight[kg], price[₽], package type [box, bundle, wrap]")
 	fmt.Print(">")
 	fmt.Scan(&order.Weight, &order.Price, &pacakgeType)
 
