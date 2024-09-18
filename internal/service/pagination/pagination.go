@@ -1,4 +1,4 @@
-package service
+package pagination
 
 import (
 	"bufio"
@@ -10,7 +10,7 @@ import (
 )
 
 // пагинация скроллом
-func scrollPagination(orders []*models.Order, limit int) error {
+func ScrollPagination(orders []*models.Order, limit int) error {
 	total := len(orders)
 	lastIndex := 0
 
@@ -47,7 +47,7 @@ func scrollPagination(orders []*models.Order, limit int) error {
 }
 
 // пагинация постраничная
-func pagePagination(returns []*models.Return, page, limit int) error {
+func PagePagination(returns []*models.Return, page, limit int) error {
 	if page < 1 || limit < 1 {
 		return e.ErrLimitPage
 	}

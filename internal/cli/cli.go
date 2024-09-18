@@ -3,7 +3,7 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service"
+	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/controller"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
 	"os"
 	"strings"
@@ -41,17 +41,17 @@ func Run(oS storage.OrderStorageInterface, rS storage.ReturnStorageInterface) er
 			rS.WriteToJSON()
 			return nil
 		case "acceptOrder":
-			handleErr(service.WAcceptOrder(oS))
+			handleErr(controller.WAcceptOrder(oS))
 		case "returnOrder":
-			handleErr(service.WReturnOrder(oS))
+			handleErr(controller.WReturnOrder(oS))
 		case "placeOrder":
-			handleErr(service.WPlaceOrder(oS))
+			handleErr(controller.WPlaceOrder(oS))
 		case "listOrders":
-			handleErr(service.WListOrders(oS))
+			handleErr(controller.WListOrders(oS))
 		case "refundOrder":
-			handleErr(service.WRefundOrder(rS, oS))
+			handleErr(controller.WRefundOrder(rS, oS))
 		case "listReturns":
-			handleErr(service.WListReturns(rS))
+			handleErr(controller.WListReturns(rS))
 		case "help":
 			showHelp()
 		default:

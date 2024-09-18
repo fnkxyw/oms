@@ -1,11 +1,13 @@
-package service
+package controller
 
 import (
 	"bufio"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/orders"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/packing"
+	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/returns"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
 	"log"
 	"os"
@@ -46,7 +48,7 @@ func WAcceptOrder(s storage.OrderStorageInterface) error {
 		return err
 	}
 
-	err = AcceptOrder(s, &order)
+	err = orders.AcceptOrder(s, &order)
 	if err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func WReturnOrder(s storage.OrderStorageInterface) error {
 	if !s.IsConsist(id) {
 		return e.ErrNoConsist
 	}
-	err := ReturnOrder(s, id)
+	err := returns.ReturnOrder(s, id)
 	if err != nil {
 		return err
 	}
@@ -93,7 +95,7 @@ func WPlaceOrder(s storage.OrderStorageInterface) error {
 		}
 		uintdata = append(uintdata, uint(uval))
 	}
-	err = PlaceOrder(s, uintdata)
+	err = orders.PlaceOrder(s, uintdata)
 	if err != nil {
 		return err
 	}
@@ -116,13 +118,13 @@ func WListOrders(s storage.OrderStorageInterface) error {
 	fmt.Scan(&temp)
 	switch temp {
 	case 1:
-		err := ListOrders(s, id, 0, true)
+		err := orders.ListOrders(s, id, 0, true)
 		return err
 	case 2:
 		fmt.Println("Input n")
 		fmt.Print(">")
 		fmt.Scan(&n)
-		err := ListOrders(s, id, n, false)
+		err := orders.ListOrders(s, id, n, false)
 		return err
 
 	}
@@ -137,7 +139,7 @@ func WRefundOrder(rS storage.ReturnStorageInterface, oS storage.OrderStorageInte
 		userdId uint
 	)
 	fmt.Scan(&orderId, &userdId)
-	err := RefundOrder(rS, oS, orderId, userdId)
+	err := orders.RefundOrder(rS, oS, orderId, userdId)
 	if err == nil {
 		fmt.Println("Correct!")
 
@@ -154,5 +156,5 @@ func WListReturns(rs storage.ReturnStorageInterface) error {
 	fmt.Print(">")
 	fmt.Scan(&limit, &page)
 
-	return ListReturns(rs, limit, page)
+	return returns.ListReturns(rs, limit, page)
 }

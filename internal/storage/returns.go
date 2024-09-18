@@ -2,7 +2,6 @@ package storage
 
 import (
 	"encoding/json"
-	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
 	"io"
 	"os"
@@ -35,7 +34,7 @@ func NewReturnStorage() *ReturnStorage {
 func (rs *ReturnStorage) AddReturnToStorage(r *models.Return) error {
 	_, ok := rs.Data[r.ID]
 	if ok {
-		return fmt.Errorf("Order already return ")
+		return ErrAlrReturn
 	} else {
 		rs.Data[r.ID] = r
 	}
@@ -57,13 +56,13 @@ func (rs *ReturnStorage) IsConsist(id uint) bool {
 func (rs *ReturnStorage) ReadFromJSON() error {
 	file, err := os.OpenFile(rs.path, os.O_RDONLY, 0666)
 	if err != nil {
-		return fmt.Errorf("Open file erorr: %w", err)
+		return ErrOpenFile
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("Read file Err: %w", err)
+		return ErrReadFile
 	}
 
 	if len(data) == 0 {
@@ -77,7 +76,7 @@ func (rs *ReturnStorage) ReadFromJSON() error {
 
 	err = json.Unmarshal(data, &i)
 	if err != nil {
-		return fmt.Errorf("ошибка при декодировании JSON: %w", err)
+		return err
 	}
 
 	rs.Data = make(map[uint]*models.Return)
@@ -92,16 +91,14 @@ func (rs *ReturnStorage) ReadFromJSON() error {
 func (rs *ReturnStorage) WriteToJSON() error {
 	file, err := os.OpenFile("api/returns.json", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
-		fmt.Println("OpenFile eror in WriteToJSON", err)
-		return err
+		return ErrOpenFile
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent(" ", "  ")
 	if err := encoder.Encode(rs); err != nil {
-		fmt.Println("Encoding Err in WirteToJSON", err)
-		return err
+		return ErrEnocde
 	}
 	return nil
 }
