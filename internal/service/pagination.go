@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
 	"os"
 	"strings"
 )
@@ -27,8 +28,8 @@ func scrollPagination(orders []*models.Order, limit int) error {
 		}
 
 		for i := start; i < end; i++ {
-			fmt.Printf("OrderID: %v, Reciver: %v, State: %v, Date until which it will be stored: %v ",
-				orders[i].ID, orders[i].UserID, orders[i].State, orders[i].KeepUntilDate)
+			fmt.Printf("OrderID: %v, Reciver: %v, State: %v, Price: %v₽, Date until which it will be stored: %v ",
+				orders[i].ID, orders[i].UserID, orders[i].State, orders[i].Price, orders[i].KeepUntilDate)
 		}
 		lastIndex = end
 
@@ -39,23 +40,22 @@ func scrollPagination(orders []*models.Order, limit int) error {
 		}
 
 		input, _ := reader.ReadString('\n')
-		input = strings.TrimSpace(input)
+		_ = strings.TrimSpace(input)
 
 	}
 
-	return nil
 }
 
 // пагинация постраничная
 func pagePagination(returns []*models.Return, page, limit int) error {
 	if page < 1 || limit < 1 {
-		return fmt.Errorf("page and limit must be greater than 0")
+		return e.ErrLimitPage
 	}
 
 	offset := (page - 1) * limit
 
 	if offset >= len(returns) {
-		return fmt.Errorf("no more api")
+		return e.ErrNoMoreItems
 	}
 
 	end := offset + limit

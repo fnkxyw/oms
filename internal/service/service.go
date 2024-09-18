@@ -3,18 +3,19 @@ package service
 import (
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/orders"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
-	"sort"
 	"time"
 )
 
 // принять заказ от курьера
 func AcceptOrder(s *storage.OrderStorage, or *models.Order) error {
 	if s.IsConsist(or.ID) {
-		return fmt.Errorf("We can`t accept this Order on PuP\n")
+		return e.ErrIsConsist
 	}
 	if or.KeepUntilDate.Before(time.Now()) {
-		return fmt.Errorf("Incorrect date \n")
+		return e.ErrDate
 	}
 	or.State = models.AcceptState
 	or.AcceptTime = time.Now()
@@ -37,13 +38,7 @@ func PlaceOrder(s *storage.OrderStorage, ids []uint) error {
 		return fmt.Errorf("Length of ids array is 0 ")
 	}
 
-	temp := s.Data[ids[0]].UserID
-
-	for _, id := range ids {
-		if s.Data[id].UserID != temp {
-			return fmt.Errorf("Not all orders are for the same user ")
-		}
-	}
+	orders.CheckIDsOrders(s, ids)
 
 	for _, id := range ids {
 		order := s.Data[id]
@@ -69,26 +64,14 @@ func PlaceOrder(s *storage.OrderStorage, ids []uint) error {
 
 func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 	var list []*models.Order
-	for _, v := range s.Data {
-		if inPuP == true {
-			if v.UserID == id && (v.State == models.AcceptState || v.State == models.ReturnedState) {
-				list = append(list, v)
-			}
-		} else {
-			if v.UserID == id {
-				list = append(list, v)
-			}
-		}
-	}
-	sort.Slice(list, func(i, j int) bool {
-		return !(list[i].AcceptTime.Before(list[j].AcceptTime))
-	})
+	list = orders.FilterOrders(s, id, inPuP)
+	orders.SortOrders(list)
 	if n < 1 {
 		n = 1
 	} else if n > len(list) {
 		n = len(list)
 	}
-	if inPuP == false {
+	if !inPuP {
 		list = list[:n]
 	}
 	return scrollPagination(list, 1)
@@ -97,16 +80,16 @@ func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 // вернуть заказ юзеру
 func RefundOrder(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, userId uint) error {
 	if !os.IsConsist(id) {
-		return fmt.Errorf("Check input OrderId\n")
+		return e.ErrCheckOrderID
 	}
 	if os.Data[id].State != models.PlaceState {
-		return fmt.Errorf("Order are not placed\n")
+		return e.ErrNotPlace
 	}
 	if time.Now().After(os.Data[id].PlaceDate.AddDate(0, 0, 2)) {
-		return fmt.Errorf("Return time has expired :(\n")
+		return e.ErrTimeExpired
 	}
 	if os.Data[id].UserID != userId {
-		return fmt.Errorf("Check input api\n")
+		return e.ErrIncorrectUserId
 	}
 
 	rs.AddReturnToStorage(&models.Return{
@@ -119,7 +102,7 @@ func RefundOrder(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, u
 	return nil
 }
 
-// показать список возвратов с постраничной пагинацией
+// показать список возвратов с    пагинацией
 func ListReturns(rs *storage.ReturnStorage, limit, page int) error {
 	var list []*models.Return
 	for _, v := range rs.Data {

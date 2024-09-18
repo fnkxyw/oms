@@ -53,7 +53,7 @@ func (o *ReturnStorage) ReadFromJSON() error {
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return fmt.Errorf("Read file error: %w", err)
+		return fmt.Errorf("Read file Err: %w", err)
 	}
 
 	if len(data) == 0 {
@@ -90,7 +90,7 @@ func (o *ReturnStorage) WritoToJSON() error {
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent(" ", "  ")
 	if err := encoder.Encode(o); err != nil {
-		fmt.Println("Encoding error in WirteToJSON", err)
+		fmt.Println("Encoding Err in WirteToJSON", err)
 		return err
 	}
 	return nil

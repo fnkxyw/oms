@@ -34,7 +34,7 @@
 - <span style="color: rgba(207,102,102,0.83);"> returnOrder </span> - Позволяет вернуть заказ курьеру
 - <span style="color: rgba(207,102,102,0.83);"> placeOrder </span> - Позволяет доставить заказ клиенту
 - <span style="color: rgba(207,102,102,0.83);"> listOrders </span> - Позволяет показать список всех заказов клиента
-- <span style="color: rgba(207,102,102,0.83);"> returnUser </span> - Позволяет клиенту вернуть заказ на ПВЗ
+- <span style="color: rgba(207,102,102,0.83);"> refundOrder </span> - Позволяет клиенту вернуть заказ на ПВЗ
 - <span style="color: rgba(207,102,102,0.83);"> listReturns </span> - Позволяет показать список всех возвратов
 
 В качестве хранилища создаются два json файла
@@ -46,7 +46,7 @@ orders.json
 
 ![img.png](assets/img.png)
 
-- returnOrder + placeOrder + returnUser
+- returnOrder + placeOrder + RefundOrder
 
 ![img_1.png](assets/img_1.png)
 ![img_2.png](assets/img_2.png)

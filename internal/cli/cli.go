@@ -21,78 +21,62 @@ var helpText = `
 `
 
 func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
-	ShowHelp()
+	showHelp()
 
-	var in *bufio.Reader
-	var out *bufio.Writer
-	out = bufio.NewWriter(os.Stdout)
-	in = bufio.NewReader(os.Stdin)
-	fmt.Fprint(out, ">")
-	out.Flush()
-	var err error
-	var input string
-	fmt.Fscanln(in, &input)
+	in := bufio.NewReader(os.Stdin)
+	out := bufio.NewWriter(os.Stdout)
+	defer out.Flush()
+
 	for {
+		fmt.Fprint(out, ">")
+		if err := out.Flush(); err != nil {
+			return err
+		}
+
+		input, err := readInput(in)
+		if err != nil {
+			return err
+		}
+
 		switch input {
 		case "exit":
 			oS.WritoToJSON()
 			rS.WritoToJSON()
 			return nil
 		case "acceptOrder":
-			err = service.WAcceptOrder(oS)
-			if err != nil {
-				fmt.Print(err)
-			}
-			break
+			handleErr(service.WAcceptOrder(oS))
 		case "returnOrder":
-			err = service.WReturnOrder(oS)
-			if err != nil {
-				fmt.Print(err)
-			}
-			break
+			handleErr(service.WReturnOrder(oS))
 		case "placeOrder":
-			err = service.WPlaceOrder(oS)
-			if err != nil {
-				fmt.Print(err)
-			}
-			break
+			handleErr(service.WPlaceOrder(oS))
 		case "listOrders":
-			err = service.WListOrders(oS)
-			if err != nil {
-				fmt.Println(err)
-			}
-			break
+			handleErr(service.WListOrders(oS))
 		case "refundOrder":
-			err = service.WRefundOrder(rS, oS)
-			if err != nil {
-				fmt.Print(err)
-			}
-			break
+			handleErr(service.WRefundOrder(rS, oS))
 		case "listReturns":
-			err = service.WListReturns(rS)
-			if err != nil {
-				fmt.Println(err)
-			}
-			break
+			handleErr(service.WListReturns(rS))
 		case "help":
-			ShowHelp()
-			break
+			showHelp()
 		default:
-			fmt.Fprint(out, "Unknown command\n")
-			break
+			fmt.Fprintln(out, "Unknown command")
 		}
-
-		fmt.Fprint(out, ">")
-		out.Flush()
-		input = ""
-		fmt.Fscanln(in, &input)
-		input = strings.TrimSpace(input)
-
 	}
-	return nil
 }
 
-func ShowHelp() error {
+func readInput(in *bufio.Reader) (string, error) {
+	var input string
+	if _, err := fmt.Fscanln(in, &input); err != nil {
+		return "", err
+	}
+	return strings.TrimSpace(input), nil
+}
+
+func handleErr(err error) {
+	if err != nil {
+		fmt.Println(err)
+	}
+}
+func showHelp() error {
 	fmt.Println(helpText)
 	return nil
 }

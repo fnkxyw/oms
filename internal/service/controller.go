@@ -4,6 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/packing"
 	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
 	"log"
 	"os"
@@ -15,24 +17,40 @@ import (
 //Файл с обертками для организации входа данных
 
 func WAcceptOrder(s *storage.OrderStorage) error {
+
 	var order models.Order
+	var pacakgeType string
 	fmt.Println("Input OrderID _ UserID _ Date(form[2024-12(m)-12(d)])")
 	fmt.Print(">")
 
 	var dateString string
 	_, err := fmt.Scan(&order.ID, &order.UserID, &dateString)
 	if err != nil {
-		return fmt.Errorf("Input api error: %w\n", err)
+		return fmt.Errorf("Input api Err: %w\n", err)
+	}
+	if s.IsConsist(order.ID) {
+		return e.ErrIsConsist
 	}
 
 	order.KeepUntilDate, err = time.Parse("2006-01-02", dateString)
 	if err != nil {
-		return fmt.Errorf("Date parse error: %w\n", err)
+		return fmt.Errorf("Date parse Err: %w\n", err)
 	}
+
+	fmt.Println("Input weight[kg], price[₽], package type [box, bundle, wrap]")
+	fmt.Print(">")
+	fmt.Scan(&order.Weight, &order.Price, &pacakgeType)
+
+	err = packing.Packing(&order, pacakgeType)
+	if err != nil {
+		return err
+	}
+
 	err = AcceptOrder(s, &order)
 	if err != nil {
 		return err
 	}
+
 	return err
 }
 
@@ -42,7 +60,7 @@ func WReturnOrder(s *storage.OrderStorage) error {
 	fmt.Print(">")
 	fmt.Scan(&id)
 	if !s.IsConsist(id) {
-		return fmt.Errorf("We dont have order with that id\n ")
+		return e.ErrNoConsist
 	}
 	err := ReturnOrder(s, id)
 	if err != nil {
@@ -71,7 +89,7 @@ func WPlaceOrder(s *storage.OrderStorage) error {
 			return err
 		}
 		if !s.IsConsist(uint(uval)) {
-			return fmt.Errorf("We dont have order with that id\n")
+			return e.ErrNoConsist
 		}
 		uintdata = append(uintdata, uint(uval))
 	}
