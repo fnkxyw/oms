@@ -14,10 +14,13 @@ func SortOrders(o []*models.Order) error {
 	return nil
 }
 
-func FilterOrders(s *storage.OrderStorage, id uint, inPuP bool) []*models.Order {
+func FilterOrders(s storage.OrderStorageInterface, id uint, inPuP bool) []*models.Order {
 	var filtered []*models.Order
-
-	for _, order := range s.Data {
+	for _, o := range s.GetOrderIDs() {
+		order, exists := s.GetOrder(o)
+		if !exists {
+			continue
+		}
 		if order.UserID == id && (!inPuP || (order.State == models.AcceptState || order.State == models.ReturnedState)) {
 			filtered = append(filtered, order)
 		}
@@ -26,10 +29,12 @@ func FilterOrders(s *storage.OrderStorage, id uint, inPuP bool) []*models.Order 
 	return filtered
 }
 
-func CheckIDsOrders(s *storage.OrderStorage, ids []uint) error {
-	temp := s.Data[ids[0]].UserID
+func CheckIDsOrders(s storage.OrderStorageInterface, ids []uint) error {
+	order, _ := s.GetOrder(ids[0])
+	temp := order.UserID
 	for _, id := range ids {
-		if s.Data[id].UserID != temp {
+		order, _ = s.GetOrder(id)
+		if order.UserID != temp {
 			return e.ErrNotAllIDs
 		}
 	}

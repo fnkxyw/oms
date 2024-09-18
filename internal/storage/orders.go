@@ -8,6 +8,19 @@ import (
 	"os"
 )
 
+type OrderStorageInterface interface {
+	AddOrderToStorage(or *models.Order) error
+	IsConsist(id uint) bool
+	DeleteOrderFromStorage(id uint)
+	GetOrder(id uint) (*models.Order, bool)
+	GetOrderIDs() []uint
+}
+
+type JSONStorageInterface interface {
+	ReadFromJSON() error
+	WriteToJSON() error
+}
+
 type OrderStorage struct {
 	Data map[uint]*models.Order
 	path string
@@ -78,7 +91,7 @@ func (o *OrderStorage) ReadFromJSON() error {
 	return nil
 }
 
-func (o *OrderStorage) WritoToJSON() error {
+func (o *OrderStorage) WriteToJSON() error {
 	file, err := os.OpenFile("api/orders.json", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
 		fmt.Println("OpenFile eror in WriteToJSON", err)
@@ -93,4 +106,17 @@ func (o *OrderStorage) WritoToJSON() error {
 		return err
 	}
 	return nil
+}
+
+func (os *OrderStorage) GetOrder(id uint) (*models.Order, bool) {
+	order, ok := os.Data[id]
+	return order, ok
+}
+
+func (os *OrderStorage) GetOrderIDs() []uint {
+	var ids []uint
+	for id := range os.Data {
+		ids = append(ids, id)
+	}
+	return ids
 }

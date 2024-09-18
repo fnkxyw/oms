@@ -16,7 +16,7 @@ import (
 
 //Файл с обертками для организации входа данных
 
-func WAcceptOrder(s *storage.OrderStorage) error {
+func WAcceptOrder(s storage.OrderStorageInterface) error {
 
 	var order models.Order
 	var pacakgeType string
@@ -54,7 +54,7 @@ func WAcceptOrder(s *storage.OrderStorage) error {
 	return err
 }
 
-func WReturnOrder(s *storage.OrderStorage) error {
+func WReturnOrder(s storage.OrderStorageInterface) error {
 	var id uint
 	fmt.Println("Input OrderID")
 	fmt.Print(">")
@@ -70,7 +70,7 @@ func WReturnOrder(s *storage.OrderStorage) error {
 	return nil
 }
 
-func WPlaceOrder(s *storage.OrderStorage) error {
+func WPlaceOrder(s storage.OrderStorageInterface) error {
 	fmt.Println("Input all IDs that you want to place")
 	fmt.Print(">")
 	var temp string
@@ -101,7 +101,7 @@ func WPlaceOrder(s *storage.OrderStorage) error {
 	return nil
 }
 
-func WListOrders(s *storage.OrderStorage) error {
+func WListOrders(s storage.OrderStorageInterface) error {
 	var (
 		id   uint
 		n    int
@@ -129,7 +129,7 @@ func WListOrders(s *storage.OrderStorage) error {
 	return nil
 }
 
-func WRefundOrder(rS *storage.ReturnStorage, oS *storage.OrderStorage) error {
+func WRefundOrder(rS *storage.ReturnStorage, oS storage.OrderStorageInterface) error {
 	fmt.Println("Input OrderID and UserId")
 	fmt.Print(">")
 	var (

@@ -19,7 +19,7 @@ func SygnalSearch(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 		<-signalls
 		fmt.Println()
 		fmt.Println("exit")
-		oS.WritoToJSON()
+		oS.WriteToJSON()
 		rS.WritoToJSON()
 		os.Exit(1)
 

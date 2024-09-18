@@ -40,7 +40,7 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 
 		switch input {
 		case "exit":
-			oS.WritoToJSON()
+			oS.WriteToJSON()
 			rS.WritoToJSON()
 			return nil
 		case "acceptOrder":

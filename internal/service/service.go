@@ -10,7 +10,7 @@ import (
 )
 
 // принять заказ от курьера
-func AcceptOrder(s *storage.OrderStorage, or *models.Order) error {
+func AcceptOrder(s storage.OrderStorageInterface, or *models.Order) error {
 	if s.IsConsist(or.ID) {
 		return e.ErrIsConsist
 	}
@@ -28,12 +28,16 @@ func AcceptOrder(s *storage.OrderStorage, or *models.Order) error {
 }
 
 // вернуть заказ курьеру
-func ReturnOrder(s *storage.OrderStorage, id uint) error {
-	return s.Data[id].CanReturned()
+func ReturnOrder(s storage.OrderStorageInterface, id uint) error {
+	order, exists := s.GetOrder(id)
+	if !exists {
+		return e.ErrNoConsist
+	}
+	return order.CanReturned()
 }
 
 // доставить заказ юзеру
-func PlaceOrder(s *storage.OrderStorage, ids []uint) error {
+func PlaceOrder(s storage.OrderStorageInterface, ids []uint) error {
 	if len(ids) == 0 {
 		return fmt.Errorf("Length of ids array is 0 ")
 	}
@@ -41,8 +45,10 @@ func PlaceOrder(s *storage.OrderStorage, ids []uint) error {
 	orders.CheckIDsOrders(s, ids)
 
 	for _, id := range ids {
-		order := s.Data[id]
-
+		order, exists := s.GetOrder(id)
+		if !exists {
+			return e.ErrNoConsist
+		}
 		if order.State == models.PlaceState {
 			return fmt.Errorf("Order by id: %d is already placed", id)
 		}
@@ -62,7 +68,7 @@ func PlaceOrder(s *storage.OrderStorage, ids []uint) error {
 	return nil
 }
 
-func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
+func ListOrders(s storage.OrderStorageInterface, id uint, n int, inPuP bool) error {
 	var list []*models.Order
 	list = orders.FilterOrders(s, id, inPuP)
 	orders.SortOrders(list)
@@ -78,17 +84,18 @@ func ListOrders(s *storage.OrderStorage, id uint, n int, inPuP bool) error {
 }
 
 // вернуть заказ юзеру
-func RefundOrder(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, userId uint) error {
-	if !os.IsConsist(id) {
+func RefundOrder(rs *storage.ReturnStorage, os storage.OrderStorageInterface, id uint, userId uint) error {
+	order, exists := os.GetOrder(id)
+	if !exists {
 		return e.ErrCheckOrderID
 	}
-	if os.Data[id].State != models.PlaceState {
+	if order.State != models.PlaceState {
 		return e.ErrNotPlace
 	}
-	if time.Now().After(os.Data[id].PlaceDate.AddDate(0, 0, 2)) {
+	if time.Now().After(order.PlaceDate.AddDate(0, 0, 2)) {
 		return e.ErrTimeExpired
 	}
-	if os.Data[id].UserID != userId {
+	if order.UserID != userId {
 		return e.ErrIncorrectUserId
 	}
 
@@ -97,12 +104,11 @@ func RefundOrder(rs *storage.ReturnStorage, os *storage.OrderStorage, id uint, u
 		UserID:       userId,
 		DateOfReturn: time.Now(),
 	})
-	os.Data[id].State = models.ReturnedState
+	order.State = models.ReturnedState
 
 	return nil
 }
 
-// показать список возвратов с    пагинацией
 func ListReturns(rs *storage.ReturnStorage, limit, page int) error {
 	var list []*models.Return
 	for _, v := range rs.Data {
