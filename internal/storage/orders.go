@@ -14,9 +14,6 @@ type OrderStorageInterface interface {
 	DeleteOrderFromStorage(id uint)
 	GetOrder(id uint) (*models.Order, bool)
 	GetOrderIDs() []uint
-}
-
-type JSONStorageInterface interface {
 	ReadFromJSON() error
 	WriteToJSON() error
 }

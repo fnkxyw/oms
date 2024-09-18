@@ -20,7 +20,7 @@ var helpText = `
      listReturns - allows you to get a list of returns 
 `
 
-func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
+func Run(oS storage.OrderStorageInterface, rS storage.ReturnStorageInterface) error {
 	showHelp()
 
 	in := bufio.NewReader(os.Stdin)
@@ -33,15 +33,12 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 			return err
 		}
 
-		input, err := readInput(in)
-		if err != nil {
-			return err
-		}
+		input, _ := readInput(in)
 
 		switch input {
 		case "exit":
 			oS.WriteToJSON()
-			rS.WritoToJSON()
+			rS.WriteToJSON()
 			return nil
 		case "acceptOrder":
 			handleErr(service.WAcceptOrder(oS))

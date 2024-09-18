@@ -129,7 +129,7 @@ func WListOrders(s storage.OrderStorageInterface) error {
 	return nil
 }
 
-func WRefundOrder(rS *storage.ReturnStorage, oS storage.OrderStorageInterface) error {
+func WRefundOrder(rS storage.ReturnStorageInterface, oS storage.OrderStorageInterface) error {
 	fmt.Println("Input OrderID and UserId")
 	fmt.Print(">")
 	var (
@@ -145,7 +145,7 @@ func WRefundOrder(rS *storage.ReturnStorage, oS storage.OrderStorageInterface) e
 	return err
 }
 
-func WListReturns(rs *storage.ReturnStorage) error {
+func WListReturns(rs storage.ReturnStorageInterface) error {
 	fmt.Println("Input max Returns on one page and Page")
 	var (
 		limit int

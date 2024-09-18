@@ -29,5 +29,4 @@ func main() {
 	signals.SygnalSearch(orderStorage, returnStorage)
 
 	c.Run(orderStorage, returnStorage)
-
 }

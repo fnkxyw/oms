@@ -84,7 +84,7 @@ func ListOrders(s storage.OrderStorageInterface, id uint, n int, inPuP bool) err
 }
 
 // вернуть заказ юзеру
-func RefundOrder(rs *storage.ReturnStorage, os storage.OrderStorageInterface, id uint, userId uint) error {
+func RefundOrder(rs storage.ReturnStorageInterface, os storage.OrderStorageInterface, id uint, userId uint) error {
 	order, exists := os.GetOrder(id)
 	if !exists {
 		return e.ErrCheckOrderID
@@ -109,10 +109,11 @@ func RefundOrder(rs *storage.ReturnStorage, os storage.OrderStorageInterface, id
 	return nil
 }
 
-func ListReturns(rs *storage.ReturnStorage, limit, page int) error {
+func ListReturns(rs storage.ReturnStorageInterface, limit, page int) error {
 	var list []*models.Return
-	for _, v := range rs.Data {
-		list = append(list, v)
+	for _, v := range rs.GetReturnIDs() {
+		r, _ := rs.GetReturn(v)
+		list = append(list, r)
 	}
 	return pagePagination(list, page, limit)
 }

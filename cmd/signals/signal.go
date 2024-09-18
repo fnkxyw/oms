@@ -10,7 +10,7 @@ import (
 
 //файл для ловли сигналов завершения, чтобы не потерять данные
 
-func SygnalSearch(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
+func SygnalSearch(oS storage.OrderStorageInterface, rS storage.ReturnStorageInterface) error {
 	signalls := make(chan os.Signal, 1)
 
 	signal.Notify(signalls, syscall.SIGINT, syscall.SIGTERM)
@@ -20,7 +20,7 @@ func SygnalSearch(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 		fmt.Println()
 		fmt.Println("exit")
 		oS.WriteToJSON()
-		rS.WritoToJSON()
+		rS.WriteToJSON()
 		os.Exit(1)
 
 	}()
