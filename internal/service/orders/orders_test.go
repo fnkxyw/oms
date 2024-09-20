@@ -14,7 +14,8 @@ import (
 func TestAcceptOrder(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
-
+	K := time.Now().Add(24 * time.Hour)
+	T := time.Now().Unix()
 	mockStorage := mocks.NewOrderStorageInterfaceMock(ctrl)
 
 	tests := []struct {
@@ -23,9 +24,9 @@ func TestAcceptOrder(t *testing.T) {
 			s  storage.OrderStorageInterface
 			or *models.Order
 		}
-		isOrderExist       bool // существует ли заказ
-		expectAddToStorage bool // нужно ли добавлять заказ
-		wantErr            assert.ErrorAssertionFunc
+		setupMock func()
+
+		wantErr assert.ErrorAssertionFunc
 	}{
 		{
 			name: "successful acceptance",
@@ -36,13 +37,21 @@ func TestAcceptOrder(t *testing.T) {
 				s: mockStorage,
 				or: &models.Order{
 					ID:            1,
-					KeepUntilDate: time.Now().Add(24 * time.Hour),
+					KeepUntilDate: K,
 					State:         models.AcceptState,
+					AcceptTime:    T,
 				},
 			},
-			isOrderExist:       false,
-			expectAddToStorage: true,
-			wantErr:            assert.NoError,
+			setupMock: func() {
+				mockStorage.IsConsistMock.Expect(uint(1)).Return(false)
+				mockStorage.AddOrderToStorageMock.Expect(&models.Order{
+					ID:            1,
+					KeepUntilDate: K,
+					State:         models.AcceptState,
+					AcceptTime:    T,
+				})
+			},
+			wantErr: assert.NoError,
 		},
 		{
 			name: "order already exists",
@@ -52,14 +61,16 @@ func TestAcceptOrder(t *testing.T) {
 			}{
 				s: mockStorage,
 				or: &models.Order{
-					ID:            1,
+					ID:            4,
 					KeepUntilDate: time.Now().Add(24 * time.Hour),
 					State:         models.AcceptState,
 				},
 			},
-			isOrderExist:       true,
-			expectAddToStorage: false,
-			wantErr:            assert.Error,
+			setupMock: func() {
+				mockStorage.IsConsistMock.When(uint(4)).Then(true)
+			},
+
+			wantErr: assert.Error,
 		},
 		{
 			name: "order has expired",
@@ -74,21 +85,18 @@ func TestAcceptOrder(t *testing.T) {
 					State:         models.AcceptState,
 				},
 			},
-			isOrderExist:       false,
-			expectAddToStorage: false,
-			wantErr:            assert.Error,
+			setupMock: func() {
+				mockStorage.IsConsistMock.When(2).Then(false)
+			},
+
+			wantErr: assert.Error,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-
-			mockStorage.IsConsistMock.Expect(tt.args.or.ID).Return(tt.isOrderExist)
-
-			if !tt.isOrderExist && tt.expectAddToStorage {
-				mockStorage.AddOrderToStorageMock.Expect(tt.args.or)
-			}
-
+			t.Parallel()
+			tt.setupMock()
 			err := AcceptOrder(tt.args.s, tt.args.or)
 			tt.wantErr(t, err)
 		})
@@ -129,11 +137,11 @@ func TestPlaceOrder(t *testing.T) {
 		},
 		{
 			name: "order already placed",
-			ids:  []uint{1},
+			ids:  []uint{2},
 			setupMock: func() {
 				//заказ уже размещен
-				mockStorage.GetOrderMock.Expect(uint(1)).Return(&models.Order{
-					ID:            1,
+				mockStorage.GetOrderMock.When(uint(2)).Then(&models.Order{
+					ID:            2,
 					State:         models.PlaceState,
 					KeepUntilDate: time.Now().Add(24 * time.Hour),
 				}, true)
@@ -142,11 +150,11 @@ func TestPlaceOrder(t *testing.T) {
 		},
 		{
 			name: "order was deleted",
-			ids:  []uint{2},
+			ids:  []uint{3},
 			setupMock: func() {
 				// заказ был удалён
-				mockStorage.GetOrderMock.Expect(uint(2)).Return(&models.Order{
-					ID:            2,
+				mockStorage.GetOrderMock.When(uint(3)).Then(&models.Order{
+					ID:            3,
 					State:         models.SoftDelete,
 					KeepUntilDate: time.Now().Add(24 * time.Hour),
 				}, true)
@@ -155,10 +163,10 @@ func TestPlaceOrder(t *testing.T) {
 		},
 		{
 			name: "order expired",
-			ids:  []uint{3},
+			ids:  []uint{4},
 			setupMock: func() {
-				mockStorage.GetOrderMock.Expect(uint(3)).Return(&models.Order{
-					ID:            3,
+				mockStorage.GetOrderMock.When(uint(4)).Then(&models.Order{
+					ID:            4,
 					State:         models.AcceptState,
 					KeepUntilDate: time.Now().Add(-24 * time.Hour),
 				}, true)
@@ -167,11 +175,11 @@ func TestPlaceOrder(t *testing.T) {
 		},
 		{
 			name: "successful order placement",
-			ids:  []uint{4},
+			ids:  []uint{5},
 			setupMock: func() {
 				// Успешный сценарий
-				mockStorage.GetOrderMock.Expect(uint(4)).Return(&models.Order{
-					ID:            4,
+				mockStorage.GetOrderMock.When(uint(5)).Then(&models.Order{
+					ID:            5,
 					State:         models.AcceptState,
 					KeepUntilDate: time.Now().Add(24 * time.Hour),
 				}, true)
@@ -182,6 +190,8 @@ func TestPlaceOrder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			tt.setupMock()
 
 			err := PlaceOrder(mockStorage, tt.ids)
@@ -218,11 +228,11 @@ func TestListOrders(t *testing.T) {
 		},
 		{
 			name:  "no consists",
-			id:    1,
+			id:    5,
 			n:     1,
 			inPuP: false,
 			setupMock: func() {
-				mockStorage.IsConsistMock.Expect(uint(1)).Return(false)
+				mockStorage.IsConsistMock.When(uint(5)).Then(false)
 			},
 			wantErr: assert.Error,
 		},
@@ -230,6 +240,8 @@ func TestListOrders(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			tt.setupMock()
 
 			err := ListOrders(mockStorage, tt.id, tt.n, tt.inPuP)
@@ -274,12 +286,12 @@ func TestReturnOrder(t *testing.T) {
 			name: "successful return date and accept state",
 			args: args{
 				s:  mockStorage,
-				id: 1,
+				id: 10,
 			},
 			setupMock: func() {
-				mockStorage.GetOrderMock.Expect(uint(1)).Return(&models.Order{
-					ID:            1,
-					UserID:        1,
+				mockStorage.GetOrderMock.When(uint(10)).Then(&models.Order{
+					ID:            10,
+					UserID:        10,
 					State:         models.AcceptState,
 					KeepUntilDate: time.Now().Add(-24 * time.Hour),
 				}, true)
@@ -290,10 +302,10 @@ func TestReturnOrder(t *testing.T) {
 			name: "no order found",
 			args: args{
 				s:  mockStorage,
-				id: 1,
+				id: 11,
 			},
 			setupMock: func() {
-				mockStorage.GetOrderMock.Expect(uint(1)).Return(&models.Order{}, false)
+				mockStorage.GetOrderMock.When(uint(11)).Then(&models.Order{}, false)
 			},
 			wantErr: assert.Error,
 		},
@@ -301,11 +313,11 @@ func TestReturnOrder(t *testing.T) {
 			name: "order can't be returned",
 			args: args{
 				s:  mockStorage,
-				id: 1,
+				id: 5,
 			},
 			setupMock: func() {
-				mockStorage.GetOrderMock.Expect(uint(1)).Return(&models.Order{
-					ID:            1,
+				mockStorage.GetOrderMock.When(uint(5)).Then(&models.Order{
+					ID:            5,
 					UserID:        1,
 					State:         models.AcceptState,
 					KeepUntilDate: time.Now().Add(24 * time.Hour),
@@ -317,6 +329,8 @@ func TestReturnOrder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
 			tt.setupMock()
 			err := ReturnOrder(tt.args.s, tt.args.id)
 

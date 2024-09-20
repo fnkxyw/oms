@@ -18,7 +18,7 @@ func AcceptOrder(s storage.OrderStorageInterface, or *models.Order) error {
 		return e.ErrDate
 	}
 	or.State = models.AcceptState
-	or.AcceptTime = time.Now()
+	or.AcceptTime = time.Now().Unix()
 	s.AddOrderToStorage(or)
 	return nil
 }
@@ -84,7 +84,7 @@ func ReturnOrder(s storage.OrderStorageInterface, id uint) error {
 
 func SortOrders(o []*models.Order) error {
 	sort.Slice(o, func(i, j int) bool {
-		return o[i].AcceptTime.Before(o[j].AcceptTime)
+		return o[i].AcceptTime < o[j].AcceptTime
 	})
 	return nil
 }

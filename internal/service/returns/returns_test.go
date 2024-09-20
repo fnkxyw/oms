@@ -17,14 +17,6 @@ func TestListReturns(t *testing.T) {
 
 	mockStorage := mocks.NewReturnStorageInterfaceMock(ctrl)
 
-	mockStorage.GetReturnIDsMock.Expect().Return([]uint{1, 2, 3, 4, 5}) // Общая настройка для всех тестов
-
-	mockStorage.GetReturnMock.When(uint(1)).Then(&models.Return{ID: 1, UserID: 1001}, true)
-	mockStorage.GetReturnMock.When(uint(2)).Then(&models.Return{ID: 2, UserID: 1002}, true)
-	mockStorage.GetReturnMock.When(uint(3)).Then(&models.Return{ID: 3, UserID: 1003}, true)
-	mockStorage.GetReturnMock.When(uint(4)).Then(&models.Return{ID: 4, UserID: 1004}, true)
-	mockStorage.GetReturnMock.When(uint(5)).Then(&models.Return{ID: 5, UserID: 1005}, true)
-
 	// Структура для аргументов
 	type args struct {
 		s     storage.ReturnStorageInterface
@@ -33,9 +25,10 @@ func TestListReturns(t *testing.T) {
 	}
 
 	tests := []struct {
-		name    string
-		args    args
-		wantErr assert.ErrorAssertionFunc
+		name      string
+		args      args
+		wantErr   assert.ErrorAssertionFunc
+		setupMock func()
 	}{
 		{
 			name: "valid_returns_with_pagination",
@@ -43,6 +36,14 @@ func TestListReturns(t *testing.T) {
 				s:     mockStorage,
 				limit: 2,
 				page:  2,
+			},
+			setupMock: func() {
+				mockStorage.GetReturnIDsMock.Expect().Return([]uint{1, 2, 3, 4, 5})
+				mockStorage.GetReturnMock.When(uint(1)).Then(&models.Return{ID: 1, UserID: 1001}, true)
+				mockStorage.GetReturnMock.When(uint(2)).Then(&models.Return{ID: 2, UserID: 1002}, true)
+				mockStorage.GetReturnMock.When(uint(3)).Then(&models.Return{ID: 3, UserID: 1003}, true)
+				mockStorage.GetReturnMock.When(uint(4)).Then(&models.Return{ID: 4, UserID: 1004}, true)
+				mockStorage.GetReturnMock.When(uint(5)).Then(&models.Return{ID: 5, UserID: 1005}, true)
 			},
 			wantErr: assert.NoError,
 		},
@@ -53,14 +54,31 @@ func TestListReturns(t *testing.T) {
 				limit: 2,
 				page:  -1,
 			},
+			setupMock: func() {
+				mockStorage.GetReturnIDsMock.Expect().Return([]uint{1, 2, 3, 4, 5})
+				mockStorage.GetReturnMock.When(uint(1)).Then(&models.Return{ID: 1, UserID: 1001}, true)
+				mockStorage.GetReturnMock.When(uint(2)).Then(&models.Return{ID: 2, UserID: 1002}, true)
+				mockStorage.GetReturnMock.When(uint(3)).Then(&models.Return{ID: 3, UserID: 1003}, true)
+				mockStorage.GetReturnMock.When(uint(4)).Then(&models.Return{ID: 4, UserID: 1004}, true)
+				mockStorage.GetReturnMock.When(uint(5)).Then(&models.Return{ID: 5, UserID: 1005}, true)
+			},
 			wantErr: assert.Error,
 		},
+
 		{
 			name: "no_more_items",
 			args: args{
 				s:     mockStorage,
 				limit: 2,
 				page:  5, // запрашиваем несуществующую страницу
+			},
+			setupMock: func() {
+				mockStorage.GetReturnIDsMock.Expect().Return([]uint{1, 2, 3, 4, 5})
+				mockStorage.GetReturnMock.When(uint(1)).Then(&models.Return{ID: 1, UserID: 1001}, true)
+				mockStorage.GetReturnMock.When(uint(2)).Then(&models.Return{ID: 2, UserID: 1002}, true)
+				mockStorage.GetReturnMock.When(uint(3)).Then(&models.Return{ID: 3, UserID: 1003}, true)
+				mockStorage.GetReturnMock.When(uint(4)).Then(&models.Return{ID: 4, UserID: 1004}, true)
+				mockStorage.GetReturnMock.When(uint(5)).Then(&models.Return{ID: 5, UserID: 1005}, true)
 			},
 			wantErr: assert.Error,
 		},
@@ -71,12 +89,22 @@ func TestListReturns(t *testing.T) {
 				limit: 0, // неправильный лимит
 				page:  1,
 			},
+			setupMock: func() {
+				mockStorage.GetReturnIDsMock.Expect().Return([]uint{1, 2, 3, 4, 5})
+				mockStorage.GetReturnMock.When(uint(1)).Then(&models.Return{ID: 1, UserID: 1001}, true)
+				mockStorage.GetReturnMock.When(uint(2)).Then(&models.Return{ID: 2, UserID: 1002}, true)
+				mockStorage.GetReturnMock.When(uint(3)).Then(&models.Return{ID: 3, UserID: 1003}, true)
+				mockStorage.GetReturnMock.When(uint(4)).Then(&models.Return{ID: 4, UserID: 1004}, true)
+				mockStorage.GetReturnMock.When(uint(5)).Then(&models.Return{ID: 5, UserID: 1005}, true)
+			},
 			wantErr: assert.Error,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+			tt.setupMock()
 			err := ListReturns(mockStorage, tt.args.limit, tt.args.page)
 			tt.wantErr(t, err)
 		})
@@ -112,7 +140,7 @@ func TestRefundOrder(t *testing.T) {
 			orderId: 2,
 			userId:  userId,
 			setupMock: func() {
-				mockOrderStorage.GetOrderMock.Expect(uint(2)).Return(&models.Order{
+				mockOrderStorage.GetOrderMock.When(uint(2)).Then(&models.Order{
 					ID:        2,
 					State:     models.AcceptState,
 					UserID:    userId,
@@ -126,7 +154,7 @@ func TestRefundOrder(t *testing.T) {
 			orderId: 3,
 			userId:  userId,
 			setupMock: func() {
-				mockOrderStorage.GetOrderMock.Expect(uint(3)).Return(&models.Order{
+				mockOrderStorage.GetOrderMock.When(uint(3)).Then(&models.Order{
 					ID:        3,
 					State:     models.PlaceState,
 					UserID:    userId,
@@ -140,7 +168,7 @@ func TestRefundOrder(t *testing.T) {
 			orderId: 4,
 			userId:  userId + 1,
 			setupMock: func() {
-				mockOrderStorage.GetOrderMock.Expect(uint(4)).Return(&models.Order{
+				mockOrderStorage.GetOrderMock.When(uint(4)).Then(&models.Order{
 					ID:        4,
 					State:     models.PlaceState,
 					UserID:    userId,
@@ -154,7 +182,7 @@ func TestRefundOrder(t *testing.T) {
 			orderId: 5,
 			userId:  userId,
 			setupMock: func() {
-				mockOrderStorage.GetOrderMock.Expect(uint(5)).Return(&models.Order{
+				mockOrderStorage.GetOrderMock.When(uint(5)).Then(&models.Order{
 					ID:        5,
 					State:     models.PlaceState,
 					UserID:    userId,
@@ -171,6 +199,7 @@ func TestRefundOrder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			tt.setupMock()
 
 			err := RefundOrder(mockReturnStorage, mockOrderStorage, tt.orderId, tt.userId)

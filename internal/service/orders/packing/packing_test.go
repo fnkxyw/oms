@@ -2,12 +2,11 @@ package packing_test
 
 import (
 	"github.com/stretchr/testify/assert"
-	"testing"
-
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/controller"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/mocks"
+	"testing"
 )
 
 func TestPackaging(t *testing.T) {
@@ -39,7 +38,7 @@ func TestPackaging(t *testing.T) {
 			expectedPrice: 121,
 		},
 		{
-			name: "Box Packaging Without Wrap",
+			name: "box Packaging without wrap",
 			args: struct {
 				order    *models.Order
 				packType string
@@ -56,7 +55,7 @@ func TestPackaging(t *testing.T) {
 			expectedPrice: 120,
 		},
 		{
-			name: "Bundle Packaging With Wrap",
+			name: "bundle packaging with wrap",
 			args: struct {
 				order    *models.Order
 				packType string
@@ -73,7 +72,7 @@ func TestPackaging(t *testing.T) {
 			expectedPrice: 106,
 		},
 		{
-			name: "Invalid Weight Box",
+			name: "invalid weight box",
 			args: struct {
 				order    *models.Order
 				packType string
@@ -86,7 +85,7 @@ func TestPackaging(t *testing.T) {
 			expectedPrice: 100,
 		},
 		{
-			name: "Invalid Package Type",
+			name: "invalid package type",
 			args: struct {
 				order    *models.Order
 				packType string
@@ -99,9 +98,9 @@ func TestPackaging(t *testing.T) {
 			expectedPrice: 100,
 		},
 	}
-
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
 			tt.setupMock()
 
 			err := packing.Packing(tt.args.order, tt.args.packType)
@@ -111,4 +110,5 @@ func TestPackaging(t *testing.T) {
 			}
 		})
 	}
+
 }
