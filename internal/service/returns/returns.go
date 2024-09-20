@@ -1,10 +1,10 @@
 package returns
 
 import (
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
-	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/pagination"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 )
 
 func ReturnOrder(s storage.OrderStorageInterface, id uint) error {

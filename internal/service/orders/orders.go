@@ -2,10 +2,10 @@ package orders
 
 import (
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
-	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/pagination"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"sort"
 	"time"
 )
@@ -20,11 +20,7 @@ func AcceptOrder(s storage.OrderStorageInterface, or *models.Order) error {
 	}
 	or.State = models.AcceptState
 	or.AcceptTime = time.Now()
-	err := s.AddOrderToStorage(or)
-	if err != nil {
-		return err
-	}
-	fmt.Println("Correct!")
+	s.AddOrderToStorage(or)
 	return nil
 }
 
@@ -61,6 +57,9 @@ func PlaceOrder(s storage.OrderStorageInterface, ids []uint) error {
 }
 
 func ListOrders(s storage.OrderStorageInterface, id uint, n int, inPuP bool) error {
+	if !s.IsConsist(id) {
+		return e.ErrNoConsist
+	}
 	var list []*models.Order
 	list = FilterOrders(s, id, inPuP)
 	SortOrders(list)
@@ -92,9 +91,8 @@ func RefundOrder(rs storage.ReturnStorageInterface, os storage.OrderStorageInter
 	}
 
 	rs.AddReturnToStorage(&models.Return{
-		ID:           id,
-		UserID:       userId,
-		DateOfReturn: time.Now(),
+		ID:     id,
+		UserID: userId,
 	})
 	order.State = models.ReturnedState
 
@@ -110,12 +108,11 @@ func SortOrders(o []*models.Order) error {
 
 func FilterOrders(s storage.OrderStorageInterface, id uint, inPuP bool) []*models.Order {
 	var filtered []*models.Order
-	for _, o := range s.GetOrderIDs() {
+	var ids []uint
+	ids = s.GetOrderIDs()
+	for _, o := range ids {
 		order, exists := s.GetOrder(o)
-		if !exists {
-			continue
-		}
-		if order.UserID == id && (!inPuP || (order.State == models.AcceptState || order.State == models.ReturnedState)) {
+		if exists && order.UserID == id && (!inPuP || order.State == models.AcceptState || order.State == models.ReturnedState) {
 			filtered = append(filtered, order)
 		}
 	}

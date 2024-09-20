@@ -16,9 +16,8 @@ type Order struct {
 
 // модель возврата
 type Return struct {
-	ID           uint      `json:"order_id"`
-	UserID       uint      `json:"user_id"`
-	DateOfReturn time.Time `json:"date_of_return"`
+	ID     uint `json:"order_id"`
+	UserID uint `json:"user_id"`
 }
 
 type State string
@@ -29,4 +28,5 @@ var (
 	AcceptState   = State("accept")
 	PlaceState    = State("place")
 	ReturnedState = State("returned")
+	NewState      = State("newState")
 )

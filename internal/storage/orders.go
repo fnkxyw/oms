@@ -2,13 +2,13 @@ package storage
 
 import (
 	"encoding/json"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	"io"
 	"os"
 )
 
 type OrderStorageInterface interface {
-	AddOrderToStorage(or *models.Order) error
+	AddOrderToStorage(or *models.Order)
 	IsConsist(id uint) bool
 	DeleteOrderFromStorage(id uint)
 	GetOrder(id uint) (*models.Order, bool)
@@ -31,15 +31,8 @@ func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{Data: make(map[uint]*models.Order), path: "api/orders.json"}
 }
 
-func (os *OrderStorage) AddOrderToStorage(or *models.Order) error {
-	_, ok := os.Data[or.ID]
-	if ok {
-		return ErrAlrAccept
-	} else {
-		os.Data[or.ID] = or
-	}
-
-	return nil
+func (os *OrderStorage) AddOrderToStorage(or *models.Order) {
+	os.Data[or.ID] = or
 }
 
 func (o *OrderStorage) IsConsist(id uint) bool {

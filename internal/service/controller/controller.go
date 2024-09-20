@@ -3,12 +3,12 @@ package controller
 import (
 	"bufio"
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
-	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/orders"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/packing"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/returns"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/packing"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/returns"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"log"
 	"os"
 	"strconv"
@@ -68,7 +68,6 @@ func WReturnOrder(s storage.OrderStorageInterface) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Correct!")
 	return nil
 }
 
@@ -99,7 +98,6 @@ func WPlaceOrder(s storage.OrderStorageInterface) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Correct!")
 	return nil
 }
 
@@ -140,10 +138,6 @@ func WRefundOrder(rS storage.ReturnStorageInterface, oS storage.OrderStorageInte
 	)
 	fmt.Scan(&orderId, &userdId)
 	err := orders.RefundOrder(rS, oS, orderId, userdId)
-	if err == nil {
-		fmt.Println("Correct!")
-
-	}
 	return err
 }
 

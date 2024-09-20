@@ -2,7 +2,7 @@ package sygnal
 
 import (
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"os"
 	"os/signal"
 	"syscall"

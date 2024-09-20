@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	signals "gitlab.ozon.dev/akugnerevich/homework-1.git/cmd/signals"
-	c "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/cli"
-	s "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
+	signals "gitlab.ozon.dev/akugnerevich/homework.git/cmd/signals"
+	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
+	s "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 )
 
 func main() {

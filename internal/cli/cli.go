@@ -3,8 +3,8 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/controller"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"os"
 	"strings"
 )
@@ -71,6 +71,8 @@ func readInput(in *bufio.Reader) (string, error) {
 func handleErr(err error) {
 	if err != nil {
 		fmt.Println(err)
+	} else {
+		fmt.Println("Correct!")
 	}
 }
 func showHelp() error {

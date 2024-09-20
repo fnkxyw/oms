@@ -1,8 +1,8 @@
 package packing
 
 import (
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/packing/controller"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/packing/controller"
 )
 
 // интерфейс упаковки

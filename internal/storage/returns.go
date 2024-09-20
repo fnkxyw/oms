@@ -2,7 +2,7 @@ package storage
 
 import (
 	"encoding/json"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	"io"
 	"os"
 )
