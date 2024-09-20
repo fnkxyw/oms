@@ -75,28 +75,12 @@ func ListOrders(s storage.OrderStorageInterface, id uint, n int, inPuP bool) err
 }
 
 // вернуть заказ юзеру
-func RefundOrder(rs storage.ReturnStorageInterface, os storage.OrderStorageInterface, id uint, userId uint) error {
-	order, exists := os.GetOrder(id)
+func ReturnOrder(s storage.OrderStorageInterface, id uint) error {
+	order, exists := s.GetOrder(id)
 	if !exists {
-		return e.ErrCheckOrderID
+		return e.ErrNoConsist
 	}
-	if order.State != models.PlaceState {
-		return e.ErrNotPlace
-	}
-	if time.Now().After(order.PlaceDate.AddDate(0, 0, 2)) {
-		return e.ErrTimeExpired
-	}
-	if order.UserID != userId {
-		return e.ErrIncorrectUserId
-	}
-
-	rs.AddReturnToStorage(&models.Return{
-		ID:     id,
-		UserID: userId,
-	})
-	order.State = models.ReturnedState
-
-	return nil
+	return order.CanReturned()
 }
 
 func SortOrders(o []*models.Order) error {

@@ -64,7 +64,7 @@ func WReturnOrder(s storage.OrderStorageInterface) error {
 	if !s.IsConsist(id) {
 		return e.ErrNoConsist
 	}
-	err := returns.ReturnOrder(s, id)
+	err := orders.ReturnOrder(s, id)
 	if err != nil {
 		return err
 	}
@@ -137,7 +137,7 @@ func WRefundOrder(rS storage.ReturnStorageInterface, oS storage.OrderStorageInte
 		userdId uint
 	)
 	fmt.Scan(&orderId, &userdId)
-	err := orders.RefundOrder(rS, oS, orderId, userdId)
+	err := returns.RefundOrder(rS, oS, orderId, userdId)
 	return err
 }
 
