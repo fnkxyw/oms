@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-// принять заказ от курьера
 func AcceptOrder(s storage.OrderStorageInterface, or *models.Order) error {
 	if s.IsConsist(or.ID) {
 		return e.ErrIsConsist

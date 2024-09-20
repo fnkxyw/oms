@@ -65,23 +65,29 @@
 				
 				<option value="file4">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller/controller.go (0.0%)</option>
 				
-				<option value="file5">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/mocks/order_storage_interface_mock.go (25.6%)</option>
+				<option value="file5">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller/inputs/inputs.go (0.0%)</option>
 				
-				<option value="file6">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/mocks/return_storage_interface_mock.go (19.2%)</option>
+				<option value="file6">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/mocks/order_storage_interface_mock.go (25.6%)</option>
 				
-				<option value="file7">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/orders.go (89.7%)</option>
+				<option value="file7">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/mocks/return_storage_interface_mock.go (19.2%)</option>
 				
-				<option value="file8">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/packing/controller/controller.go (0.0%)</option>
+				<option value="file8">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/orders.go (89.7%)</option>
 				
-				<option value="file9">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/packing/packing.go (0.0%)</option>
+				<option value="file9">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/controller/addWrap.go (22.2%)</option>
 				
-				<option value="file10">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination/pagination.go (84.4%)</option>
+				<option value="file10">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/mocks/packager_mock.go (0.0%)</option>
 				
-				<option value="file11">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/returns/returns.go (100.0%)</option>
+				<option value="file11">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/mocks/wrap_adder_mock.go (39.5%)</option>
 				
-				<option value="file12">gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orders.go (0.0%)</option>
+				<option value="file12">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/packing.go (89.7%)</option>
 				
-				<option value="file13">gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returns.go (0.0%)</option>
+				<option value="file13">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination/pagination.go (84.4%)</option>
+				
+				<option value="file14">gitlab.ozon.dev/akugnerevich/homework.git/internal/service/returns/returns.go (100.0%)</option>
+				
+				<option value="file15">gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orders.go (0.0%)</option>
+				
+				<option value="file16">gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returns.go (0.0%)</option>
 				
 				</select>
 			</div>
@@ -263,57 +269,35 @@ func (o *Order) CanReturned() error <span class="cov8" title="1">{
 import (
         "bufio"
         "fmt"
-        "gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+        "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller/inputs"
         e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
         "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders"
-        "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/packing"
+        "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
         "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/returns"
         "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
         "log"
         "os"
         "strconv"
         "strings"
-        "time"
 )
 
-//Файл с обертками для организации входа данных
-
 func WAcceptOrder(s storage.OrderStorageInterface) error <span class="cov0" title="0">{
-
-        var order models.Order
-        var pacakgeType string
-        fmt.Println("Input OrderID _ UserID _ Date(form[2024-12(m)-12(d)])")
-        fmt.Print("&gt;")
-
-        var dateString string
-        _, err := fmt.Scan(&amp;order.ID, &amp;order.UserID, &amp;dateString)
-        if err != nil </span><span class="cov0" title="0">{
-                return fmt.Errorf("Input api Err: %w\n", err)
-        }</span>
-        <span class="cov0" title="0">if s.IsConsist(order.ID) </span><span class="cov0" title="0">{
-                return e.ErrIsConsist
-        }</span>
-
-        <span class="cov0" title="0">order.KeepUntilDate, err = time.Parse("2006-01-02", dateString)
-        if err != nil </span><span class="cov0" title="0">{
-                return fmt.Errorf("Date parse Err: %w\n", err)
-        }</span>
-
-        <span class="cov0" title="0">fmt.Println("Input weight[kg], price[₽], package type [box, bundle, wrap]")
-        fmt.Print("&gt;")
-        fmt.Scan(&amp;order.Weight, &amp;order.Price, &amp;pacakgeType)
-
-        err = packing.Packing(&amp;order, pacakgeType)
+        order, packageType, err := inputs.CollectOrderInput()
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov0" title="0">err = orders.AcceptOrder(s, &amp;order)
+        <span class="cov0" title="0">err = packing.Packing(order, packageType)
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
 
-        <span class="cov0" title="0">return err</span>
+        <span class="cov0" title="0">err = orders.AcceptOrder(s, order)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov0" title="0">return nil</span>
 }
 
 func WReturnOrder(s storage.OrderStorageInterface) error <span class="cov0" title="0">{
@@ -414,7 +398,43 @@ func WListReturns(rs storage.ReturnStorageInterface) error <span class="cov0" ti
 }</span>
 </pre>
 		
-		<pre class="file" id="file5" style="display: none">// Code generated by http://github.com/gojuno/minimock (v3.4.0). DO NOT EDIT.
+		<pre class="file" id="file5" style="display: none">package inputs
+
+import (
+        "fmt"
+        "gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+        "time"
+)
+
+func CollectOrderInput() (*models.Order, string, error) <span class="cov0" title="0">{
+        var order models.Order
+        var packageType string
+        var dateString string
+
+        fmt.Println("Input OrderID _ UserID _ Date(form[2024-12(m)-12(d)])")
+        fmt.Print("&gt;")
+        _, err := fmt.Scan(&amp;order.ID, &amp;order.UserID, &amp;dateString)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, "", fmt.Errorf("Input api Err: %w\n", err)
+        }</span>
+
+        <span class="cov0" title="0">order.KeepUntilDate, err = time.Parse("2006-01-02", dateString)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, "", fmt.Errorf("Date parse Err: %w\n", err)
+        }</span>
+
+        <span class="cov0" title="0">fmt.Println("Input weight[kg], price[₽], package type [box, bundle, wrap]")
+        fmt.Print("&gt;")
+        _, err = fmt.Scan(&amp;order.Weight, &amp;order.Price, &amp;packageType)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, "", fmt.Errorf("Input api Err: %w\n", err)
+        }</span>
+
+        <span class="cov0" title="0">return &amp;order, packageType, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file6" style="display: none">// Code generated by http://github.com/gojuno/minimock (v3.4.0). DO NOT EDIT.
 
 package mocks
 
@@ -2310,7 +2330,7 @@ func (m *OrderStorageInterfaceMock) minimockDone() bool <span class="cov8" title
 }</span>
 </pre>
 		
-		<pre class="file" id="file6" style="display: none">// Code generated by http://github.com/gojuno/minimock (v3.4.0). DO NOT EDIT.
+		<pre class="file" id="file7" style="display: none">// Code generated by http://github.com/gojuno/minimock (v3.4.0). DO NOT EDIT.
 
 package mocks
 
@@ -4235,7 +4255,7 @@ func (m *ReturnStorageInterfaceMock) minimockDone() bool <span class="cov8" titl
 }</span>
 </pre>
 		
-		<pre class="file" id="file7" style="display: none">package orders
+		<pre class="file" id="file8" style="display: none">package orders
 
 import (
         "fmt"
@@ -4247,7 +4267,6 @@ import (
         "time"
 )
 
-// принять заказ от курьера
 func AcceptOrder(s storage.OrderStorageInterface, or *models.Order) error <span class="cov8" title="1">{
         if s.IsConsist(or.ID) </span><span class="cov8" title="1">{
                 return e.ErrIsConsist
@@ -4354,16 +4373,24 @@ func CheckIDsOrders(s storage.OrderStorageInterface, ids []uint) error <span cla
 }
 </pre>
 		
-		<pre class="file" id="file8" style="display: none">package controller
+		<pre class="file" id="file9" style="display: none">package controller
 
 import (
         "errors"
         "fmt"
 )
 
-func AddWrap() (bool, error) <span class="cov0" title="0">{
+//пришел к решению что так необходимо сделать чтобы корректно протестировать код
+
+type WrapAdder interface {
+        AddWrap() (bool, error)
+}
+
+type defaultWrapAdder struct{}
+
+func (d *defaultWrapAdder) AddWrap() (bool, error) <span class="cov0" title="0">{
         var answer string
-        fmt.Println("whether you want to add a wrap to your package?['y' - yes, 'n' - no ]")
+        fmt.Println("Would you like to add a wrap to your package? ['y' - yes, 'n' - no]")
         fmt.Scan(&amp;answer)
         switch answer </span>{
         case "y":<span class="cov0" title="0">
@@ -4371,18 +4398,674 @@ func AddWrap() (bool, error) <span class="cov0" title="0">{
         case "n":<span class="cov0" title="0">
                 return false, nil</span>
         default:<span class="cov0" title="0">
-                return false, errors.New("Invalid input")</span>
-
+                return false, errors.New("invalid input")</span>
         }
-
 }
+
+var wrapAdder WrapAdder = &amp;defaultWrapAdder{}
+
+func GetWrapAdder() WrapAdder <span class="cov8" title="1">{
+        return wrapAdder
+}</span>
+
+func SetWrapAdder(wa WrapAdder) <span class="cov8" title="1">{
+        wrapAdder = wa
+}</span>
 </pre>
 		
-		<pre class="file" id="file9" style="display: none">package packing
+		<pre class="file" id="file10" style="display: none">// Code generated by http://github.com/gojuno/minimock (v3.4.0). DO NOT EDIT.
+
+package mocks
+
+//go:generate minimock -i gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing.Packager -o packager_mock_test.go -n PackagerMock -p mocks
+
+import (
+        "sync"
+        mm_atomic "sync/atomic"
+        mm_time "time"
+
+        "github.com/gojuno/minimock/v3"
+        "gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+)
+
+// PackagerMock implements mm_packing.Packager
+type PackagerMock struct {
+        t          minimock.Tester
+        finishOnce sync.Once
+
+        funcPack          func(o *models.Order) (err error)
+        funcPackOrigin    string
+        inspectFuncPack   func(o *models.Order)
+        afterPackCounter  uint64
+        beforePackCounter uint64
+        PackMock          mPackagerMockPack
+}
+
+// NewPackagerMock returns a mock for mm_packing.Packager
+func NewPackagerMock(t minimock.Tester) *PackagerMock <span class="cov0" title="0">{
+        m := &amp;PackagerMock{t: t}
+
+        if controller, ok := t.(minimock.MockController); ok </span><span class="cov0" title="0">{
+                controller.RegisterMocker(m)
+        }</span>
+
+        <span class="cov0" title="0">m.PackMock = mPackagerMockPack{mock: m}
+        m.PackMock.callArgs = []*PackagerMockPackParams{}
+
+        t.Cleanup(m.MinimockFinish)
+
+        return m</span>
+}
+
+type mPackagerMockPack struct {
+        optional           bool
+        mock               *PackagerMock
+        defaultExpectation *PackagerMockPackExpectation
+        expectations       []*PackagerMockPackExpectation
+
+        callArgs []*PackagerMockPackParams
+        mutex    sync.RWMutex
+
+        expectedInvocations       uint64
+        expectedInvocationsOrigin string
+}
+
+// PackagerMockPackExpectation specifies expectation struct of the Packager.Pack
+type PackagerMockPackExpectation struct {
+        mock               *PackagerMock
+        params             *PackagerMockPackParams
+        paramPtrs          *PackagerMockPackParamPtrs
+        expectationOrigins PackagerMockPackExpectationOrigins
+        results            *PackagerMockPackResults
+        returnOrigin       string
+        Counter            uint64
+}
+
+// PackagerMockPackParams contains parameters of the Packager.Pack
+type PackagerMockPackParams struct {
+        o *models.Order
+}
+
+// PackagerMockPackParamPtrs contains pointers to parameters of the Packager.Pack
+type PackagerMockPackParamPtrs struct {
+        o **models.Order
+}
+
+// PackagerMockPackResults contains results of the Packager.Pack
+type PackagerMockPackResults struct {
+        err error
+}
+
+// PackagerMockPackOrigins contains origins of expectations of the Packager.Pack
+type PackagerMockPackExpectationOrigins struct {
+        origin  string
+        originO string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmPack *mPackagerMockPack) Optional() *mPackagerMockPack <span class="cov0" title="0">{
+        mmPack.optional = true
+        return mmPack
+}</span>
+
+// Expect sets up expected params for Packager.Pack
+func (mmPack *mPackagerMockPack) Expect(o *models.Order) *mPackagerMockPack <span class="cov0" title="0">{
+        if mmPack.mock.funcPack != nil </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("PackagerMock.Pack mock is already set by Set")
+        }</span>
+
+        <span class="cov0" title="0">if mmPack.defaultExpectation == nil </span><span class="cov0" title="0">{
+                mmPack.defaultExpectation = &amp;PackagerMockPackExpectation{}
+        }</span>
+
+        <span class="cov0" title="0">if mmPack.defaultExpectation.paramPtrs != nil </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("PackagerMock.Pack mock is already set by ExpectParams functions")
+        }</span>
+
+        <span class="cov0" title="0">mmPack.defaultExpectation.params = &amp;PackagerMockPackParams{o}
+        mmPack.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+        for _, e := range mmPack.expectations </span><span class="cov0" title="0">{
+                if minimock.Equal(e.params, mmPack.defaultExpectation.params) </span><span class="cov0" title="0">{
+                        mmPack.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmPack.defaultExpectation.params)
+                }</span>
+        }
+
+        <span class="cov0" title="0">return mmPack</span>
+}
+
+// ExpectOParam1 sets up expected param o for Packager.Pack
+func (mmPack *mPackagerMockPack) ExpectOParam1(o *models.Order) *mPackagerMockPack <span class="cov0" title="0">{
+        if mmPack.mock.funcPack != nil </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("PackagerMock.Pack mock is already set by Set")
+        }</span>
+
+        <span class="cov0" title="0">if mmPack.defaultExpectation == nil </span><span class="cov0" title="0">{
+                mmPack.defaultExpectation = &amp;PackagerMockPackExpectation{}
+        }</span>
+
+        <span class="cov0" title="0">if mmPack.defaultExpectation.params != nil </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("PackagerMock.Pack mock is already set by Expect")
+        }</span>
+
+        <span class="cov0" title="0">if mmPack.defaultExpectation.paramPtrs == nil </span><span class="cov0" title="0">{
+                mmPack.defaultExpectation.paramPtrs = &amp;PackagerMockPackParamPtrs{}
+        }</span>
+        <span class="cov0" title="0">mmPack.defaultExpectation.paramPtrs.o = &amp;o
+        mmPack.defaultExpectation.expectationOrigins.originO = minimock.CallerInfo(1)
+
+        return mmPack</span>
+}
+
+// Inspect accepts an inspector function that has same arguments as the Packager.Pack
+func (mmPack *mPackagerMockPack) Inspect(f func(o *models.Order)) *mPackagerMockPack <span class="cov0" title="0">{
+        if mmPack.mock.inspectFuncPack != nil </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("Inspect function is already set for PackagerMock.Pack")
+        }</span>
+
+        <span class="cov0" title="0">mmPack.mock.inspectFuncPack = f
+
+        return mmPack</span>
+}
+
+// Return sets up results that will be returned by Packager.Pack
+func (mmPack *mPackagerMockPack) Return(err error) *PackagerMock <span class="cov0" title="0">{
+        if mmPack.mock.funcPack != nil </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("PackagerMock.Pack mock is already set by Set")
+        }</span>
+
+        <span class="cov0" title="0">if mmPack.defaultExpectation == nil </span><span class="cov0" title="0">{
+                mmPack.defaultExpectation = &amp;PackagerMockPackExpectation{mock: mmPack.mock}
+        }</span>
+        <span class="cov0" title="0">mmPack.defaultExpectation.results = &amp;PackagerMockPackResults{err}
+        mmPack.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+        return mmPack.mock</span>
+}
+
+// Set uses given function f to mock the Packager.Pack method
+func (mmPack *mPackagerMockPack) Set(f func(o *models.Order) (err error)) *PackagerMock <span class="cov0" title="0">{
+        if mmPack.defaultExpectation != nil </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("Default expectation is already set for the Packager.Pack method")
+        }</span>
+
+        <span class="cov0" title="0">if len(mmPack.expectations) &gt; 0 </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("Some expectations are already set for the Packager.Pack method")
+        }</span>
+
+        <span class="cov0" title="0">mmPack.mock.funcPack = f
+        mmPack.mock.funcPackOrigin = minimock.CallerInfo(1)
+        return mmPack.mock</span>
+}
+
+// When sets expectation for the Packager.Pack which will trigger the result defined by the following
+// Then helper
+func (mmPack *mPackagerMockPack) When(o *models.Order) *PackagerMockPackExpectation <span class="cov0" title="0">{
+        if mmPack.mock.funcPack != nil </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("PackagerMock.Pack mock is already set by Set")
+        }</span>
+
+        <span class="cov0" title="0">expectation := &amp;PackagerMockPackExpectation{
+                mock:               mmPack.mock,
+                params:             &amp;PackagerMockPackParams{o},
+                expectationOrigins: PackagerMockPackExpectationOrigins{origin: minimock.CallerInfo(1)},
+        }
+        mmPack.expectations = append(mmPack.expectations, expectation)
+        return expectation</span>
+}
+
+// Then sets up Packager.Pack return parameters for the expectation previously defined by the When method
+func (e *PackagerMockPackExpectation) Then(err error) *PackagerMock <span class="cov0" title="0">{
+        e.results = &amp;PackagerMockPackResults{err}
+        return e.mock
+}</span>
+
+// Times sets number of times Packager.Pack should be invoked
+func (mmPack *mPackagerMockPack) Times(n uint64) *mPackagerMockPack <span class="cov0" title="0">{
+        if n == 0 </span><span class="cov0" title="0">{
+                mmPack.mock.t.Fatalf("Times of PackagerMock.Pack mock can not be zero")
+        }</span>
+        <span class="cov0" title="0">mm_atomic.StoreUint64(&amp;mmPack.expectedInvocations, n)
+        mmPack.expectedInvocationsOrigin = minimock.CallerInfo(1)
+        return mmPack</span>
+}
+
+func (mmPack *mPackagerMockPack) invocationsDone() bool <span class="cov0" title="0">{
+        if len(mmPack.expectations) == 0 &amp;&amp; mmPack.defaultExpectation == nil &amp;&amp; mmPack.mock.funcPack == nil </span><span class="cov0" title="0">{
+                return true
+        }</span>
+
+        <span class="cov0" title="0">totalInvocations := mm_atomic.LoadUint64(&amp;mmPack.mock.afterPackCounter)
+        expectedInvocations := mm_atomic.LoadUint64(&amp;mmPack.expectedInvocations)
+
+        return totalInvocations &gt; 0 &amp;&amp; (expectedInvocations == 0 || expectedInvocations == totalInvocations)</span>
+}
+
+// Pack implements mm_packing.Packager
+func (mmPack *PackagerMock) Pack(o *models.Order) (err error) <span class="cov0" title="0">{
+        mm_atomic.AddUint64(&amp;mmPack.beforePackCounter, 1)
+        defer mm_atomic.AddUint64(&amp;mmPack.afterPackCounter, 1)
+
+        mmPack.t.Helper()
+
+        if mmPack.inspectFuncPack != nil </span><span class="cov0" title="0">{
+                mmPack.inspectFuncPack(o)
+        }</span>
+
+        <span class="cov0" title="0">mm_params := PackagerMockPackParams{o}
+
+        // Record call args
+        mmPack.PackMock.mutex.Lock()
+        mmPack.PackMock.callArgs = append(mmPack.PackMock.callArgs, &amp;mm_params)
+        mmPack.PackMock.mutex.Unlock()
+
+        for _, e := range mmPack.PackMock.expectations </span><span class="cov0" title="0">{
+                if minimock.Equal(*e.params, mm_params) </span><span class="cov0" title="0">{
+                        mm_atomic.AddUint64(&amp;e.Counter, 1)
+                        return e.results.err
+                }</span>
+        }
+
+        <span class="cov0" title="0">if mmPack.PackMock.defaultExpectation != nil </span><span class="cov0" title="0">{
+                mm_atomic.AddUint64(&amp;mmPack.PackMock.defaultExpectation.Counter, 1)
+                mm_want := mmPack.PackMock.defaultExpectation.params
+                mm_want_ptrs := mmPack.PackMock.defaultExpectation.paramPtrs
+
+                mm_got := PackagerMockPackParams{o}
+
+                if mm_want_ptrs != nil </span><span class="cov0" title="0">{
+
+                        if mm_want_ptrs.o != nil &amp;&amp; !minimock.Equal(*mm_want_ptrs.o, mm_got.o) </span><span class="cov0" title="0">{
+                                mmPack.t.Errorf("PackagerMock.Pack got unexpected parameter o, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+                                        mmPack.PackMock.defaultExpectation.expectationOrigins.originO, *mm_want_ptrs.o, mm_got.o, minimock.Diff(*mm_want_ptrs.o, mm_got.o))
+                        }</span>
+
+                } else<span class="cov0" title="0"> if mm_want != nil &amp;&amp; !minimock.Equal(*mm_want, mm_got) </span><span class="cov0" title="0">{
+                        mmPack.t.Errorf("PackagerMock.Pack got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+                                mmPack.PackMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+                }</span>
+
+                <span class="cov0" title="0">mm_results := mmPack.PackMock.defaultExpectation.results
+                if mm_results == nil </span><span class="cov0" title="0">{
+                        mmPack.t.Fatal("No results are set for the PackagerMock.Pack")
+                }</span>
+                <span class="cov0" title="0">return (*mm_results).err</span>
+        }
+        <span class="cov0" title="0">if mmPack.funcPack != nil </span><span class="cov0" title="0">{
+                return mmPack.funcPack(o)
+        }</span>
+        <span class="cov0" title="0">mmPack.t.Fatalf("Unexpected call to PackagerMock.Pack. %v", o)
+        return</span>
+}
+
+// PackAfterCounter returns a count of finished PackagerMock.Pack invocations
+func (mmPack *PackagerMock) PackAfterCounter() uint64 <span class="cov0" title="0">{
+        return mm_atomic.LoadUint64(&amp;mmPack.afterPackCounter)
+}</span>
+
+// PackBeforeCounter returns a count of PackagerMock.Pack invocations
+func (mmPack *PackagerMock) PackBeforeCounter() uint64 <span class="cov0" title="0">{
+        return mm_atomic.LoadUint64(&amp;mmPack.beforePackCounter)
+}</span>
+
+// Calls returns a list of arguments used in each call to PackagerMock.Pack.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmPack *mPackagerMockPack) Calls() []*PackagerMockPackParams <span class="cov0" title="0">{
+        mmPack.mutex.RLock()
+
+        argCopy := make([]*PackagerMockPackParams, len(mmPack.callArgs))
+        copy(argCopy, mmPack.callArgs)
+
+        mmPack.mutex.RUnlock()
+
+        return argCopy
+}</span>
+
+// MinimockPackDone returns true if the count of the Pack invocations corresponds
+// the number of defined expectations
+func (m *PackagerMock) MinimockPackDone() bool <span class="cov0" title="0">{
+        if m.PackMock.optional </span><span class="cov0" title="0">{
+                // Optional methods provide '0 or more' call count restriction.
+                return true
+        }</span>
+
+        <span class="cov0" title="0">for _, e := range m.PackMock.expectations </span><span class="cov0" title="0">{
+                if mm_atomic.LoadUint64(&amp;e.Counter) &lt; 1 </span><span class="cov0" title="0">{
+                        return false
+                }</span>
+        }
+
+        <span class="cov0" title="0">return m.PackMock.invocationsDone()</span>
+}
+
+// MinimockPackInspect logs each unmet expectation
+func (m *PackagerMock) MinimockPackInspect() <span class="cov0" title="0">{
+        for _, e := range m.PackMock.expectations </span><span class="cov0" title="0">{
+                if mm_atomic.LoadUint64(&amp;e.Counter) &lt; 1 </span><span class="cov0" title="0">{
+                        m.t.Errorf("Expected call to PackagerMock.Pack at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+                }</span>
+        }
+
+        <span class="cov0" title="0">afterPackCounter := mm_atomic.LoadUint64(&amp;m.afterPackCounter)
+        // if default expectation was set then invocations count should be greater than zero
+        if m.PackMock.defaultExpectation != nil &amp;&amp; afterPackCounter &lt; 1 </span><span class="cov0" title="0">{
+                if m.PackMock.defaultExpectation.params == nil </span><span class="cov0" title="0">{
+                        m.t.Errorf("Expected call to PackagerMock.Pack at\n%s", m.PackMock.defaultExpectation.returnOrigin)
+                }</span> else<span class="cov0" title="0"> {
+                        m.t.Errorf("Expected call to PackagerMock.Pack at\n%s with params: %#v", m.PackMock.defaultExpectation.expectationOrigins.origin, *m.PackMock.defaultExpectation.params)
+                }</span>
+        }
+        // if func was set then invocations count should be greater than zero
+        <span class="cov0" title="0">if m.funcPack != nil &amp;&amp; afterPackCounter &lt; 1 </span><span class="cov0" title="0">{
+                m.t.Errorf("Expected call to PackagerMock.Pack at\n%s", m.funcPackOrigin)
+        }</span>
+
+        <span class="cov0" title="0">if !m.PackMock.invocationsDone() &amp;&amp; afterPackCounter &gt; 0 </span><span class="cov0" title="0">{
+                m.t.Errorf("Expected %d calls to PackagerMock.Pack at\n%s but found %d calls",
+                        mm_atomic.LoadUint64(&amp;m.PackMock.expectedInvocations), m.PackMock.expectedInvocationsOrigin, afterPackCounter)
+        }</span>
+}
+
+// MinimockFinish checks that all mocked methods have been called the expected number of times
+func (m *PackagerMock) MinimockFinish() <span class="cov0" title="0">{
+        m.finishOnce.Do(func() </span><span class="cov0" title="0">{
+                if !m.minimockDone() </span><span class="cov0" title="0">{
+                        m.MinimockPackInspect()
+                }</span>
+        })
+}
+
+// MinimockWait waits for all mocked methods to be called the expected number of times
+func (m *PackagerMock) MinimockWait(timeout mm_time.Duration) <span class="cov0" title="0">{
+        timeoutCh := mm_time.After(timeout)
+        for </span><span class="cov0" title="0">{
+                if m.minimockDone() </span><span class="cov0" title="0">{
+                        return
+                }</span>
+                <span class="cov0" title="0">select </span>{
+                case &lt;-timeoutCh:<span class="cov0" title="0">
+                        m.MinimockFinish()
+                        return</span>
+                case &lt;-mm_time.After(10 * mm_time.Millisecond):<span class="cov0" title="0"></span>
+                }
+        }
+}
+
+func (m *PackagerMock) minimockDone() bool <span class="cov0" title="0">{
+        done := true
+        return done &amp;&amp;
+                m.MinimockPackDone()
+}</span>
+</pre>
+		
+		<pre class="file" id="file11" style="display: none">// Code generated by http://github.com/gojuno/minimock (v3.4.0). DO NOT EDIT.
+
+package mocks
+
+//go:generate minimock -i gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/controller.WrapAdder -o wrap_adder_mock_test.go -n WrapAdderMock -p mocks
+
+import (
+        "sync"
+        mm_atomic "sync/atomic"
+        mm_time "time"
+
+        "github.com/gojuno/minimock/v3"
+)
+
+// WrapAdderMock implements mm_controller.WrapAdder
+type WrapAdderMock struct {
+        t          minimock.Tester
+        finishOnce sync.Once
+
+        funcAddWrap          func() (b1 bool, err error)
+        funcAddWrapOrigin    string
+        inspectFuncAddWrap   func()
+        afterAddWrapCounter  uint64
+        beforeAddWrapCounter uint64
+        AddWrapMock          mWrapAdderMockAddWrap
+}
+
+// NewWrapAdderMock returns a mock for mm_controller.WrapAdder
+func NewWrapAdderMock(t minimock.Tester) *WrapAdderMock <span class="cov8" title="1">{
+        m := &amp;WrapAdderMock{t: t}
+
+        if controller, ok := t.(minimock.MockController); ok </span><span class="cov0" title="0">{
+                controller.RegisterMocker(m)
+        }</span>
+
+        <span class="cov8" title="1">m.AddWrapMock = mWrapAdderMockAddWrap{mock: m}
+
+        t.Cleanup(m.MinimockFinish)
+
+        return m</span>
+}
+
+type mWrapAdderMockAddWrap struct {
+        optional           bool
+        mock               *WrapAdderMock
+        defaultExpectation *WrapAdderMockAddWrapExpectation
+        expectations       []*WrapAdderMockAddWrapExpectation
+
+        expectedInvocations       uint64
+        expectedInvocationsOrigin string
+}
+
+// WrapAdderMockAddWrapExpectation specifies expectation struct of the WrapAdder.AddWrap
+type WrapAdderMockAddWrapExpectation struct {
+        mock *WrapAdderMock
+
+        results      *WrapAdderMockAddWrapResults
+        returnOrigin string
+        Counter      uint64
+}
+
+// WrapAdderMockAddWrapResults contains results of the WrapAdder.AddWrap
+type WrapAdderMockAddWrapResults struct {
+        b1  bool
+        err error
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmAddWrap *mWrapAdderMockAddWrap) Optional() *mWrapAdderMockAddWrap <span class="cov0" title="0">{
+        mmAddWrap.optional = true
+        return mmAddWrap
+}</span>
+
+// Expect sets up expected params for WrapAdder.AddWrap
+func (mmAddWrap *mWrapAdderMockAddWrap) Expect() *mWrapAdderMockAddWrap <span class="cov8" title="1">{
+        if mmAddWrap.mock.funcAddWrap != nil </span><span class="cov0" title="0">{
+                mmAddWrap.mock.t.Fatalf("WrapAdderMock.AddWrap mock is already set by Set")
+        }</span>
+
+        <span class="cov8" title="1">if mmAddWrap.defaultExpectation == nil </span><span class="cov8" title="1">{
+                mmAddWrap.defaultExpectation = &amp;WrapAdderMockAddWrapExpectation{}
+        }</span>
+
+        <span class="cov8" title="1">return mmAddWrap</span>
+}
+
+// Inspect accepts an inspector function that has same arguments as the WrapAdder.AddWrap
+func (mmAddWrap *mWrapAdderMockAddWrap) Inspect(f func()) *mWrapAdderMockAddWrap <span class="cov0" title="0">{
+        if mmAddWrap.mock.inspectFuncAddWrap != nil </span><span class="cov0" title="0">{
+                mmAddWrap.mock.t.Fatalf("Inspect function is already set for WrapAdderMock.AddWrap")
+        }</span>
+
+        <span class="cov0" title="0">mmAddWrap.mock.inspectFuncAddWrap = f
+
+        return mmAddWrap</span>
+}
+
+// Return sets up results that will be returned by WrapAdder.AddWrap
+func (mmAddWrap *mWrapAdderMockAddWrap) Return(b1 bool, err error) *WrapAdderMock <span class="cov8" title="1">{
+        if mmAddWrap.mock.funcAddWrap != nil </span><span class="cov0" title="0">{
+                mmAddWrap.mock.t.Fatalf("WrapAdderMock.AddWrap mock is already set by Set")
+        }</span>
+
+        <span class="cov8" title="1">if mmAddWrap.defaultExpectation == nil </span><span class="cov0" title="0">{
+                mmAddWrap.defaultExpectation = &amp;WrapAdderMockAddWrapExpectation{mock: mmAddWrap.mock}
+        }</span>
+        <span class="cov8" title="1">mmAddWrap.defaultExpectation.results = &amp;WrapAdderMockAddWrapResults{b1, err}
+        mmAddWrap.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+        return mmAddWrap.mock</span>
+}
+
+// Set uses given function f to mock the WrapAdder.AddWrap method
+func (mmAddWrap *mWrapAdderMockAddWrap) Set(f func() (b1 bool, err error)) *WrapAdderMock <span class="cov0" title="0">{
+        if mmAddWrap.defaultExpectation != nil </span><span class="cov0" title="0">{
+                mmAddWrap.mock.t.Fatalf("Default expectation is already set for the WrapAdder.AddWrap method")
+        }</span>
+
+        <span class="cov0" title="0">if len(mmAddWrap.expectations) &gt; 0 </span><span class="cov0" title="0">{
+                mmAddWrap.mock.t.Fatalf("Some expectations are already set for the WrapAdder.AddWrap method")
+        }</span>
+
+        <span class="cov0" title="0">mmAddWrap.mock.funcAddWrap = f
+        mmAddWrap.mock.funcAddWrapOrigin = minimock.CallerInfo(1)
+        return mmAddWrap.mock</span>
+}
+
+// Times sets number of times WrapAdder.AddWrap should be invoked
+func (mmAddWrap *mWrapAdderMockAddWrap) Times(n uint64) *mWrapAdderMockAddWrap <span class="cov0" title="0">{
+        if n == 0 </span><span class="cov0" title="0">{
+                mmAddWrap.mock.t.Fatalf("Times of WrapAdderMock.AddWrap mock can not be zero")
+        }</span>
+        <span class="cov0" title="0">mm_atomic.StoreUint64(&amp;mmAddWrap.expectedInvocations, n)
+        mmAddWrap.expectedInvocationsOrigin = minimock.CallerInfo(1)
+        return mmAddWrap</span>
+}
+
+func (mmAddWrap *mWrapAdderMockAddWrap) invocationsDone() bool <span class="cov8" title="1">{
+        if len(mmAddWrap.expectations) == 0 &amp;&amp; mmAddWrap.defaultExpectation == nil &amp;&amp; mmAddWrap.mock.funcAddWrap == nil </span><span class="cov0" title="0">{
+                return true
+        }</span>
+
+        <span class="cov8" title="1">totalInvocations := mm_atomic.LoadUint64(&amp;mmAddWrap.mock.afterAddWrapCounter)
+        expectedInvocations := mm_atomic.LoadUint64(&amp;mmAddWrap.expectedInvocations)
+
+        return totalInvocations &gt; 0 &amp;&amp; (expectedInvocations == 0 || expectedInvocations == totalInvocations)</span>
+}
+
+// AddWrap implements mm_controller.WrapAdder
+func (mmAddWrap *WrapAdderMock) AddWrap() (b1 bool, err error) <span class="cov8" title="1">{
+        mm_atomic.AddUint64(&amp;mmAddWrap.beforeAddWrapCounter, 1)
+        defer mm_atomic.AddUint64(&amp;mmAddWrap.afterAddWrapCounter, 1)
+
+        mmAddWrap.t.Helper()
+
+        if mmAddWrap.inspectFuncAddWrap != nil </span><span class="cov0" title="0">{
+                mmAddWrap.inspectFuncAddWrap()
+        }</span>
+
+        <span class="cov8" title="1">if mmAddWrap.AddWrapMock.defaultExpectation != nil </span><span class="cov8" title="1">{
+                mm_atomic.AddUint64(&amp;mmAddWrap.AddWrapMock.defaultExpectation.Counter, 1)
+
+                mm_results := mmAddWrap.AddWrapMock.defaultExpectation.results
+                if mm_results == nil </span><span class="cov0" title="0">{
+                        mmAddWrap.t.Fatal("No results are set for the WrapAdderMock.AddWrap")
+                }</span>
+                <span class="cov8" title="1">return (*mm_results).b1, (*mm_results).err</span>
+        }
+        <span class="cov0" title="0">if mmAddWrap.funcAddWrap != nil </span><span class="cov0" title="0">{
+                return mmAddWrap.funcAddWrap()
+        }</span>
+        <span class="cov0" title="0">mmAddWrap.t.Fatalf("Unexpected call to WrapAdderMock.AddWrap.")
+        return</span>
+}
+
+// AddWrapAfterCounter returns a count of finished WrapAdderMock.AddWrap invocations
+func (mmAddWrap *WrapAdderMock) AddWrapAfterCounter() uint64 <span class="cov0" title="0">{
+        return mm_atomic.LoadUint64(&amp;mmAddWrap.afterAddWrapCounter)
+}</span>
+
+// AddWrapBeforeCounter returns a count of WrapAdderMock.AddWrap invocations
+func (mmAddWrap *WrapAdderMock) AddWrapBeforeCounter() uint64 <span class="cov0" title="0">{
+        return mm_atomic.LoadUint64(&amp;mmAddWrap.beforeAddWrapCounter)
+}</span>
+
+// MinimockAddWrapDone returns true if the count of the AddWrap invocations corresponds
+// the number of defined expectations
+func (m *WrapAdderMock) MinimockAddWrapDone() bool <span class="cov8" title="1">{
+        if m.AddWrapMock.optional </span><span class="cov0" title="0">{
+                // Optional methods provide '0 or more' call count restriction.
+                return true
+        }</span>
+
+        <span class="cov8" title="1">for _, e := range m.AddWrapMock.expectations </span><span class="cov0" title="0">{
+                if mm_atomic.LoadUint64(&amp;e.Counter) &lt; 1 </span><span class="cov0" title="0">{
+                        return false
+                }</span>
+        }
+
+        <span class="cov8" title="1">return m.AddWrapMock.invocationsDone()</span>
+}
+
+// MinimockAddWrapInspect logs each unmet expectation
+func (m *WrapAdderMock) MinimockAddWrapInspect() <span class="cov0" title="0">{
+        for _, e := range m.AddWrapMock.expectations </span><span class="cov0" title="0">{
+                if mm_atomic.LoadUint64(&amp;e.Counter) &lt; 1 </span><span class="cov0" title="0">{
+                        m.t.Error("Expected call to WrapAdderMock.AddWrap")
+                }</span>
+        }
+
+        <span class="cov0" title="0">afterAddWrapCounter := mm_atomic.LoadUint64(&amp;m.afterAddWrapCounter)
+        // if default expectation was set then invocations count should be greater than zero
+        if m.AddWrapMock.defaultExpectation != nil &amp;&amp; afterAddWrapCounter &lt; 1 </span><span class="cov0" title="0">{
+                m.t.Errorf("Expected call to WrapAdderMock.AddWrap at\n%s", m.AddWrapMock.defaultExpectation.returnOrigin)
+        }</span>
+        // if func was set then invocations count should be greater than zero
+        <span class="cov0" title="0">if m.funcAddWrap != nil &amp;&amp; afterAddWrapCounter &lt; 1 </span><span class="cov0" title="0">{
+                m.t.Errorf("Expected call to WrapAdderMock.AddWrap at\n%s", m.funcAddWrapOrigin)
+        }</span>
+
+        <span class="cov0" title="0">if !m.AddWrapMock.invocationsDone() &amp;&amp; afterAddWrapCounter &gt; 0 </span><span class="cov0" title="0">{
+                m.t.Errorf("Expected %d calls to WrapAdderMock.AddWrap at\n%s but found %d calls",
+                        mm_atomic.LoadUint64(&amp;m.AddWrapMock.expectedInvocations), m.AddWrapMock.expectedInvocationsOrigin, afterAddWrapCounter)
+        }</span>
+}
+
+// MinimockFinish checks that all mocked methods have been called the expected number of times
+func (m *WrapAdderMock) MinimockFinish() <span class="cov8" title="1">{
+        m.finishOnce.Do(func() </span><span class="cov8" title="1">{
+                if !m.minimockDone() </span><span class="cov0" title="0">{
+                        m.MinimockAddWrapInspect()
+                }</span>
+        })
+}
+
+// MinimockWait waits for all mocked methods to be called the expected number of times
+func (m *WrapAdderMock) MinimockWait(timeout mm_time.Duration) <span class="cov0" title="0">{
+        timeoutCh := mm_time.After(timeout)
+        for </span><span class="cov0" title="0">{
+                if m.minimockDone() </span><span class="cov0" title="0">{
+                        return
+                }</span>
+                <span class="cov0" title="0">select </span>{
+                case &lt;-timeoutCh:<span class="cov0" title="0">
+                        m.MinimockFinish()
+                        return</span>
+                case &lt;-mm_time.After(10 * mm_time.Millisecond):<span class="cov0" title="0"></span>
+                }
+        }
+}
+
+func (m *WrapAdderMock) minimockDone() bool <span class="cov8" title="1">{
+        done := true
+        return done &amp;&amp;
+                m.MinimockAddWrapDone()
+}</span>
+</pre>
+		
+		<pre class="file" id="file12" style="display: none">package packing
 
 import (
         "gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
-        "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/packing/controller"
+        "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/controller"
 )
 
 // интерфейс упаковки
@@ -4393,77 +5076,77 @@ type Packager interface {
 type BoxPackaging struct {
 }
 
-func (b *BoxPackaging) Pack(o *models.Order) error <span class="cov0" title="0">{
-        if o.Weight &gt; 30 </span><span class="cov0" title="0">{
+func (b *BoxPackaging) Pack(o *models.Order) error <span class="cov8" title="1">{
+        if o.Weight &gt; 30 </span><span class="cov8" title="1">{
                 return ErrWeightBox
         }</span>
 
-        <span class="cov0" title="0">o.Price += 20
+        <span class="cov8" title="1">o.Price += 20
 
-        ans, err := controller.AddWrap()
+        ans, err := controller.GetWrapAdder().AddWrap()
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
-        <span class="cov0" title="0">if ans </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if ans </span><span class="cov8" title="1">{
                 Packing(o, "wrap")
         }</span>
-        <span class="cov0" title="0">return nil</span>
+        <span class="cov8" title="1">return nil</span>
 }
 
 type BundlePackaging struct {
 }
 
-func (b *BundlePackaging) Pack(o *models.Order) error <span class="cov0" title="0">{
+func (b *BundlePackaging) Pack(o *models.Order) error <span class="cov8" title="1">{
         if o.Weight &gt; 10 </span><span class="cov0" title="0">{
                 return ErrWeightBundle
         }</span>
 
-        <span class="cov0" title="0">o.Price += 5
+        <span class="cov8" title="1">o.Price += 5
 
-        ans, err := controller.AddWrap()
+        ans, err := controller.GetWrapAdder().AddWrap()
         if err != nil </span><span class="cov0" title="0">{
                 return err
         }</span>
-        <span class="cov0" title="0">if ans </span><span class="cov0" title="0">{
+        <span class="cov8" title="1">if ans </span><span class="cov8" title="1">{
                 Packing(o, "wrap")
         }</span>
 
-        <span class="cov0" title="0">return nil</span>
+        <span class="cov8" title="1">return nil</span>
 }
 
 type WrapPackaging struct {
 }
 
-func (w *WrapPackaging) Pack(o *models.Order) error <span class="cov0" title="0">{
+func (w *WrapPackaging) Pack(o *models.Order) error <span class="cov8" title="1">{
         o.Price += 1
         return nil
 }</span>
 
 // рациональное решение в случае если в дальнейшем понадобиться добавить еще одну упаковку
-func GetPackager(pack string) (Packager, error) <span class="cov0" title="0">{
+func GetPackager(pack string) (Packager, error) <span class="cov8" title="1">{
         switch pack </span>{
-        case "box":<span class="cov0" title="0">
+        case "box":<span class="cov8" title="1">
                 return &amp;BoxPackaging{}, nil</span>
-        case "bundle":<span class="cov0" title="0">
+        case "bundle":<span class="cov8" title="1">
                 return &amp;BundlePackaging{}, nil</span>
-        case "wrap":<span class="cov0" title="0">
+        case "wrap":<span class="cov8" title="1">
                 return &amp;WrapPackaging{}, nil</span>
-        default:<span class="cov0" title="0">
+        default:<span class="cov8" title="1">
                 return nil, ErrInvalidType</span>
         }
 }
 
 // упаковка
-func Packing(o *models.Order, pack string) error <span class="cov0" title="0">{
+func Packing(o *models.Order, pack string) error <span class="cov8" title="1">{
         packager, err := GetPackager(pack)
-        if err != nil </span><span class="cov0" title="0">{
+        if err != nil </span><span class="cov8" title="1">{
                 return err
         }</span>
-        <span class="cov0" title="0">return packager.Pack(o)</span>
+        <span class="cov8" title="1">return packager.Pack(o)</span>
 }
 </pre>
 		
-		<pre class="file" id="file10" style="display: none">package pagination
+		<pre class="file" id="file13" style="display: none">package pagination
 
 import (
         "bufio"
@@ -4535,7 +5218,7 @@ func PagePagination(returns []*models.Return, page, limit int) error <span class
 }
 </pre>
 		
-		<pre class="file" id="file11" style="display: none">package returns
+		<pre class="file" id="file14" style="display: none">package returns
 
 import (
         "gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
@@ -4579,7 +5262,7 @@ func ListReturns(rs storage.ReturnStorageInterface, limit, page int) error <span
 }
 </pre>
 		
-		<pre class="file" id="file12" style="display: none">package storage
+		<pre class="file" id="file15" style="display: none">package storage
 
 import (
         "encoding/json"
@@ -4690,7 +5373,7 @@ func (os *OrderStorage) GetOrderIDs() []uint <span class="cov0" title="0">{
 }
 </pre>
 		
-		<pre class="file" id="file13" style="display: none">package storage
+		<pre class="file" id="file16" style="display: none">package storage
 
 import (
         "encoding/json"

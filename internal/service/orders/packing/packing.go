@@ -2,7 +2,7 @@ package packing
 
 import (
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/packing/controller"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/controller"
 )
 
 // интерфейс упаковки
@@ -20,7 +20,7 @@ func (b *BoxPackaging) Pack(o *models.Order) error {
 
 	o.Price += 20
 
-	ans, err := controller.AddWrap()
+	ans, err := controller.GetWrapAdder().AddWrap()
 	if err != nil {
 		return err
 	}
@@ -40,7 +40,7 @@ func (b *BundlePackaging) Pack(o *models.Order) error {
 
 	o.Price += 5
 
-	ans, err := controller.AddWrap()
+	ans, err := controller.GetWrapAdder().AddWrap()
 	if err != nil {
 		return err
 	}
