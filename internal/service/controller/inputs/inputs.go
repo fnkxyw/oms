@@ -11,30 +11,53 @@ import (
 )
 
 func CollectOrderInput() (*models.Order, string, error) {
+	scanner := bufio.NewScanner(os.Stdin)
 	var order models.Order
 	var packageType string
 	var dateString string
 
+	// Считываем первую строку
 	fmt.Println("Input OrderID _ UserID _ Date(form[2024-12(m)-12(d)])")
 	fmt.Print(">")
-	_, err := fmt.Scan(&order.ID, &order.UserID, &dateString)
+	if !scanner.Scan() {
+		return nil, "", fmt.Errorf("Input error: failed to read line")
+	}
+	// Парсим строку
+	input := scanner.Text()
+	_, err := fmt.Sscanf(input, "%d %d %s", &order.ID, &order.UserID, &dateString)
 	if err != nil {
-		return nil, "", fmt.Errorf("Input api Err: %w\n", err)
+		return nil, "", fmt.Errorf("Input parse Err: %w", err)
 	}
 
 	order.KeepUntilDate, err = time.Parse("2006-01-02", dateString)
 	if err != nil {
-		return nil, "", fmt.Errorf("Date parse Err: %w\n", err)
+		return nil, "", fmt.Errorf("Date parse Err: %w", err)
 	}
 
 	fmt.Println("Input weight[kg], price[₽], package type [box, bundle, wrap]")
 	fmt.Print(">")
-	_, err = fmt.Scan(&order.Weight, &order.Price, &packageType)
+	if !scanner.Scan() {
+		return nil, "", fmt.Errorf("Input error: failed to read line")
+	}
+	// Парсим строку
+	input = scanner.Text()
+	_, err = fmt.Sscanf(input, "%d %d %s", &order.Weight, &order.Price, &packageType)
 	if err != nil {
-		return nil, "", fmt.Errorf("Input api Err: %w\n", err)
+		return nil, "", fmt.Errorf("Input parse Err: %w", err)
 	}
 
 	return &order, packageType, nil
+}
+
+func main() {
+	// Пример вызова CollectOrderInput()
+	order, packageType, err := CollectOrderInput()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
+		return
+	}
+	fmt.Printf("Order: %+v\n", order)
+	fmt.Printf("Package Type: %s\n", packageType)
 }
 
 func InputOrderID() (uint, error) {
