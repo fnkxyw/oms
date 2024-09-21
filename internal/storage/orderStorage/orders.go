@@ -1,8 +1,9 @@
-package storage
+package orderStorage
 
 import (
 	"encoding/json"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/errors"
 	"io"
 	"os"
 )
@@ -28,7 +29,7 @@ func (o *OrderStorage) Create() error {
 }
 
 func NewOrderStorage() *OrderStorage {
-	return &OrderStorage{Data: make(map[uint]*models.Order), path: "api/orders.json"}
+	return &OrderStorage{Data: make(map[uint]*models.Order), path: "api/order.json"}
 }
 
 func (os *OrderStorage) AddOrderToStorage(or *models.Order) {
@@ -46,15 +47,15 @@ func (o *OrderStorage) DeleteOrderFromStorage(id uint) {
 
 // считываем с JSON-a
 func (o *OrderStorage) ReadFromJSON() error {
-	file, err := os.OpenFile(o.path, os.O_RDONLY, 0666)
+	file, err := os.OpenFile(o.path, os.O_RDONLY|os.O_CREATE, 0666)
 	if err != nil {
-		return ErrOpenFile
+		return e.ErrOpenFile
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return ErrReadFile
+		return e.ErrReadFile
 	}
 
 	if len(data) == 0 {
@@ -81,16 +82,16 @@ func (o *OrderStorage) ReadFromJSON() error {
 }
 
 func (o *OrderStorage) WriteToJSON() error {
-	file, err := os.OpenFile("api/orders.json", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	file, err := os.OpenFile(o.path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
-		return ErrOpenFile
+		return e.ErrOpenFile
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent(" ", "  ")
 	if err := encoder.Encode(o); err != nil {
-		return ErrEnocde
+		return e.ErrEnocde
 	}
 	return nil
 }
@@ -106,4 +107,12 @@ func (os *OrderStorage) GetOrderIDs() []uint {
 		ids = append(ids, id)
 	}
 	return ids
+}
+
+func (os *OrderStorage) GetPath() string {
+	return os.path
+}
+
+func (os *OrderStorage) SetPath(p string) {
+	os.path = p
 }

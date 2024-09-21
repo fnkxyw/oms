@@ -68,7 +68,7 @@ type OrderStorageInterfaceMock struct {
 	WriteToJSONMock          mOrderStorageInterfaceMockWriteToJSON
 }
 
-// NewOrderStorageInterfaceMock returns a mock for mm_storage.OrderStorageInterface
+// NewOrderStorageInterfaceMock returnStorage a mock for mm_storage.OrderStorageInterface
 func NewOrderStorageInterfaceMock(t minimock.Tester) *OrderStorageInterfaceMock {
 	m := &OrderStorageInterfaceMock{t: t}
 
@@ -313,17 +313,17 @@ func (mmAddOrderToStorage *OrderStorageInterfaceMock) AddOrderToStorage(or *mode
 
 }
 
-// AddOrderToStorageAfterCounter returns a count of finished OrderStorageInterfaceMock.AddOrderToStorage invocations
+// AddOrderToStorageAfterCounter returnStorage a count of finished OrderStorageInterfaceMock.AddOrderToStorage invocations
 func (mmAddOrderToStorage *OrderStorageInterfaceMock) AddOrderToStorageAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmAddOrderToStorage.afterAddOrderToStorageCounter)
 }
 
-// AddOrderToStorageBeforeCounter returns a count of OrderStorageInterfaceMock.AddOrderToStorage invocations
+// AddOrderToStorageBeforeCounter returnStorage a count of OrderStorageInterfaceMock.AddOrderToStorage invocations
 func (mmAddOrderToStorage *OrderStorageInterfaceMock) AddOrderToStorageBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmAddOrderToStorage.beforeAddOrderToStorageCounter)
 }
 
-// Calls returns a list of arguments used in each call to OrderStorageInterfaceMock.AddOrderToStorage.
+// Calls returnStorage a list of arguments used in each call to OrderStorageInterfaceMock.AddOrderToStorage.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
 func (mmAddOrderToStorage *mOrderStorageInterfaceMockAddOrderToStorage) Calls() []*OrderStorageInterfaceMockAddOrderToStorageParams {
 	mmAddOrderToStorage.mutex.RLock()
@@ -336,7 +336,7 @@ func (mmAddOrderToStorage *mOrderStorageInterfaceMockAddOrderToStorage) Calls() 
 	return argCopy
 }
 
-// MinimockAddOrderToStorageDone returns true if the count of the AddOrderToStorage invocations corresponds
+// MinimockAddOrderToStorageDone returnStorage true if the count of the AddOrderToStorage invocations corresponds
 // the number of defined expectations
 func (m *OrderStorageInterfaceMock) MinimockAddOrderToStorageDone() bool {
 	if m.AddOrderToStorageMock.optional {
@@ -595,17 +595,17 @@ func (mmDeleteOrderFromStorage *OrderStorageInterfaceMock) DeleteOrderFromStorag
 
 }
 
-// DeleteOrderFromStorageAfterCounter returns a count of finished OrderStorageInterfaceMock.DeleteOrderFromStorage invocations
+// DeleteOrderFromStorageAfterCounter returnStorage a count of finished OrderStorageInterfaceMock.DeleteOrderFromStorage invocations
 func (mmDeleteOrderFromStorage *OrderStorageInterfaceMock) DeleteOrderFromStorageAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmDeleteOrderFromStorage.afterDeleteOrderFromStorageCounter)
 }
 
-// DeleteOrderFromStorageBeforeCounter returns a count of OrderStorageInterfaceMock.DeleteOrderFromStorage invocations
+// DeleteOrderFromStorageBeforeCounter returnStorage a count of OrderStorageInterfaceMock.DeleteOrderFromStorage invocations
 func (mmDeleteOrderFromStorage *OrderStorageInterfaceMock) DeleteOrderFromStorageBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmDeleteOrderFromStorage.beforeDeleteOrderFromStorageCounter)
 }
 
-// Calls returns a list of arguments used in each call to OrderStorageInterfaceMock.DeleteOrderFromStorage.
+// Calls returnStorage a list of arguments used in each call to OrderStorageInterfaceMock.DeleteOrderFromStorage.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
 func (mmDeleteOrderFromStorage *mOrderStorageInterfaceMockDeleteOrderFromStorage) Calls() []*OrderStorageInterfaceMockDeleteOrderFromStorageParams {
 	mmDeleteOrderFromStorage.mutex.RLock()
@@ -618,7 +618,7 @@ func (mmDeleteOrderFromStorage *mOrderStorageInterfaceMockDeleteOrderFromStorage
 	return argCopy
 }
 
-// MinimockDeleteOrderFromStorageDone returns true if the count of the DeleteOrderFromStorage invocations corresponds
+// MinimockDeleteOrderFromStorageDone returnStorage true if the count of the DeleteOrderFromStorage invocations corresponds
 // the number of defined expectations
 func (m *OrderStorageInterfaceMock) MinimockDeleteOrderFromStorageDone() bool {
 	if m.DeleteOrderFromStorageMock.optional {
@@ -907,17 +907,17 @@ func (mmGetOrder *OrderStorageInterfaceMock) GetOrder(id uint) (op1 *models.Orde
 	return
 }
 
-// GetOrderAfterCounter returns a count of finished OrderStorageInterfaceMock.GetOrder invocations
+// GetOrderAfterCounter returnStorage a count of finished OrderStorageInterfaceMock.GetOrder invocations
 func (mmGetOrder *OrderStorageInterfaceMock) GetOrderAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmGetOrder.afterGetOrderCounter)
 }
 
-// GetOrderBeforeCounter returns a count of OrderStorageInterfaceMock.GetOrder invocations
+// GetOrderBeforeCounter returnStorage a count of OrderStorageInterfaceMock.GetOrder invocations
 func (mmGetOrder *OrderStorageInterfaceMock) GetOrderBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmGetOrder.beforeGetOrderCounter)
 }
 
-// Calls returns a list of arguments used in each call to OrderStorageInterfaceMock.GetOrder.
+// Calls returnStorage a list of arguments used in each call to OrderStorageInterfaceMock.GetOrder.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
 func (mmGetOrder *mOrderStorageInterfaceMockGetOrder) Calls() []*OrderStorageInterfaceMockGetOrderParams {
 	mmGetOrder.mutex.RLock()
@@ -930,7 +930,7 @@ func (mmGetOrder *mOrderStorageInterfaceMockGetOrder) Calls() []*OrderStorageInt
 	return argCopy
 }
 
-// MinimockGetOrderDone returns true if the count of the GetOrder invocations corresponds
+// MinimockGetOrderDone returnStorage true if the count of the GetOrder invocations corresponds
 // the number of defined expectations
 func (m *OrderStorageInterfaceMock) MinimockGetOrderDone() bool {
 	if m.GetOrderMock.optional {
@@ -1110,17 +1110,17 @@ func (mmGetOrderIDs *OrderStorageInterfaceMock) GetOrderIDs() (ua1 []uint) {
 	return
 }
 
-// GetOrderIDsAfterCounter returns a count of finished OrderStorageInterfaceMock.GetOrderIDs invocations
+// GetOrderIDsAfterCounter returnStorage a count of finished OrderStorageInterfaceMock.GetOrderIDs invocations
 func (mmGetOrderIDs *OrderStorageInterfaceMock) GetOrderIDsAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmGetOrderIDs.afterGetOrderIDsCounter)
 }
 
-// GetOrderIDsBeforeCounter returns a count of OrderStorageInterfaceMock.GetOrderIDs invocations
+// GetOrderIDsBeforeCounter returnStorage a count of OrderStorageInterfaceMock.GetOrderIDs invocations
 func (mmGetOrderIDs *OrderStorageInterfaceMock) GetOrderIDsBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmGetOrderIDs.beforeGetOrderIDsCounter)
 }
 
-// MinimockGetOrderIDsDone returns true if the count of the GetOrderIDs invocations corresponds
+// MinimockGetOrderIDsDone returnStorage true if the count of the GetOrderIDs invocations corresponds
 // the number of defined expectations
 func (m *OrderStorageInterfaceMock) MinimockGetOrderIDsDone() bool {
 	if m.GetOrderIDsMock.optional {
@@ -1404,17 +1404,17 @@ func (mmIsConsist *OrderStorageInterfaceMock) IsConsist(id uint) (b1 bool) {
 	return
 }
 
-// IsConsistAfterCounter returns a count of finished OrderStorageInterfaceMock.IsConsist invocations
+// IsConsistAfterCounter returnStorage a count of finished OrderStorageInterfaceMock.IsConsist invocations
 func (mmIsConsist *OrderStorageInterfaceMock) IsConsistAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmIsConsist.afterIsConsistCounter)
 }
 
-// IsConsistBeforeCounter returns a count of OrderStorageInterfaceMock.IsConsist invocations
+// IsConsistBeforeCounter returnStorage a count of OrderStorageInterfaceMock.IsConsist invocations
 func (mmIsConsist *OrderStorageInterfaceMock) IsConsistBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmIsConsist.beforeIsConsistCounter)
 }
 
-// Calls returns a list of arguments used in each call to OrderStorageInterfaceMock.IsConsist.
+// Calls returnStorage a list of arguments used in each call to OrderStorageInterfaceMock.IsConsist.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
 func (mmIsConsist *mOrderStorageInterfaceMockIsConsist) Calls() []*OrderStorageInterfaceMockIsConsistParams {
 	mmIsConsist.mutex.RLock()
@@ -1427,7 +1427,7 @@ func (mmIsConsist *mOrderStorageInterfaceMockIsConsist) Calls() []*OrderStorageI
 	return argCopy
 }
 
-// MinimockIsConsistDone returns true if the count of the IsConsist invocations corresponds
+// MinimockIsConsistDone returnStorage true if the count of the IsConsist invocations corresponds
 // the number of defined expectations
 func (m *OrderStorageInterfaceMock) MinimockIsConsistDone() bool {
 	if m.IsConsistMock.optional {
@@ -1607,17 +1607,17 @@ func (mmReadFromJSON *OrderStorageInterfaceMock) ReadFromJSON() (err error) {
 	return
 }
 
-// ReadFromJSONAfterCounter returns a count of finished OrderStorageInterfaceMock.ReadFromJSON invocations
+// ReadFromJSONAfterCounter returnStorage a count of finished OrderStorageInterfaceMock.ReadFromJSON invocations
 func (mmReadFromJSON *OrderStorageInterfaceMock) ReadFromJSONAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmReadFromJSON.afterReadFromJSONCounter)
 }
 
-// ReadFromJSONBeforeCounter returns a count of OrderStorageInterfaceMock.ReadFromJSON invocations
+// ReadFromJSONBeforeCounter returnStorage a count of OrderStorageInterfaceMock.ReadFromJSON invocations
 func (mmReadFromJSON *OrderStorageInterfaceMock) ReadFromJSONBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmReadFromJSON.beforeReadFromJSONCounter)
 }
 
-// MinimockReadFromJSONDone returns true if the count of the ReadFromJSON invocations corresponds
+// MinimockReadFromJSONDone returnStorage true if the count of the ReadFromJSON invocations corresponds
 // the number of defined expectations
 func (m *OrderStorageInterfaceMock) MinimockReadFromJSONDone() bool {
 	if m.ReadFromJSONMock.optional {
@@ -1793,17 +1793,17 @@ func (mmWriteToJSON *OrderStorageInterfaceMock) WriteToJSON() (err error) {
 	return
 }
 
-// WriteToJSONAfterCounter returns a count of finished OrderStorageInterfaceMock.WriteToJSON invocations
+// WriteToJSONAfterCounter returnStorage a count of finished OrderStorageInterfaceMock.WriteToJSON invocations
 func (mmWriteToJSON *OrderStorageInterfaceMock) WriteToJSONAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmWriteToJSON.afterWriteToJSONCounter)
 }
 
-// WriteToJSONBeforeCounter returns a count of OrderStorageInterfaceMock.WriteToJSON invocations
+// WriteToJSONBeforeCounter returnStorage a count of OrderStorageInterfaceMock.WriteToJSON invocations
 func (mmWriteToJSON *OrderStorageInterfaceMock) WriteToJSONBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmWriteToJSON.beforeWriteToJSONCounter)
 }
 
-// MinimockWriteToJSONDone returns true if the count of the WriteToJSON invocations corresponds
+// MinimockWriteToJSONDone returnStorage true if the count of the WriteToJSON invocations corresponds
 // the number of defined expectations
 func (m *OrderStorageInterfaceMock) MinimockWriteToJSONDone() bool {
 	if m.WriteToJSONMock.optional {

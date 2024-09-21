@@ -4,11 +4,12 @@ import (
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
 	"time"
 )
 
-func RefundOrder(rs storage.ReturnStorageInterface, os storage.OrderStorageInterface, id uint, userId uint) error {
+func RefundOrder(rs returnStorage.ReturnStorageInterface, os orderStorage.OrderStorageInterface, id uint, userId uint) error {
 	order, exists := os.GetOrder(id)
 	if !exists {
 		return e.ErrCheckOrderID
@@ -32,7 +33,7 @@ func RefundOrder(rs storage.ReturnStorageInterface, os storage.OrderStorageInter
 	return nil
 }
 
-func ListReturns(rs storage.ReturnStorageInterface, limit, page int) error {
+func ListReturns(rs returnStorage.ReturnStorageInterface, limit, page int) error {
 	var list []*models.Return
 	for _, v := range rs.GetReturnIDs() {
 		r, _ := rs.GetReturn(v)

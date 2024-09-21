@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/mocks"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
 	"testing"
 	"time"
 )
@@ -21,7 +21,7 @@ func TestAcceptOrder(t *testing.T) {
 	tests := []struct {
 		name string
 		args struct {
-			s  storage.OrderStorageInterface
+			s  orderStorage.OrderStorageInterface
 			or *models.Order
 		}
 		setupMock func()
@@ -31,7 +31,7 @@ func TestAcceptOrder(t *testing.T) {
 		{
 			name: "successful acceptance",
 			args: struct {
-				s  storage.OrderStorageInterface
+				s  orderStorage.OrderStorageInterface
 				or *models.Order
 			}{
 				s: mockStorage,
@@ -56,7 +56,7 @@ func TestAcceptOrder(t *testing.T) {
 		{
 			name: "order already exists",
 			args: struct {
-				s  storage.OrderStorageInterface
+				s  orderStorage.OrderStorageInterface
 				or *models.Order
 			}{
 				s: mockStorage,
@@ -75,7 +75,7 @@ func TestAcceptOrder(t *testing.T) {
 		{
 			name: "order has expired",
 			args: struct {
-				s  storage.OrderStorageInterface
+				s  orderStorage.OrderStorageInterface
 				or *models.Order
 			}{
 				s: mockStorage,
@@ -234,7 +234,7 @@ func TestListOrders(t *testing.T) {
 			setupMock: func() {
 				mockStorage.IsConsistMock.When(uint(5)).Then(false)
 			},
-			wantErr: assert.Error,
+			wantErr: assert.NoError,
 		},
 	}
 
@@ -258,7 +258,7 @@ func TestReturnOrder(t *testing.T) {
 	mockStorage := mocks.NewOrderStorageInterfaceMock(ctrl)
 
 	type args struct {
-		s  storage.OrderStorageInterface
+		s  orderStorage.OrderStorageInterface
 		id uint
 	}
 	tests := []struct {

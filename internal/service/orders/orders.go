@@ -1,16 +1,17 @@
 package orders
 
 import (
+	"errors"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
 	"sort"
 	"time"
 )
 
-func AcceptOrder(s storage.OrderStorageInterface, or *models.Order) error {
+func AcceptOrder(s orderStorage.OrderStorageInterface, or *models.Order) error {
 	if s.IsConsist(or.ID) {
 		return e.ErrIsConsist
 	}
@@ -24,7 +25,7 @@ func AcceptOrder(s storage.OrderStorageInterface, or *models.Order) error {
 }
 
 // доставить заказ юзеру
-func PlaceOrder(s storage.OrderStorageInterface, ids []uint) error {
+func PlaceOrder(s orderStorage.OrderStorageInterface, ids []uint) error {
 	if len(ids) == 0 {
 		return fmt.Errorf("Length of ids array is 0 ")
 	}
@@ -55,10 +56,7 @@ func PlaceOrder(s storage.OrderStorageInterface, ids []uint) error {
 	return nil
 }
 
-func ListOrders(s storage.OrderStorageInterface, id uint, n int, inPuP bool) error {
-	if !s.IsConsist(id) {
-		return e.ErrNoConsist
-	}
+func ListOrders(s orderStorage.OrderStorageInterface, id uint, n int, inPuP bool) error {
 	var list []*models.Order
 	list = FilterOrders(s, id, inPuP)
 	SortOrders(list)
@@ -73,8 +71,8 @@ func ListOrders(s storage.OrderStorageInterface, id uint, n int, inPuP bool) err
 	return pagination.ScrollPagination(list, 1)
 }
 
-// вернуть заказ юзеру
-func ReturnOrder(s storage.OrderStorageInterface, id uint) error {
+// вернуть заказ курьеру
+func ReturnOrder(s orderStorage.OrderStorageInterface, id uint) error {
 	order, exists := s.GetOrder(id)
 	if !exists {
 		return e.ErrNoConsist
@@ -89,7 +87,7 @@ func SortOrders(o []*models.Order) error {
 	return nil
 }
 
-func FilterOrders(s storage.OrderStorageInterface, id uint, inPuP bool) []*models.Order {
+func FilterOrders(s orderStorage.OrderStorageInterface, id uint, inPuP bool) []*models.Order {
 	var filtered []*models.Order
 	var ids []uint
 	ids = s.GetOrderIDs()
@@ -103,8 +101,11 @@ func FilterOrders(s storage.OrderStorageInterface, id uint, inPuP bool) []*model
 	return filtered
 }
 
-func CheckIDsOrders(s storage.OrderStorageInterface, ids []uint) error {
-	order, _ := s.GetOrder(ids[0])
+func CheckIDsOrders(s orderStorage.OrderStorageInterface, ids []uint) error {
+	order, ok := s.GetOrder(ids[0])
+	if !ok {
+		return errors.New("Order no consist ")
+	}
 	temp := order.UserID
 	for _, id := range ids {
 		order, _ = s.GetOrder(id)

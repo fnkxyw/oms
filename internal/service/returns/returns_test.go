@@ -5,7 +5,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/mocks"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
 	"testing"
 	"time"
 )
@@ -19,7 +19,7 @@ func TestListReturns(t *testing.T) {
 
 	// Структура для аргументов
 	type args struct {
-		s     storage.ReturnStorageInterface
+		s     returnStorage.ReturnStorageInterface
 		limit int
 		page  int
 	}

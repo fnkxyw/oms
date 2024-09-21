@@ -68,7 +68,7 @@ type ReturnStorageInterfaceMock struct {
 	WriteToJSONMock          mReturnStorageInterfaceMockWriteToJSON
 }
 
-// NewReturnStorageInterfaceMock returns a mock for mm_storage.ReturnStorageInterface
+// NewReturnStorageInterfaceMock returnStorage a mock for mm_storage.ReturnStorageInterface
 func NewReturnStorageInterfaceMock(t minimock.Tester) *ReturnStorageInterfaceMock {
 	m := &ReturnStorageInterfaceMock{t: t}
 
@@ -342,17 +342,17 @@ func (mmAddReturnToStorage *ReturnStorageInterfaceMock) AddReturnToStorage(r *mo
 	return
 }
 
-// AddReturnToStorageAfterCounter returns a count of finished ReturnStorageInterfaceMock.AddReturnToStorage invocations
+// AddReturnToStorageAfterCounter returnStorage a count of finished ReturnStorageInterfaceMock.AddReturnToStorage invocations
 func (mmAddReturnToStorage *ReturnStorageInterfaceMock) AddReturnToStorageAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmAddReturnToStorage.afterAddReturnToStorageCounter)
 }
 
-// AddReturnToStorageBeforeCounter returns a count of ReturnStorageInterfaceMock.AddReturnToStorage invocations
+// AddReturnToStorageBeforeCounter returnStorage a count of ReturnStorageInterfaceMock.AddReturnToStorage invocations
 func (mmAddReturnToStorage *ReturnStorageInterfaceMock) AddReturnToStorageBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmAddReturnToStorage.beforeAddReturnToStorageCounter)
 }
 
-// Calls returns a list of arguments used in each call to ReturnStorageInterfaceMock.AddReturnToStorage.
+// Calls returnStorage a list of arguments used in each call to ReturnStorageInterfaceMock.AddReturnToStorage.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
 func (mmAddReturnToStorage *mReturnStorageInterfaceMockAddReturnToStorage) Calls() []*ReturnStorageInterfaceMockAddReturnToStorageParams {
 	mmAddReturnToStorage.mutex.RLock()
@@ -365,7 +365,7 @@ func (mmAddReturnToStorage *mReturnStorageInterfaceMockAddReturnToStorage) Calls
 	return argCopy
 }
 
-// MinimockAddReturnToStorageDone returns true if the count of the AddReturnToStorage invocations corresponds
+// MinimockAddReturnToStorageDone returnStorage true if the count of the AddReturnToStorage invocations corresponds
 // the number of defined expectations
 func (m *ReturnStorageInterfaceMock) MinimockAddReturnToStorageDone() bool {
 	if m.AddReturnToStorageMock.optional {
@@ -624,17 +624,17 @@ func (mmDeleteReturnFromStorage *ReturnStorageInterfaceMock) DeleteReturnFromSto
 
 }
 
-// DeleteReturnFromStorageAfterCounter returns a count of finished ReturnStorageInterfaceMock.DeleteReturnFromStorage invocations
+// DeleteReturnFromStorageAfterCounter returnStorage a count of finished ReturnStorageInterfaceMock.DeleteReturnFromStorage invocations
 func (mmDeleteReturnFromStorage *ReturnStorageInterfaceMock) DeleteReturnFromStorageAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmDeleteReturnFromStorage.afterDeleteReturnFromStorageCounter)
 }
 
-// DeleteReturnFromStorageBeforeCounter returns a count of ReturnStorageInterfaceMock.DeleteReturnFromStorage invocations
+// DeleteReturnFromStorageBeforeCounter returnStorage a count of ReturnStorageInterfaceMock.DeleteReturnFromStorage invocations
 func (mmDeleteReturnFromStorage *ReturnStorageInterfaceMock) DeleteReturnFromStorageBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmDeleteReturnFromStorage.beforeDeleteReturnFromStorageCounter)
 }
 
-// Calls returns a list of arguments used in each call to ReturnStorageInterfaceMock.DeleteReturnFromStorage.
+// Calls returnStorage a list of arguments used in each call to ReturnStorageInterfaceMock.DeleteReturnFromStorage.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
 func (mmDeleteReturnFromStorage *mReturnStorageInterfaceMockDeleteReturnFromStorage) Calls() []*ReturnStorageInterfaceMockDeleteReturnFromStorageParams {
 	mmDeleteReturnFromStorage.mutex.RLock()
@@ -647,7 +647,7 @@ func (mmDeleteReturnFromStorage *mReturnStorageInterfaceMockDeleteReturnFromStor
 	return argCopy
 }
 
-// MinimockDeleteReturnFromStorageDone returns true if the count of the DeleteReturnFromStorage invocations corresponds
+// MinimockDeleteReturnFromStorageDone returnStorage true if the count of the DeleteReturnFromStorage invocations corresponds
 // the number of defined expectations
 func (m *ReturnStorageInterfaceMock) MinimockDeleteReturnFromStorageDone() bool {
 	if m.DeleteReturnFromStorageMock.optional {
@@ -936,17 +936,17 @@ func (mmGetReturn *ReturnStorageInterfaceMock) GetReturn(id uint) (rp1 *models.R
 	return
 }
 
-// GetReturnAfterCounter returns a count of finished ReturnStorageInterfaceMock.GetReturn invocations
+// GetReturnAfterCounter returnStorage a count of finished ReturnStorageInterfaceMock.GetReturn invocations
 func (mmGetReturn *ReturnStorageInterfaceMock) GetReturnAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmGetReturn.afterGetReturnCounter)
 }
 
-// GetReturnBeforeCounter returns a count of ReturnStorageInterfaceMock.GetReturn invocations
+// GetReturnBeforeCounter returnStorage a count of ReturnStorageInterfaceMock.GetReturn invocations
 func (mmGetReturn *ReturnStorageInterfaceMock) GetReturnBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmGetReturn.beforeGetReturnCounter)
 }
 
-// Calls returns a list of arguments used in each call to ReturnStorageInterfaceMock.GetReturn.
+// Calls returnStorage a list of arguments used in each call to ReturnStorageInterfaceMock.GetReturn.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
 func (mmGetReturn *mReturnStorageInterfaceMockGetReturn) Calls() []*ReturnStorageInterfaceMockGetReturnParams {
 	mmGetReturn.mutex.RLock()
@@ -959,7 +959,7 @@ func (mmGetReturn *mReturnStorageInterfaceMockGetReturn) Calls() []*ReturnStorag
 	return argCopy
 }
 
-// MinimockGetReturnDone returns true if the count of the GetReturn invocations corresponds
+// MinimockGetReturnDone returnStorage true if the count of the GetReturn invocations corresponds
 // the number of defined expectations
 func (m *ReturnStorageInterfaceMock) MinimockGetReturnDone() bool {
 	if m.GetReturnMock.optional {
@@ -1139,17 +1139,17 @@ func (mmGetReturnIDs *ReturnStorageInterfaceMock) GetReturnIDs() (ua1 []uint) {
 	return
 }
 
-// GetReturnIDsAfterCounter returns a count of finished ReturnStorageInterfaceMock.GetReturnIDs invocations
+// GetReturnIDsAfterCounter returnStorage a count of finished ReturnStorageInterfaceMock.GetReturnIDs invocations
 func (mmGetReturnIDs *ReturnStorageInterfaceMock) GetReturnIDsAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmGetReturnIDs.afterGetReturnIDsCounter)
 }
 
-// GetReturnIDsBeforeCounter returns a count of ReturnStorageInterfaceMock.GetReturnIDs invocations
+// GetReturnIDsBeforeCounter returnStorage a count of ReturnStorageInterfaceMock.GetReturnIDs invocations
 func (mmGetReturnIDs *ReturnStorageInterfaceMock) GetReturnIDsBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmGetReturnIDs.beforeGetReturnIDsCounter)
 }
 
-// MinimockGetReturnIDsDone returns true if the count of the GetReturnIDs invocations corresponds
+// MinimockGetReturnIDsDone returnStorage true if the count of the GetReturnIDs invocations corresponds
 // the number of defined expectations
 func (m *ReturnStorageInterfaceMock) MinimockGetReturnIDsDone() bool {
 	if m.GetReturnIDsMock.optional {
@@ -1433,17 +1433,17 @@ func (mmIsConsist *ReturnStorageInterfaceMock) IsConsist(id uint) (b1 bool) {
 	return
 }
 
-// IsConsistAfterCounter returns a count of finished ReturnStorageInterfaceMock.IsConsist invocations
+// IsConsistAfterCounter returnStorage a count of finished ReturnStorageInterfaceMock.IsConsist invocations
 func (mmIsConsist *ReturnStorageInterfaceMock) IsConsistAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmIsConsist.afterIsConsistCounter)
 }
 
-// IsConsistBeforeCounter returns a count of ReturnStorageInterfaceMock.IsConsist invocations
+// IsConsistBeforeCounter returnStorage a count of ReturnStorageInterfaceMock.IsConsist invocations
 func (mmIsConsist *ReturnStorageInterfaceMock) IsConsistBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmIsConsist.beforeIsConsistCounter)
 }
 
-// Calls returns a list of arguments used in each call to ReturnStorageInterfaceMock.IsConsist.
+// Calls returnStorage a list of arguments used in each call to ReturnStorageInterfaceMock.IsConsist.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
 func (mmIsConsist *mReturnStorageInterfaceMockIsConsist) Calls() []*ReturnStorageInterfaceMockIsConsistParams {
 	mmIsConsist.mutex.RLock()
@@ -1456,7 +1456,7 @@ func (mmIsConsist *mReturnStorageInterfaceMockIsConsist) Calls() []*ReturnStorag
 	return argCopy
 }
 
-// MinimockIsConsistDone returns true if the count of the IsConsist invocations corresponds
+// MinimockIsConsistDone returnStorage true if the count of the IsConsist invocations corresponds
 // the number of defined expectations
 func (m *ReturnStorageInterfaceMock) MinimockIsConsistDone() bool {
 	if m.IsConsistMock.optional {
@@ -1636,17 +1636,17 @@ func (mmReadFromJSON *ReturnStorageInterfaceMock) ReadFromJSON() (err error) {
 	return
 }
 
-// ReadFromJSONAfterCounter returns a count of finished ReturnStorageInterfaceMock.ReadFromJSON invocations
+// ReadFromJSONAfterCounter returnStorage a count of finished ReturnStorageInterfaceMock.ReadFromJSON invocations
 func (mmReadFromJSON *ReturnStorageInterfaceMock) ReadFromJSONAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmReadFromJSON.afterReadFromJSONCounter)
 }
 
-// ReadFromJSONBeforeCounter returns a count of ReturnStorageInterfaceMock.ReadFromJSON invocations
+// ReadFromJSONBeforeCounter returnStorage a count of ReturnStorageInterfaceMock.ReadFromJSON invocations
 func (mmReadFromJSON *ReturnStorageInterfaceMock) ReadFromJSONBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmReadFromJSON.beforeReadFromJSONCounter)
 }
 
-// MinimockReadFromJSONDone returns true if the count of the ReadFromJSON invocations corresponds
+// MinimockReadFromJSONDone returnStorage true if the count of the ReadFromJSON invocations corresponds
 // the number of defined expectations
 func (m *ReturnStorageInterfaceMock) MinimockReadFromJSONDone() bool {
 	if m.ReadFromJSONMock.optional {
@@ -1822,17 +1822,17 @@ func (mmWriteToJSON *ReturnStorageInterfaceMock) WriteToJSON() (err error) {
 	return
 }
 
-// WriteToJSONAfterCounter returns a count of finished ReturnStorageInterfaceMock.WriteToJSON invocations
+// WriteToJSONAfterCounter returnStorage a count of finished ReturnStorageInterfaceMock.WriteToJSON invocations
 func (mmWriteToJSON *ReturnStorageInterfaceMock) WriteToJSONAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmWriteToJSON.afterWriteToJSONCounter)
 }
 
-// WriteToJSONBeforeCounter returns a count of ReturnStorageInterfaceMock.WriteToJSON invocations
+// WriteToJSONBeforeCounter returnStorage a count of ReturnStorageInterfaceMock.WriteToJSON invocations
 func (mmWriteToJSON *ReturnStorageInterfaceMock) WriteToJSONBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmWriteToJSON.beforeWriteToJSONCounter)
 }
 
-// MinimockWriteToJSONDone returns true if the count of the WriteToJSON invocations corresponds
+// MinimockWriteToJSONDone returnStorage true if the count of the WriteToJSON invocations corresponds
 // the number of defined expectations
 func (m *ReturnStorageInterfaceMock) MinimockWriteToJSONDone() bool {
 	if m.WriteToJSONMock.optional {

@@ -25,7 +25,7 @@ type WrapAdderMock struct {
 	AddWrapMock          mWrapAdderMockAddWrap
 }
 
-// NewWrapAdderMock returns a mock for mm_controller.WrapAdder
+// NewWrapAdderMock returnStorage a mock for mm_controller.WrapAdder
 func NewWrapAdderMock(t minimock.Tester) *WrapAdderMock {
 	m := &WrapAdderMock{t: t}
 
@@ -176,17 +176,17 @@ func (mmAddWrap *WrapAdderMock) AddWrap() (b1 bool, err error) {
 	return
 }
 
-// AddWrapAfterCounter returns a count of finished WrapAdderMock.AddWrap invocations
+// AddWrapAfterCounter returnStorage a count of finished WrapAdderMock.AddWrap invocations
 func (mmAddWrap *WrapAdderMock) AddWrapAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmAddWrap.afterAddWrapCounter)
 }
 
-// AddWrapBeforeCounter returns a count of WrapAdderMock.AddWrap invocations
+// AddWrapBeforeCounter returnStorage a count of WrapAdderMock.AddWrap invocations
 func (mmAddWrap *WrapAdderMock) AddWrapBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmAddWrap.beforeAddWrapCounter)
 }
 
-// MinimockAddWrapDone returns true if the count of the AddWrap invocations corresponds
+// MinimockAddWrapDone returnStorage true if the count of the AddWrap invocations corresponds
 // the number of defined expectations
 func (m *WrapAdderMock) MinimockAddWrapDone() bool {
 	if m.AddWrapMock.optional {

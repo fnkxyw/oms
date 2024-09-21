@@ -1,8 +1,9 @@
-package storage
+package returnStorage
 
 import (
 	"encoding/json"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/errors"
 	"io"
 	"os"
 )
@@ -28,13 +29,13 @@ func (r *ReturnStorage) Create() error {
 }
 
 func NewReturnStorage() *ReturnStorage {
-	return &ReturnStorage{Data: make(map[uint]*models.Return), path: "api/returns.json"}
+	return &ReturnStorage{Data: make(map[uint]*models.Return), path: "api/return.json"}
 }
 
 func (rs *ReturnStorage) AddReturnToStorage(r *models.Return) error {
 	_, ok := rs.Data[r.ID]
 	if ok {
-		return ErrAlrReturn
+		return e.ErrAlrReturn
 	} else {
 		rs.Data[r.ID] = r
 	}
@@ -56,13 +57,13 @@ func (rs *ReturnStorage) IsConsist(id uint) bool {
 func (rs *ReturnStorage) ReadFromJSON() error {
 	file, err := os.OpenFile(rs.path, os.O_RDONLY, 0666)
 	if err != nil {
-		return ErrOpenFile
+		return e.ErrOpenFile
 	}
 	defer file.Close()
 
 	data, err := io.ReadAll(file)
 	if err != nil {
-		return ErrReadFile
+		return e.ErrReadFile
 	}
 
 	if len(data) == 0 {
@@ -89,16 +90,16 @@ func (rs *ReturnStorage) ReadFromJSON() error {
 }
 
 func (rs *ReturnStorage) WriteToJSON() error {
-	file, err := os.OpenFile("api/returns.json", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+	file, err := os.OpenFile(rs.path, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 	if err != nil {
-		return ErrOpenFile
+		return e.ErrOpenFile
 	}
 	defer file.Close()
 
 	encoder := json.NewEncoder(file)
 	encoder.SetIndent(" ", "  ")
 	if err := encoder.Encode(rs); err != nil {
-		return ErrEnocde
+		return e.ErrEnocde
 	}
 	return nil
 }
@@ -114,4 +115,11 @@ func (rs *ReturnStorage) GetReturnIDs() []uint {
 		ids = append(ids, id)
 	}
 	return ids
+}
+func (rs *ReturnStorage) GetPath() string {
+	return rs.path
+}
+
+func (rs *ReturnStorage) SetPath(p string) {
+	rs.path = p
 }

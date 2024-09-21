@@ -4,7 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
 	"os"
 	"strings"
 )
@@ -15,12 +16,12 @@ var helpText = `
      acceptOrder - allows you to take the order from the courier 
      returnOrder - allows you to return the order to the courier
      placeOrder - allow the order to be released to the user
-     listOrders - allows you to get a list of orders  
+     listOrders - allows you to get a list of orderStorage  
      refundOrder - allows you to accept a return from a user
-     listReturns - allows you to get a list of returns 
+     listReturns - allows you to get a list of returnStorage 
 `
 
-func Run(oS storage.OrderStorageInterface, rS storage.ReturnStorageInterface) error {
+func Run(oS orderStorage.OrderStorageInterface, rS returnStorage.ReturnStorageInterface) error {
 	showHelp()
 
 	in := bufio.NewReader(os.Stdin)

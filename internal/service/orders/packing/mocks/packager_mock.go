@@ -26,7 +26,7 @@ type PackagerMock struct {
 	PackMock          mPackagerMockPack
 }
 
-// NewPackagerMock returns a mock for mm_packing.Packager
+// NewPackagerMock returnStorage a mock for mm_packing.Packager
 func NewPackagerMock(t minimock.Tester) *PackagerMock {
 	m := &PackagerMock{t: t}
 
@@ -285,17 +285,17 @@ func (mmPack *PackagerMock) Pack(o *models.Order) (err error) {
 	return
 }
 
-// PackAfterCounter returns a count of finished PackagerMock.Pack invocations
+// PackAfterCounter returnStorage a count of finished PackagerMock.Pack invocations
 func (mmPack *PackagerMock) PackAfterCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmPack.afterPackCounter)
 }
 
-// PackBeforeCounter returns a count of PackagerMock.Pack invocations
+// PackBeforeCounter returnStorage a count of PackagerMock.Pack invocations
 func (mmPack *PackagerMock) PackBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmPack.beforePackCounter)
 }
 
-// Calls returns a list of arguments used in each call to PackagerMock.Pack.
+// Calls returnStorage a list of arguments used in each call to PackagerMock.Pack.
 // The list is in the same order as the calls were made (i.e. recent calls have a higher index)
 func (mmPack *mPackagerMockPack) Calls() []*PackagerMockPackParams {
 	mmPack.mutex.RLock()
@@ -308,7 +308,7 @@ func (mmPack *mPackagerMockPack) Calls() []*PackagerMockPackParams {
 	return argCopy
 }
 
-// MinimockPackDone returns true if the count of the Pack invocations corresponds
+// MinimockPackDone returnStorage true if the count of the Pack invocations corresponds
 // the number of defined expectations
 func (m *PackagerMock) MinimockPackDone() bool {
 	if m.PackMock.optional {

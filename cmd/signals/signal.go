@@ -2,7 +2,8 @@ package sygnal
 
 import (
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	s "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	r "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,7 +11,7 @@ import (
 
 //файл для ловли сигналов завершения, чтобы не потерять данные
 
-func SygnalSearch(oS storage.OrderStorageInterface, rS storage.ReturnStorageInterface) error {
+func SygnalSearch(oS s.OrderStorageInterface, rS r.ReturnStorageInterface) error {
 	signalls := make(chan os.Signal, 1)
 
 	signal.Notify(signalls, syscall.SIGINT, syscall.SIGTERM)

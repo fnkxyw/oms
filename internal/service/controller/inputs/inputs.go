@@ -1,8 +1,12 @@
 package inputs
 
 import (
+	"bufio"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -31,4 +35,69 @@ func CollectOrderInput() (*models.Order, string, error) {
 	}
 
 	return &order, packageType, nil
+}
+
+func InputOrderID() (uint, error) {
+	var id uint
+	fmt.Print("Input OrderID\n>")
+	fmt.Scan(&id)
+	return id, nil
+}
+
+func InputUserID() (uint, error) {
+	var id uint
+	fmt.Print("Input UserID\n>")
+	fmt.Scan(&id)
+	return id, nil
+}
+
+func InputOrderIDs() ([]uint, error) {
+	fmt.Print("Input all IDs that you want to place\n>")
+	reader := bufio.NewReader(os.Stdin)
+	temp, err := reader.ReadString('\n')
+	if err != nil {
+		return nil, err
+	}
+
+	data := strings.Fields(temp)
+	var uintdata []uint
+	for _, v := range data {
+		uval, err := strconv.Atoi(v)
+		if err != nil {
+			fmt.Println("Wrong conv id in PlaceOrder")
+			return nil, err
+		}
+		uintdata = append(uintdata, uint(uval))
+	}
+	return uintdata, nil
+}
+
+func InputListChoice() (int, error) {
+	var choice int
+	fmt.Println("1. List all orderStorage which consists on our PuP\n" +
+		"2. List last N orderStorage")
+	fmt.Print(">")
+	fmt.Scan(&choice)
+	return choice, nil
+}
+
+func InputN() (int, error) {
+	var n int
+	fmt.Print("Input n\n>")
+	fmt.Scan(&n)
+	return n, nil
+}
+
+func InputOrderAndUserID() (uint, uint, error) {
+	var orderId, userId uint
+	fmt.Print("Input OrderID and UserID\n>")
+	fmt.Scan(&orderId, &userId)
+	return orderId, userId, nil
+}
+
+func InputReturnsPagination() (int, int, error) {
+	var limit, page int
+	fmt.Print("Input max Returns on one page and Page\n>")
+	fmt.Scan(&limit, &page)
+	return limit, page, nil
 }

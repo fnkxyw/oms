@@ -4,12 +4,13 @@ import (
 	"fmt"
 	signals "gitlab.ozon.dev/akugnerevich/homework.git/cmd/signals"
 	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
-	s "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	s "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	r "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
 )
 
 func main() {
 	orderStorage := s.NewOrderStorage()
-	returnStorage := s.NewReturnStorage()
+	returnStorage := r.NewReturnStorage()
 	err := orderStorage.ReadFromJSON()
 	if err != nil {
 		fmt.Println(err)
