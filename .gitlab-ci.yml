@@ -1,0 +1,20 @@
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  image: golang:latest
+  script:
+    - go mod tidy
+    - make build
+  only:
+    - devtask/GOJHW-3
+
+test:
+  stage: test
+  image: golang:latest
+  script:
+    - go test -v ./...
+  only:
+    - develop/GOJHW-3
