@@ -24,7 +24,7 @@ build-windows:
 
 #удалять бинарники
 clean:
-	rm -f ./app ./appL ./appM ./appW.exe
+	rm -f ./app ./appL ./appM ./appW.exe coverage.out
 
 run:
 	$(GORUN) cmd/app/main.go
@@ -40,6 +40,15 @@ lint:
 cleanstorages:
 	rm -f api/*.json
 
+coverage:
+	go test -coverprofile=coverage.out ./...
 
 
-.PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages
+# Команда для расчета покрытия тестов и открытия HTML отчета
+coverage-html:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
+
+
+
+.PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html

@@ -25,6 +25,7 @@ func newReturnStorage() *returnStorage.ReturnStorage {
 }
 
 func TestRefundOrder(t *testing.T) {
+	t.Parallel()
 	orderStorage := newOrderStorage()
 	returnStorage := newReturnStorage()
 
@@ -51,6 +52,7 @@ func TestRefundOrder(t *testing.T) {
 }
 
 func TestRefundOrder_NoOrder(t *testing.T) {
+	t.Parallel()
 	orderStorage := newOrderStorage()
 	returnStorage := newReturnStorage()
 
@@ -82,7 +84,7 @@ func TestWriteToJSON_ReturnStorage(t *testing.T) {
 	}
 
 	storage.AddReturnToStorage(returnItem)
-
+	storage.SetPath("returns_test.json")
 	err := storage.WriteToJSON()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
