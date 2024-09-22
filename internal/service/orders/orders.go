@@ -73,6 +73,7 @@ func ListOrders(s orderStorage.OrderStorageInterface, id uint, n int, inPuP bool
 
 // вернуть заказ курьеру
 func ReturnOrder(s orderStorage.OrderStorageInterface, id uint) error {
+
 	order, exists := s.GetOrder(id)
 	if !exists {
 		return e.ErrNoConsist

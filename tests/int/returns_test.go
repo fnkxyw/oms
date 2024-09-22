@@ -63,6 +63,7 @@ func TestRefundOrder_NoOrder(t *testing.T) {
 }
 
 func TestListReturn(t *testing.T) {
+	t.Parallel()
 	returnStorage := newReturnStorage()
 
 	returnStorage.AddReturnToStorage(&models.Return{ID: 1, UserID: 1})
@@ -74,8 +75,6 @@ func TestListReturn(t *testing.T) {
 }
 
 func TestWriteToJSON_ReturnStorage(t *testing.T) {
-	t.Parallel()
-
 	storage := newReturnStorage()
 
 	returnItem := &models.Return{
@@ -114,7 +113,6 @@ func TestWriteToJSON_ReturnStorage(t *testing.T) {
 }
 
 func TestReadFromJSON_ReturnStorage(t *testing.T) {
-	t.Parallel()
 
 	storage := newReturnStorage()
 	returnItem := &models.Return{
@@ -123,6 +121,7 @@ func TestReadFromJSON_ReturnStorage(t *testing.T) {
 	}
 
 	storage.AddReturnToStorage(returnItem)
+	storage.SetPath("returns_test.json")
 
 	err := storage.WriteToJSON()
 	if err != nil {

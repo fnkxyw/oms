@@ -174,7 +174,7 @@ func TestReturnOrder(t *testing.T) {
 	}
 }
 
-func TestReturnOrder_NoConit(t *testing.T) {
+func TestReturnOrder_NoConsist(t *testing.T) {
 	t.Parallel()
 
 	storage := newStorage()

@@ -92,8 +92,8 @@ func TestReturnStorage_GetReturnIDs(t *testing.T) {
 	rs.AddReturnToStorage(&models.Return{ID: 2, UserID: 456})
 
 	got := rs.GetReturnIDs()
-	sort.SliceIsSorted(got, func(i, j int) bool {
-		return i < j
+	sort.Slice(got, func(i, j int) bool {
+		return got[i] < got[j]
 	})
 	want := []uint{1, 2}
 	if !reflect.DeepEqual(got, want) {

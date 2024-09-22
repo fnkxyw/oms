@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+	"time"
 )
 
 func TestNewOrderStorage(t *testing.T) {
@@ -126,18 +127,26 @@ func TestOrderStorage_GetOrderIDs(t *testing.T) {
 	order1 := &models.Order{ID: 1}
 	order2 := &models.Order{ID: 2}
 	order3 := &models.Order{ID: 3}
+	order4 := &models.Order{ID: 4}
+	order5 := &models.Order{ID: 5}
+	order6 := &models.Order{ID: 6}
+	order7 := &models.Order{ID: 7}
 	os.AddOrderToStorage(order1)
 	os.AddOrderToStorage(order2)
 	os.AddOrderToStorage(order3)
+	os.AddOrderToStorage(order4)
+	os.AddOrderToStorage(order5)
+	os.AddOrderToStorage(order6)
+	os.AddOrderToStorage(order7)
 
-	wantIDs := []uint{1, 2, 3}
-	gotIDs := os.GetOrderIDs()
-
-	sort.SliceIsSorted(gotIDs, func(i, j int) bool {
-		return i < j
+	wantIDs := []uint{1, 2, 3, 4, 5, 6, 7}
+	got := os.GetOrderIDs()
+	time.Sleep(1 * time.Millisecond)
+	sort.Slice(got, func(i, j int) bool {
+		return got[i] < got[j]
 	})
 
-	if !reflect.DeepEqual(gotIDs, wantIDs) {
-		t.Errorf("GetOrderIDs() = %v, want %v", gotIDs, wantIDs)
+	if !reflect.DeepEqual(got, wantIDs) {
+		t.Errorf("GetOrderIDs() = %v, want %v", got, wantIDs)
 	}
 }

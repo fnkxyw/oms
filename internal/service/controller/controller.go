@@ -2,7 +2,6 @@ package controller
 
 import (
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller/inputs"
-	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/returns"
@@ -33,10 +32,6 @@ func WReturnOrder(s s.OrderStorageInterface) error {
 	id, err := inputs.InputOrderID()
 	if err != nil {
 		return err
-	}
-
-	if !s.IsConsist(id) {
-		return e.ErrNoConsist
 	}
 
 	return orders.ReturnOrder(s, id)

@@ -16,9 +16,9 @@ var helpText = `
      acceptOrder - allows you to take the order from the courier 
      returnOrder - allows you to return the order to the courier
      placeOrder - allow the order to be released to the user
-     listOrders - allows you to get a list of orderStorage  
+     listOrders - allows you to get a list of orders
      refundOrder - allows you to accept a return from a user
-     listReturns - allows you to get a list of returnStorage 
+     listReturns - allows you to get a list of returns
 `
 
 func Run(oS orderStorage.OrderStorageInterface, rS returnStorage.ReturnStorageInterface) error {
