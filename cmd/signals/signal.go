@@ -20,8 +20,18 @@ func SygnalSearch(oS orderStorage.OrderStorageInterface, rS returnStorage.Return
 		<-signalls
 		fmt.Println()
 		fmt.Println("exit")
-		oS.WriteToJSON()
-		rS.WriteToJSON()
+		err := oS.WriteToJSON()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to write order storage to JSON: %v\n", err)
+
+			return
+		}
+
+		err = rS.WriteToJSON()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to write return storage to JSON: %v\n", err)
+			return
+		}
 		os.Exit(1)
 
 	}()

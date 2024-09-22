@@ -66,9 +66,11 @@ func TestListReturn(t *testing.T) {
 	t.Parallel()
 	returnStorage := newReturnStorage()
 
-	returnStorage.AddReturnToStorage(&models.Return{ID: 1, UserID: 1})
-
-	err := returns.ListReturns(returnStorage, 10, 1)
+	err := returnStorage.AddReturnToStorage(&models.Return{ID: 1, UserID: 1})
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
+	err = returns.ListReturns(returnStorage, 10, 1)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -82,9 +84,12 @@ func TestWriteToJSON_ReturnStorage(t *testing.T) {
 		UserID: 1,
 	}
 
-	storage.AddReturnToStorage(returnItem)
+	err := storage.AddReturnToStorage(returnItem)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
 	storage.SetPath("returns_test.json")
-	err := storage.WriteToJSON()
+	err = storage.WriteToJSON()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -120,10 +125,13 @@ func TestReadFromJSON_ReturnStorage(t *testing.T) {
 		UserID: 1,
 	}
 
-	storage.AddReturnToStorage(returnItem)
+	err := storage.AddReturnToStorage(returnItem)
+	if err != nil {
+		t.Fatalf("expected no error, got %v", err)
+	}
 	storage.SetPath("returns_test.json")
 
-	err := storage.WriteToJSON()
+	err = storage.WriteToJSON()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}

@@ -48,17 +48,18 @@ func (suite *ReturnServiceTestSuite) TestRefundOrder_NoOrder() {
 }
 
 func (suite *ReturnServiceTestSuite) TestListReturn() {
-	suite.returnStorage.AddReturnToStorage(&models.Return{ID: 1, UserID: 1})
-
-	err := returns.ListReturns(suite.returnStorage, 10, 1)
+	err := suite.returnStorage.AddReturnToStorage(&models.Return{ID: 1, UserID: 1})
+	suite.NoError(err)
+	err = returns.ListReturns(suite.returnStorage, 10, 1)
 	suite.NoError(err)
 }
 
 func (suite *ReturnServiceTestSuite) TestWriteToJSON() {
 	returnItem := &models.Return{ID: 1, UserID: 1}
-	suite.returnStorage.AddReturnToStorage(returnItem)
+	err := suite.returnStorage.AddReturnToStorage(&models.Return{ID: 1, UserID: 1})
+	suite.NoError(err)
 
-	err := suite.returnStorage.WriteToJSON()
+	err = suite.returnStorage.WriteToJSON()
 	suite.NoError(err)
 
 	file, err := os.Open(suite.returnStorage.GetPath())
@@ -78,9 +79,9 @@ func (suite *ReturnServiceTestSuite) TestWriteToJSON() {
 
 func (suite *ReturnServiceTestSuite) TestReadFromJSON() {
 	returnItem := &models.Return{ID: 1, UserID: 1}
-	suite.returnStorage.AddReturnToStorage(returnItem)
-
-	err := suite.returnStorage.WriteToJSON()
+	err := suite.returnStorage.AddReturnToStorage(&models.Return{ID: 1, UserID: 1})
+	suite.NoError(err)
+	err = suite.returnStorage.WriteToJSON()
 	suite.NoError(err)
 
 	suite.returnStorage.Data = make(map[uint]*models.Return)

@@ -1,6 +1,7 @@
 package returns
 
 import (
+	"errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
@@ -24,10 +25,13 @@ func RefundOrder(rs returnStorage.ReturnStorageInterface, os orderStorage.OrderS
 		return e.ErrIncorrectUserId
 	}
 
-	rs.AddReturnToStorage(&models.Return{
+	err := rs.AddReturnToStorage(&models.Return{
 		ID:     id,
 		UserID: userId,
 	})
+	if err != nil {
+		return errors.New("add return to storage error in refund order")
+	}
 	order.State = models.ReturnedState
 
 	return nil

@@ -10,12 +10,12 @@ import (
 )
 
 func WAcceptOrder(s s.OrderStorageInterface) error {
-	order, packageType, err := inputs.CollectOrderInput()
+	order, packageType, needWrapping, err := inputs.CollectOrderInput()
 	if err != nil {
 		return err
 	}
 
-	err = packing.Packing(order, packageType)
+	err = packing.Packing(order, packageType, needWrapping)
 	if err != nil {
 		return err
 	}

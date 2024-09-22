@@ -1,7 +1,6 @@
 package orders
 
 import (
-	"errors"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
@@ -30,7 +29,10 @@ func PlaceOrder(s orderStorage.OrderStorageInterface, ids []uint) error {
 		return fmt.Errorf("Length of ids array is 0 ")
 	}
 
-	CheckIDsOrders(s, ids)
+	err := CheckIDsOrders(s, ids)
+	if err != nil {
+		return err
+	}
 
 	for _, id := range ids {
 		order, exists := s.GetOrder(id)
@@ -105,7 +107,7 @@ func FilterOrders(s orderStorage.OrderStorageInterface, id uint, inPuP bool) []*
 func CheckIDsOrders(s orderStorage.OrderStorageInterface, ids []uint) error {
 	order, ok := s.GetOrder(ids[0])
 	if !ok {
-		return errors.New("Order no consist ")
+		return e.ErrNoConsist
 	}
 	temp := order.UserID
 	for _, id := range ids {

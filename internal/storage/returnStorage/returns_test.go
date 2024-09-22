@@ -41,7 +41,10 @@ func TestReturnStorage_DeleteReturnFromStorage(t *testing.T) {
 		UserID: 123,
 	}
 
-	rs.AddReturnToStorage(r)
+	err := rs.AddReturnToStorage(r)
+	if err != nil {
+		t.Errorf("DeleteReturnFromStorage() failed , AddReturnToStorage")
+	}
 	rs.DeleteReturnFromStorage(1)
 
 	if _, exists := rs.Data[1]; exists {
@@ -56,7 +59,10 @@ func TestReturnStorage_IsConsist(t *testing.T) {
 		UserID: 123,
 	}
 
-	rs.AddReturnToStorage(r)
+	err := rs.AddReturnToStorage(r)
+	if err != nil {
+		t.Errorf("IsConsist() failed , AddReturnToStorage")
+	}
 
 	if !rs.IsConsist(1) {
 		t.Errorf("IsConsist() failed, expected return with ID 1 to exist")
@@ -74,7 +80,10 @@ func TestReturnStorage_GetReturn(t *testing.T) {
 		UserID: 123,
 	}
 
-	rs.AddReturnToStorage(r)
+	err := rs.AddReturnToStorage(r)
+	if err != nil {
+		t.Errorf("GetReturn() failed , AddReturnToStorage")
+	}
 
 	got, exists := rs.GetReturn(1)
 	if !exists || !reflect.DeepEqual(got, r) {
@@ -88,8 +97,14 @@ func TestReturnStorage_GetReturn(t *testing.T) {
 
 func TestReturnStorage_GetReturnIDs(t *testing.T) {
 	rs := NewReturnStorage()
-	rs.AddReturnToStorage(&models.Return{ID: 1, UserID: 123})
-	rs.AddReturnToStorage(&models.Return{ID: 2, UserID: 456})
+	err := rs.AddReturnToStorage(&models.Return{ID: 1, UserID: 123})
+	if err != nil {
+		t.Errorf("GetReturnIDs() failed, AddReturnToStorage")
+	}
+	err = rs.AddReturnToStorage(&models.Return{ID: 2, UserID: 456})
+	if err != nil {
+		t.Errorf("GetReturnIDs() failed, AddReturnToStorage")
+	}
 
 	got := rs.GetReturnIDs()
 	sort.Slice(got, func(i, j int) bool {

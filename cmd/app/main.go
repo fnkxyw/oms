@@ -27,7 +27,13 @@ func main() {
 			fmt.Println(err)
 		}
 	}
-	signals.SygnalSearch(orderStorage, returnStorage)
+	err = signals.SygnalSearch(orderStorage, returnStorage)
+	if err != nil {
+		return
+	}
 
-	c.Run(orderStorage, returnStorage)
+	err = c.Run(orderStorage, returnStorage)
+	if err != nil {
+		return
+	}
 }

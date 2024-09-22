@@ -49,6 +49,8 @@ coverage-html:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
 
+coverage-cobertura:
+	go test ./... -coverprofile=coverage.txt -covermode=count
+	gocover-cobertura < coverage.txt > coverage.xml
 
-
-.PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html
+.PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura

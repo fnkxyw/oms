@@ -1,51 +1,59 @@
 package packing
 
 import (
+	"errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing/controller"
 )
 
 // интерфейс упаковки
 type Packager interface {
-	Pack(o *models.Order) error
+	Pack(o *models.Order, needWrapping bool) error
 }
 
 type BoxPackaging struct {
 }
 
-func (b *BoxPackaging) Pack(o *models.Order) error {
+func (b *BoxPackaging) Pack(o *models.Order, needWrapping bool) error {
 	if o.Weight > 30 {
 		return ErrWeightBox
 	}
 
 	o.Price += 20
 
-	ans, err := controller.GetWrapAdder().AddWrap()
-	if err != nil {
-		return err
+	if needWrapping {
+		err := Packing(o, "wrap", false)
+		if err != nil {
+			return errors.New("Packing in wrap error ")
+		}
 	}
-	if ans {
-		Packing(o, "wrap")
-	}
+	//ans, err := controller.GetWrapAdder().AddWrap()
+	//if err != nil {
+	//	return err
+	//}
+	//if ans {
+	//	err = Packing(o, "wrap")
+	//	if err != nil {
+	//		return err
+	//	}
+	//}
 	return nil
 }
 
 type BundlePackaging struct {
 }
 
-func (b *BundlePackaging) Pack(o *models.Order) error {
+func (b *BundlePackaging) Pack(o *models.Order, needWrapping bool) error {
 	if o.Weight > 10 {
 		return ErrWeightBundle
 	}
 
 	o.Price += 5
 
-	ans, err := controller.GetWrapAdder().AddWrap()
-	if err != nil {
-		return err
-	}
-	if ans {
-		Packing(o, "wrap")
+	if needWrapping {
+		err := Packing(o, "wrap", false)
+		if err != nil {
+			return errors.New("Packing in wrap error ")
+		}
 	}
 
 	return nil
@@ -54,7 +62,10 @@ func (b *BundlePackaging) Pack(o *models.Order) error {
 type WrapPackaging struct {
 }
 
-func (w *WrapPackaging) Pack(o *models.Order) error {
+func (w *WrapPackaging) Pack(o *models.Order, needWrapping bool) error {
+	if needWrapping {
+		return errors.New("you can`t wrapping wrap")
+	}
 	o.Price += 1
 	return nil
 }
@@ -74,10 +85,10 @@ func GetPackager(pack string) (Packager, error) {
 }
 
 // упаковка
-func Packing(o *models.Order, pack string) error {
+func Packing(o *models.Order, pack string, needWrapping bool) error {
 	packager, err := GetPackager(pack)
 	if err != nil {
 		return err
 	}
-	return packager.Pack(o)
+	return packager.Pack(o, needWrapping)
 }

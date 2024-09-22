@@ -38,8 +38,8 @@ func Run(oS orderStorage.OrderStorageInterface, rS returnStorage.ReturnStorageIn
 
 		switch input {
 		case "exit":
-			oS.WriteToJSON()
-			rS.WriteToJSON()
+			handleErr(oS.WriteToJSON())
+			handleErr(rS.WriteToJSON())
 			return nil
 		case "acceptOrder":
 			handleErr(controller.WAcceptOrder(oS))

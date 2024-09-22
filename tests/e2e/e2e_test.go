@@ -77,6 +77,7 @@ func TestAppSecond(t *testing.T) {
 			"acceptOrder\n",
 			"20 15 2024-12-12\n",
 			"20 500 wrap\n",
+			"n\n",
 			"acceptOrder\n",
 			"10 10 2024-12-12\n",
 			"10 15 box\n",
