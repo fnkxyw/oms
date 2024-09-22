@@ -15,6 +15,13 @@ test:
   stage: test
   image: golang:latest
   script:
-    - go test -v ./...
+    - go install
+    - go test ./... -coverprofile=coverage.txt -covermode count
+    - go get github.com/boumenot/gocover-cobertura
+    - go run github.com/boumenot/gocover-cobertura < coverage.txt > coverage.xml
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
   only:
     - develop/GOJHW-3
