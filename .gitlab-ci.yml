@@ -11,6 +11,9 @@ build:
   only:
     - devtask/GOJHW-3
 
+before_script:
+  - go install github.com/t-yuki/gocover-cobertura@latest
+
 test:
   stage: test
   image: golang:1.22-bullseye
