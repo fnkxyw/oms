@@ -3,8 +3,9 @@ package cli
 import (
 	"bufio"
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
 	"os"
 	"strings"
 )
@@ -15,12 +16,12 @@ var helpText = `
      acceptOrder - allows you to take the order from the courier 
      returnOrder - allows you to return the order to the courier
      placeOrder - allow the order to be released to the user
-     listOrders - allows you to get a list of orders  
+     listOrders - allows you to get a list of orders
      refundOrder - allows you to accept a return from a user
-     listReturns - allows you to get a list of returns 
+     listReturns - allows you to get a list of returns
 `
 
-func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
+func Run(oS orderStorage.OrderStorageInterface, rS returnStorage.ReturnStorageInterface) error {
 	showHelp()
 
 	in := bufio.NewReader(os.Stdin)
@@ -33,28 +34,25 @@ func Run(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 			return err
 		}
 
-		input, err := readInput(in)
-		if err != nil {
-			return err
-		}
+		input, _ := readInput(in)
 
 		switch input {
 		case "exit":
-			oS.WritoToJSON()
-			rS.WritoToJSON()
+			handleErr(oS.WriteToJSON())
+			handleErr(rS.WriteToJSON())
 			return nil
 		case "acceptOrder":
-			handleErr(service.WAcceptOrder(oS))
+			handleErr(controller.WAcceptOrder(oS))
 		case "returnOrder":
-			handleErr(service.WReturnOrder(oS))
+			handleErr(controller.WReturnOrder(oS))
 		case "placeOrder":
-			handleErr(service.WPlaceOrder(oS))
+			handleErr(controller.WPlaceOrder(oS))
 		case "listOrders":
-			handleErr(service.WListOrders(oS))
+			handleErr(controller.WListOrders(oS))
 		case "refundOrder":
-			handleErr(service.WRefundOrder(rS, oS))
+			handleErr(controller.WRefundOrder(rS, oS))
 		case "listReturns":
-			handleErr(service.WListReturns(rS))
+			handleErr(controller.WListReturns(rS))
 		case "help":
 			showHelp()
 		default:
@@ -74,6 +72,8 @@ func readInput(in *bufio.Reader) (string, error) {
 func handleErr(err error) {
 	if err != nil {
 		fmt.Println(err)
+	} else {
+		fmt.Println("Correct!")
 	}
 }
 func showHelp() error {

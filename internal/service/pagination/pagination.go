@@ -1,16 +1,16 @@
-package service
+package pagination
 
 import (
 	"bufio"
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/models"
-	e "gitlab.ozon.dev/akugnerevich/homework-1.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"os"
 	"strings"
 )
 
 // пагинация скроллом
-func scrollPagination(orders []*models.Order, limit int) error {
+func ScrollPagination(orders []*models.Order, limit int) error {
 	total := len(orders)
 	lastIndex := 0
 
@@ -47,7 +47,7 @@ func scrollPagination(orders []*models.Order, limit int) error {
 }
 
 // пагинация постраничная
-func pagePagination(returns []*models.Return, page, limit int) error {
+func PagePagination(returns []*models.Return, page, limit int) error {
 	if page < 1 || limit < 1 {
 		return e.ErrLimitPage
 	}
@@ -64,7 +64,7 @@ func pagePagination(returns []*models.Return, page, limit int) error {
 	}
 	returns = returns[offset:end]
 	for _, v := range returns {
-		fmt.Printf("OrderID: %v, UserID: %v, Date of return: %v \n", v.ID, v.UserID, v.DateOfReturn)
+		fmt.Printf("OrderID: %v, UserID: %v \n", v.ID, v.UserID)
 	}
 	return nil
 }

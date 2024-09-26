@@ -1,0 +1,29 @@
+stages:
+  - build
+  - test
+
+build:
+  stage: build
+  image: golang:1.22-bullseye
+  script:
+    - go mod tidy
+    - make build
+  only:
+    - devtask/GOJHW-3
+
+before_script:
+  - go install github.com/t-yuki/gocover-cobertura@latest
+
+test:
+  stage: test
+  image: golang:1.22-bullseye
+  script:
+      - make deps
+      - make coverage-cobertura
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: coverage.xml
+  only:
+    - devtask/GOJHW-3

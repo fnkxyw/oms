@@ -1,24 +1,25 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 // модель заказа
 type Order struct {
 	ID            uint      `json:"id"`
 	UserID        uint      `json:"user_id"`
 	State         State     `json:"state"`
-	AcceptTime    time.Time `json:"accept_time"`
+	AcceptTime    int64     `json:"accept_time"`
 	KeepUntilDate time.Time `json:"date"`
 	PlaceDate     time.Time `json:"place_data"`
-	Weight        int
-	Price         int
+	Weight        int       `json:"weight"`
+	Price         int       `json:"price"`
 }
 
 // модель возврата
 type Return struct {
-	ID           uint      `json:"order_id"`
-	UserID       uint      `json:"user_id"`
-	DateOfReturn time.Time `json:"date_of_return"`
+	ID     uint `json:"order_id"`
+	UserID uint `json:"user_id"`
 }
 
 type State string
@@ -29,4 +30,5 @@ var (
 	AcceptState   = State("accept")
 	PlaceState    = State("place")
 	ReturnedState = State("returned")
+	NewState      = State("newState")
 )

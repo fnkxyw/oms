@@ -2,7 +2,8 @@ package sygnal
 
 import (
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework-1.git/internal/storage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
 	"os"
 	"os/signal"
 	"syscall"
@@ -10,7 +11,7 @@ import (
 
 //файл для ловли сигналов завершения, чтобы не потерять данные
 
-func SygnalSearch(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
+func SygnalSearch(oS orderStorage.OrderStorageInterface, rS returnStorage.ReturnStorageInterface) error {
 	signalls := make(chan os.Signal, 1)
 
 	signal.Notify(signalls, syscall.SIGINT, syscall.SIGTERM)
@@ -19,8 +20,18 @@ func SygnalSearch(oS *storage.OrderStorage, rS *storage.ReturnStorage) error {
 		<-signalls
 		fmt.Println()
 		fmt.Println("exit")
-		oS.WritoToJSON()
-		rS.WritoToJSON()
+		err := oS.WriteToJSON()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to write order storage to JSON: %v\n", err)
+
+			return
+		}
+
+		err = rS.WriteToJSON()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "failed to write return storage to JSON: %v\n", err)
+			return
+		}
 		os.Exit(1)
 
 	}()
