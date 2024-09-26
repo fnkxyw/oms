@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/orderStorage"
+
 	"os"
 	"strings"
 )
@@ -21,7 +21,7 @@ var helpText = `
      listReturns - allows you to get a list of returns
 `
 
-func Run(oS orderStorage.OrderStorageInterface, rS returnStorage.ReturnStorageInterface) error {
+func Run(oS *orderStorage.OrderStorage) error {
 	showHelp()
 
 	in := bufio.NewReader(os.Stdin)
@@ -38,8 +38,11 @@ func Run(oS orderStorage.OrderStorageInterface, rS returnStorage.ReturnStorageIn
 
 		switch input {
 		case "exit":
-			handleErr(oS.WriteToJSON())
-			handleErr(rS.WriteToJSON())
+			err := oS.WriteToJSON()
+			if err != nil {
+				fmt.Println(err)
+			}
+
 			return nil
 		case "acceptOrder":
 			handleErr(controller.WAcceptOrder(oS))
@@ -50,9 +53,9 @@ func Run(oS orderStorage.OrderStorageInterface, rS returnStorage.ReturnStorageIn
 		case "listOrders":
 			handleErr(controller.WListOrders(oS))
 		case "refundOrder":
-			handleErr(controller.WRefundOrder(rS, oS))
+			handleErr(controller.WRefundOrder(oS))
 		case "listReturns":
-			handleErr(controller.WListReturns(rS))
+			handleErr(controller.WListReturns(oS))
 		case "help":
 			showHelp()
 		default:

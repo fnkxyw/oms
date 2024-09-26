@@ -5,12 +5,12 @@ import (
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"sort"
 	"time"
 )
 
-func AcceptOrder(s orderStorage.OrderStorageInterface, or *models.Order) error {
+func AcceptOrder(s storage.Storage, or *models.Order) error {
 	if s.IsConsist(or.ID) {
 		return e.ErrIsConsist
 	}
@@ -19,12 +19,12 @@ func AcceptOrder(s orderStorage.OrderStorageInterface, or *models.Order) error {
 	}
 	or.State = models.AcceptState
 	or.AcceptTime = time.Now().Unix()
-	s.AddOrderToStorage(or)
+	s.AddToStorage(or)
 	return nil
 }
 
 // доставить заказ юзеру
-func PlaceOrder(s orderStorage.OrderStorageInterface, ids []uint) error {
+func PlaceOrder(s storage.Storage, ids []uint) error {
 	if len(ids) == 0 {
 		return fmt.Errorf("Length of ids array is 0 ")
 	}
@@ -35,7 +35,7 @@ func PlaceOrder(s orderStorage.OrderStorageInterface, ids []uint) error {
 	}
 
 	for _, id := range ids {
-		order, exists := s.GetOrder(id)
+		order, exists := s.GetItem(id)
 		if !exists {
 			return e.ErrNoConsist
 		}
@@ -58,7 +58,7 @@ func PlaceOrder(s orderStorage.OrderStorageInterface, ids []uint) error {
 	return nil
 }
 
-func ListOrders(s orderStorage.OrderStorageInterface, id uint, n int, inPuP bool) error {
+func ListOrders(s storage.Storage, id uint, n int, inPuP bool) error {
 	var list []*models.Order
 	list = FilterOrders(s, id, inPuP)
 	SortOrders(list)
@@ -74,9 +74,9 @@ func ListOrders(s orderStorage.OrderStorageInterface, id uint, n int, inPuP bool
 }
 
 // вернуть заказ курьеру
-func ReturnOrder(s orderStorage.OrderStorageInterface, id uint) error {
+func ReturnOrder(s storage.Storage, id uint) error {
 
-	order, exists := s.GetOrder(id)
+	order, exists := s.GetItem(id)
 	if !exists {
 		return e.ErrNoConsist
 	}
@@ -90,12 +90,12 @@ func SortOrders(o []*models.Order) error {
 	return nil
 }
 
-func FilterOrders(s orderStorage.OrderStorageInterface, id uint, inPuP bool) []*models.Order {
+func FilterOrders(s storage.Storage, id uint, inPuP bool) []*models.Order {
 	var filtered []*models.Order
 	var ids []uint
-	ids = s.GetOrderIDs()
+	ids = s.GetIDs()
 	for _, o := range ids {
-		order, exists := s.GetOrder(o)
+		order, exists := s.GetItem(o)
 		if exists && order.UserID == id && (!inPuP || order.State == models.AcceptState || order.State == models.ReturnedState) {
 			filtered = append(filtered, order)
 		}
@@ -104,14 +104,14 @@ func FilterOrders(s orderStorage.OrderStorageInterface, id uint, inPuP bool) []*
 	return filtered
 }
 
-func CheckIDsOrders(s orderStorage.OrderStorageInterface, ids []uint) error {
-	order, ok := s.GetOrder(ids[0])
+func CheckIDsOrders(s storage.Storage, ids []uint) error {
+	order, ok := s.GetItem(ids[0])
 	if !ok {
 		return e.ErrNoConsist
 	}
 	temp := order.UserID
 	for _, id := range ids {
-		order, _ = s.GetOrder(id)
+		order, _ = s.GetItem(id)
 		if order.UserID != temp {
 			return e.ErrNotAllIDs
 		}

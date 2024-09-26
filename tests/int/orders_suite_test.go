@@ -10,16 +10,16 @@ import (
 
 	"github.com/stretchr/testify/suite"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	or "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/orderStorage"
 )
 
 type OrderSuite struct {
 	suite.Suite
-	storage *orderStorage.OrderStorage
+	storage *or.OrderStorage
 }
 
 func (s *OrderSuite) SetupTest() {
-	s.storage = orderStorage.NewOrderStorage()
+	s.storage = or.NewOrderStorage()
 	s.storage.SetPath("order_test.json")
 }
 
@@ -33,7 +33,7 @@ func (s *OrderSuite) TestAcceptOrder() {
 	err := orders.AcceptOrder(s.storage, order)
 	s.NoError(err)
 
-	storedOrder, exists := s.storage.GetOrder(order.ID)
+	storedOrder, exists := s.storage.GetItem(order.ID)
 	s.True(exists)
 	s.Equal(models.AcceptState, storedOrder.State)
 	s.NotZero(storedOrder.AcceptTime)
@@ -74,12 +74,12 @@ func (s *OrderSuite) TestPlaceOrder() {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 		State:         models.AcceptState,
 	}
-	s.storage.AddOrderToStorage(order)
+	s.storage.AddToStorage(order)
 
 	err := orders.PlaceOrder(s.storage, []uint{2})
 	s.NoError(err)
 
-	updatedOrder, exists := s.storage.GetOrder(2)
+	updatedOrder, exists := s.storage.GetItem(2)
 	s.True(exists)
 	s.Equal(models.PlaceState, updatedOrder.State)
 }
@@ -102,13 +102,13 @@ func (s *OrderSuite) TestListOrder() {
 		State:         models.AcceptState,
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
-	s.storage.AddOrderToStorage(order1)
-	s.storage.AddOrderToStorage(order2)
+	s.storage.AddToStorage(order1)
+	s.storage.AddToStorage(order2)
 
 	err := orders.ListOrders(s.storage, 1, 2, false)
 	s.NoError(err)
 
-	ids := s.storage.GetOrderIDs()
+	ids := s.storage.GetIDs()
 	s.Len(ids, 2)
 	s.Contains(ids, uint(4))
 	s.Contains(ids, uint(5))
@@ -120,7 +120,7 @@ func (s *OrderSuite) TestReturnOrder() {
 		UserID: 1,
 		State:  models.ReturnedState,
 	}
-	s.storage.AddOrderToStorage(order)
+	s.storage.AddToStorage(order)
 
 	err := orders.ReturnOrder(s.storage, 6)
 	s.NoError(err)
@@ -161,9 +161,9 @@ func (s *OrderSuite) TestFilterOrder() {
 		State:         models.AcceptState,
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
-	s.storage.AddOrderToStorage(order1)
-	s.storage.AddOrderToStorage(order2)
-	s.storage.AddOrderToStorage(order3)
+	s.storage.AddToStorage(order1)
+	s.storage.AddToStorage(order2)
+	s.storage.AddToStorage(order3)
 
 	filteredOrder := orders.FilterOrders(s.storage, 1, true)
 	s.Len(filteredOrder, 2)
@@ -188,9 +188,9 @@ func (s *OrderSuite) TestCheckIDOrder() {
 		UserID: 2,
 		State:  models.AcceptState,
 	}
-	s.storage.AddOrderToStorage(order1)
-	s.storage.AddOrderToStorage(order2)
-	s.storage.AddOrderToStorage(order3)
+	s.storage.AddToStorage(order1)
+	s.storage.AddToStorage(order2)
+	s.storage.AddToStorage(order3)
 
 	err := orders.CheckIDsOrders(s.storage, []uint{10, 11})
 	s.NoError(err)
@@ -207,7 +207,7 @@ func (s *OrderSuite) TestWriteToJSON() {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
 
-	s.storage.AddOrderToStorage(order)
+	s.storage.AddToStorage(order)
 
 	err := s.storage.WriteToJSON()
 	s.NoError(err)
@@ -217,12 +217,12 @@ func (s *OrderSuite) TestWriteToJSON() {
 	defer file.Close()
 
 	os.Remove(s.storage.GetPath())
-	var storageData orderStorage.OrderStorage
+	var storageData or.OrderStorage
 	decoder := json.NewDecoder(file)
 	err = decoder.Decode(&storageData)
 	s.NoError(err)
 
-	storedOrder, exists := storageData.GetOrder(order.ID)
+	storedOrder, exists := storageData.GetItem(order.ID)
 	s.True(exists)
 	s.Equal(order.UserID, storedOrder.UserID)
 	s.Equal(order.State, storedOrder.State)
@@ -237,7 +237,7 @@ func (s *OrderSuite) TestReadFromJSON() {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
 
-	s.storage.AddOrderToStorage(order)
+	s.storage.AddToStorage(order)
 
 	err := s.storage.WriteToJSON()
 	s.NoError(err)
@@ -249,7 +249,7 @@ func (s *OrderSuite) TestReadFromJSON() {
 
 	os.Remove(s.storage.GetPath())
 
-	storedOrder, exists := s.storage.GetOrder(order.ID)
+	storedOrder, exists := s.storage.GetItem(order.ID)
 	s.True(exists)
 	s.Equal(order.UserID, storedOrder.UserID)
 	s.Equal(order.State, storedOrder.State)

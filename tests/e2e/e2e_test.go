@@ -3,8 +3,7 @@ package e2e
 import (
 	"fmt"
 	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
-	orderStorage "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
+	orderStorage "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/orderStorage"
 	"os"
 	"testing"
 	"time"
@@ -14,10 +13,6 @@ func TestApp(t *testing.T) {
 	orderStorage := orderStorage.NewOrderStorage()
 	orderStorage.SetPath("e2e_order.json")
 	defer os.Remove(orderStorage.GetPath())
-
-	returnsStorage := returnStorage.NewReturnStorage()
-	returnsStorage.SetPath("e2e_returns.json")
-	defer os.Remove(returnsStorage.GetPath())
 
 	originalStdin := os.Stdin
 	defer func() { os.Stdin = originalStdin }()
@@ -45,7 +40,7 @@ func TestApp(t *testing.T) {
 		})
 	}()
 
-	if err = c.Run(orderStorage, returnsStorage); err != nil {
+	if err = c.Run(orderStorage); err != nil {
 		t.Errorf("Ошибка в e2e тесте: %v", err)
 	}
 	if !orderStorage.IsConsist(10) {
@@ -57,10 +52,6 @@ func TestAppSecond(t *testing.T) {
 	orderStorage := orderStorage.NewOrderStorage()
 	orderStorage.SetPath("e2e_order2.json")
 	defer os.Remove(orderStorage.GetPath())
-
-	returnsStorage := returnStorage.NewReturnStorage()
-	returnsStorage.SetPath("e2e_returns2.json")
-	defer os.Remove(returnsStorage.GetPath())
 
 	originalStdin := os.Stdin
 	defer func() { os.Stdin = originalStdin }()
@@ -90,14 +81,14 @@ func TestAppSecond(t *testing.T) {
 		})
 	}()
 
-	if err = c.Run(orderStorage, returnsStorage); err != nil {
+	if err = c.Run(orderStorage); err != nil {
 		t.Errorf("Ошибка в e2e тесте: %v", err)
 	}
 
 	if !orderStorage.IsConsist(10) {
 		t.Errorf("Ошибка: заказ с ID %d не найден в orderStorage", 10)
 	}
-	order, _ := orderStorage.GetOrder(10)
+	order, _ := orderStorage.GetItem(10)
 	if order.Weight != 10 {
 		t.Errorf("Данные в orderStorage неверные")
 	}

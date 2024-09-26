@@ -1,17 +1,17 @@
 package returns
 
 import (
-	"errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+
 	"time"
 )
 
-func RefundOrder(rs returnStorage.ReturnStorageInterface, os orderStorage.OrderStorageInterface, id uint, userId uint) error {
-	order, exists := os.GetOrder(id)
+func RefundOrder(os storage.Storage, id uint, userId uint) error {
+	order, exists := os.GetItem(id)
+
 	if !exists {
 		return e.ErrCheckOrderID
 	}
@@ -25,23 +25,18 @@ func RefundOrder(rs returnStorage.ReturnStorageInterface, os orderStorage.OrderS
 		return e.ErrIncorrectUserId
 	}
 
-	err := rs.AddReturnToStorage(&models.Return{
-		ID:     id,
-		UserID: userId,
-	})
-	if err != nil {
-		return errors.New("add return to storage error in refund order")
-	}
 	order.State = models.ReturnedState
 
 	return nil
 }
 
-func ListReturns(rs returnStorage.ReturnStorageInterface, limit, page int) error {
-	var list []*models.Return
-	for _, v := range rs.GetReturnIDs() {
-		r, _ := rs.GetReturn(v)
-		list = append(list, r)
+func ListReturns(os storage.Storage, limit, page int) error {
+	var list []*models.Order
+	for _, v := range os.GetIDs() {
+		order, _ := os.GetItem(v)
+		if order.State == models.SoftDelete {
+			list = append(list, order)
+		}
 	}
 	return pagination.PagePagination(list, page, limit)
 }

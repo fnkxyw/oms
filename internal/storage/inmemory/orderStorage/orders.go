@@ -3,20 +3,10 @@ package orderStorage
 import (
 	"encoding/json"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
-	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/errors"
+	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/errors"
 	"io"
 	"os"
 )
-
-type OrderStorageInterface interface {
-	AddOrderToStorage(or *models.Order)
-	IsConsist(id uint) bool
-	DeleteOrderFromStorage(id uint)
-	GetOrder(id uint) (*models.Order, bool)
-	GetOrderIDs() []uint
-	ReadFromJSON() error
-	WriteToJSON() error
-}
 
 type OrderStorage struct {
 	Data map[uint]*models.Order
@@ -32,8 +22,9 @@ func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{Data: make(map[uint]*models.Order), path: "api/order.json"}
 }
 
-func (os *OrderStorage) AddOrderToStorage(or *models.Order) {
-	os.Data[or.ID] = or
+func (o *OrderStorage) AddToStorage(order *models.Order) {
+	o.Data[order.ID] = order
+
 }
 
 func (o *OrderStorage) IsConsist(id uint) bool {
@@ -41,7 +32,7 @@ func (o *OrderStorage) IsConsist(id uint) bool {
 	return ok
 }
 
-func (o *OrderStorage) DeleteOrderFromStorage(id uint) {
+func (o *OrderStorage) DeleteFromStorage(id uint) {
 	delete(o.Data, id)
 }
 
@@ -96,23 +87,23 @@ func (o *OrderStorage) WriteToJSON() error {
 	return nil
 }
 
-func (os *OrderStorage) GetOrder(id uint) (*models.Order, bool) {
-	order, ok := os.Data[id]
-	return order, ok
+func (o *OrderStorage) GetItem(id uint) (*models.Order, bool) {
+	temp, ok := o.Data[id]
+	return temp, ok
 }
 
-func (os *OrderStorage) GetOrderIDs() []uint {
+func (o *OrderStorage) GetIDs() []uint {
 	var ids []uint
-	for id := range os.Data {
+	for id := range o.Data {
 		ids = append(ids, id)
 	}
 	return ids
 }
 
-func (os *OrderStorage) GetPath() string {
-	return os.path
+func (o *OrderStorage) GetPath() string {
+	return o.path
 }
 
-func (os *OrderStorage) SetPath(p string) {
-	os.path = p
+func (o *OrderStorage) SetPath(p string) {
+	o.path = p
 }

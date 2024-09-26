@@ -6,7 +6,7 @@ import (
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/orderStorage"
 	"os"
 	"testing"
 	"time"
@@ -33,7 +33,7 @@ func TestAcceptOrder(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	storedOrder, exists := storage.GetOrder(order.ID)
+	storedOrder, exists := storage.GetItem(order.ID)
 	if !exists {
 		t.Fatal("expected order to exist in storage")
 	}
@@ -94,14 +94,14 @@ func TestPlaceOrder(t *testing.T) {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 		State:         models.AcceptState,
 	}
-	storage.AddOrderToStorage(order)
+	storage.AddToStorage(order)
 
 	err := orders.PlaceOrder(storage, []uint{2})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	updatedOrder, exists := storage.GetOrder(2)
+	updatedOrder, exists := storage.GetItem(2)
 	if !exists {
 		t.Fatal("expected order to exist in storage")
 	}
@@ -136,15 +136,15 @@ func TestListOrder(t *testing.T) {
 		State:         models.AcceptState,
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
-	storage.AddOrderToStorage(order1)
-	storage.AddOrderToStorage(order2)
+	storage.AddToStorage(order1)
+	storage.AddToStorage(order2)
 
 	err := orders.ListOrders(storage, 1, 2, false)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	id := storage.GetOrderIDs()
+	id := storage.GetIDs()
 	if len(id) != 2 {
 		t.Errorf("expected 2 orders, got %d", len(id))
 	}
@@ -162,7 +162,7 @@ func TestReturnOrder(t *testing.T) {
 		UserID: 1,
 		State:  models.ReturnedState,
 	}
-	storage.AddOrderToStorage(order)
+	storage.AddToStorage(order)
 
 	err := orders.ReturnOrder(storage, 6)
 	if err != nil {
@@ -208,9 +208,9 @@ func TestCheckIDOrder(t *testing.T) {
 		UserID: 2,
 		State:  models.AcceptState,
 	}
-	storage.AddOrderToStorage(order1)
-	storage.AddOrderToStorage(order2)
-	storage.AddOrderToStorage(order3)
+	storage.AddToStorage(order1)
+	storage.AddToStorage(order2)
+	storage.AddToStorage(order3)
 
 	err := orders.CheckIDsOrders(storage, []uint{10, 11})
 	if err != nil {
@@ -234,7 +234,7 @@ func TestWriteToJSON(t *testing.T) {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
 
-	storage.AddOrderToStorage(order)
+	storage.AddToStorage(order)
 
 	err := storage.WriteToJSON()
 	if err != nil {
@@ -255,7 +255,7 @@ func TestWriteToJSON(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	storedOrder, exists := storageData.GetOrder(order.ID)
+	storedOrder, exists := storageData.GetItem(order.ID)
 	if !exists {
 		t.Fatal("expected order to exist in storage")
 	}
@@ -274,7 +274,7 @@ func TestReadFromJSON(t *testing.T) {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
 
-	storage.AddOrderToStorage(order)
+	storage.AddToStorage(order)
 
 	err := storage.WriteToJSON()
 	if err != nil {
@@ -289,7 +289,7 @@ func TestReadFromJSON(t *testing.T) {
 	}
 	defer os.Remove(storage.GetPath())
 
-	storedOrder, exists := storage.GetOrder(order.ID)
+	storedOrder, exists := storage.GetItem(order.ID)
 	if !exists {
 		t.Fatal("expected order to exist in storage")
 	}

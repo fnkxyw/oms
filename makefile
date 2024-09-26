@@ -68,6 +68,21 @@ compose-start:
 compose-stop:
 	docker-compose stop postgres
 
+goose-install:
+	go install github.com/pressly/goose/v3/cmd/goose@latest
+
+goose-add:
+	goose -dir ./migrations postgres "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" create rename sql
+
+goose-down:
+	goose -dir ./migrations postgres "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" down
+
+goose-up:
+	goose -dir ./migrations postgres "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" up
+
+goose-status:
+	goose -dir ./migrations postgres "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" status
 
 
 .PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura compose-up compose-down compose-ps compose-start compose-stop
+.PHONY: goose-install goose-add goose-up goose-status goose-dowm

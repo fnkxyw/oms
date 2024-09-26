@@ -2,7 +2,7 @@ package orderStorage_test
 
 import (
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/orderStorage"
 	"reflect"
 	"sort"
 	"testing"
@@ -25,7 +25,7 @@ func TestOrderStorage_AddOrderToStorage(t *testing.T) {
 		UserID: 100,
 	}
 
-	os.AddOrderToStorage(order)
+	os.AddToStorage(order)
 
 	if len(os.Data) != 1 {
 		t.Errorf("expected 1 order, got %d", len(os.Data))
@@ -42,7 +42,7 @@ func TestOrderStorage_IsConsist(t *testing.T) {
 	}
 
 	os := orderStorage.NewOrderStorage()
-	os.AddOrderToStorage(order)
+	os.AddToStorage(order)
 
 	tests := []struct {
 		name string
@@ -76,9 +76,9 @@ func TestOrderStorage_DeleteOrderFromStorage(t *testing.T) {
 	}
 
 	os := orderStorage.NewOrderStorage()
-	os.AddOrderToStorage(order)
+	os.AddToStorage(order)
 
-	os.DeleteOrderFromStorage(1)
+	os.DeleteFromStorage(1)
 
 	if _, ok := os.Data[1]; ok {
 		t.Errorf("DeleteOrderFromStorage() did not delete the order")
@@ -89,7 +89,7 @@ func TestOrderStorage_GetOrder(t *testing.T) {
 	order := &models.Order{ID: 1}
 
 	os := orderStorage.NewOrderStorage()
-	os.AddOrderToStorage(order)
+	os.AddToStorage(order)
 
 	tests := []struct {
 		name  string
@@ -113,7 +113,7 @@ func TestOrderStorage_GetOrder(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, found := os.GetOrder(tt.id)
+			got, found := os.GetItem(tt.id)
 			if !reflect.DeepEqual(got, tt.want) || found != tt.found {
 				t.Errorf("GetOrder() got = %v, want %v, found = %v, wantFound = %v", got, tt.want, found, tt.found)
 			}
@@ -131,16 +131,16 @@ func TestOrderStorage_GetOrderIDs(t *testing.T) {
 	order5 := &models.Order{ID: 5}
 	order6 := &models.Order{ID: 6}
 	order7 := &models.Order{ID: 7}
-	os.AddOrderToStorage(order1)
-	os.AddOrderToStorage(order2)
-	os.AddOrderToStorage(order3)
-	os.AddOrderToStorage(order4)
-	os.AddOrderToStorage(order5)
-	os.AddOrderToStorage(order6)
-	os.AddOrderToStorage(order7)
+	os.AddToStorage(order1)
+	os.AddToStorage(order2)
+	os.AddToStorage(order3)
+	os.AddToStorage(order4)
+	os.AddToStorage(order5)
+	os.AddToStorage(order6)
+	os.AddToStorage(order7)
 
 	wantIDs := []uint{1, 2, 3, 4, 5, 6, 7}
-	got := os.GetOrderIDs()
+	got := os.GetIDs()
 	time.Sleep(1 * time.Millisecond)
 	sort.Slice(got, func(i, j int) bool {
 		return got[i] < got[j]

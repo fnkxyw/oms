@@ -5,11 +5,10 @@ import (
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/returns"
-	s "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
-	r "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 )
 
-func WAcceptOrder(s s.OrderStorageInterface) error {
+func WAcceptOrder(s storage.Storage) error {
 	order, packageType, needWrapping, err := inputs.CollectOrderInput()
 	if err != nil {
 		return err
@@ -28,7 +27,7 @@ func WAcceptOrder(s s.OrderStorageInterface) error {
 	return nil
 }
 
-func WReturnOrder(s s.OrderStorageInterface) error {
+func WReturnOrder(s storage.Storage) error {
 	id, err := inputs.InputOrderID()
 	if err != nil {
 		return err
@@ -37,7 +36,7 @@ func WReturnOrder(s s.OrderStorageInterface) error {
 	return orders.ReturnOrder(s, id)
 }
 
-func WPlaceOrder(s s.OrderStorageInterface) error {
+func WPlaceOrder(s storage.Storage) error {
 	uintdata, err := inputs.InputOrderIDs()
 	if err != nil {
 		return err
@@ -46,7 +45,7 @@ func WPlaceOrder(s s.OrderStorageInterface) error {
 	return orders.PlaceOrder(s, uintdata)
 }
 
-func WListOrders(s s.OrderStorageInterface) error {
+func WListOrders(s storage.Storage) error {
 	id, err := inputs.InputUserID()
 	if err != nil {
 		return err
@@ -71,20 +70,20 @@ func WListOrders(s s.OrderStorageInterface) error {
 	return nil
 }
 
-func WRefundOrder(rS r.ReturnStorageInterface, oS s.OrderStorageInterface) error {
+func WRefundOrder(oS storage.Storage) error {
 	orderId, userId, err := inputs.InputOrderAndUserID()
 	if err != nil {
 		return err
 	}
 
-	return returns.RefundOrder(rS, oS, orderId, userId)
+	return returns.RefundOrder(oS, orderId, userId)
 }
 
-func WListReturns(rs r.ReturnStorageInterface) error {
+func WListReturns(oS storage.Storage) error {
 	limit, page, err := inputs.InputReturnsPagination()
 	if err != nil {
 		return err
 	}
 
-	return returns.ListReturns(rs, limit, page)
+	return returns.ListReturns(oS, limit, page)
 }

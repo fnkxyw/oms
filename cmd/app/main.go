@@ -4,35 +4,25 @@ import (
 	"fmt"
 	signals "gitlab.ozon.dev/akugnerevich/homework.git/cmd/signals"
 	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
-	s "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
-	r "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/orderStorage"
 )
 
 func main() {
-	orderStorage := s.NewOrderStorage()
-	returnStorage := r.NewReturnStorage()
-	err := orderStorage.ReadFromJSON()
+	oS := orderStorage.NewOrderStorage()
+	err := oS.ReadFromJSON()
 	if err != nil {
 		fmt.Println(err)
-		err = orderStorage.Create()
+		err = oS.Create()
 		if err != nil {
 			fmt.Println(err)
 		}
 	}
-	err = returnStorage.ReadFromJSON()
-	if err != nil {
-		fmt.Println(err)
-		err = returnStorage.Create()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-	err = signals.SygnalSearch(orderStorage, returnStorage)
+	err = signals.SygnalSearch(*oS)
 	if err != nil {
 		return
 	}
 
-	err = c.Run(orderStorage, returnStorage)
+	err = c.Run(oS)
 	if err != nil {
 		return
 	}

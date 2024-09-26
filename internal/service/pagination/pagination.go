@@ -46,8 +46,7 @@ func ScrollPagination(orders []*models.Order, limit int) error {
 
 }
 
-// пагинация постраничная
-func PagePagination(returns []*models.Return, page, limit int) error {
+func PagePagination(returns []*models.Order, page, limit int) error {
 	if page < 1 || limit < 1 {
 		return e.ErrLimitPage
 	}
