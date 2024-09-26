@@ -53,4 +53,21 @@ coverage-cobertura:
 	go test ./... -coverprofile=coverage.txt -covermode=count
 	gocover-cobertura < coverage.txt > coverage.xml
 
-.PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura
+compose-up:
+	docker-compose up -d postgres
+
+compose-down:
+	docker-compose down postgres
+
+compose-ps:
+	docker-compose ps
+
+compose-start:
+	docker-compose start postgres
+
+compose-stop:
+	docker-compose stop postgres
+
+
+
+.PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura compose-up compose-down compose-ps compose-start compose-stop
