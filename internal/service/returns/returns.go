@@ -33,11 +33,9 @@ func RefundOrder(ctx context.Context, os storage.Storage, id uint, userId uint) 
 
 func ListReturns(ctx context.Context, os storage.Storage, limit, page int) error {
 	var list []*models.Order
-	for _, v := range os.GetIDs(ctx) {
-		order, _ := os.GetItem(ctx, v)
-		if order.State == models.SoftDelete {
-			list = append(list, order)
-		}
+	list, err := os.GetReturns(ctx, models.RefundedState)
+	if err != nil {
+		return err
 	}
 	return pagination.PagePagination(list, page, limit)
 }

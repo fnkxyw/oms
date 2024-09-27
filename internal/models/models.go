@@ -7,19 +7,13 @@ import (
 // модель заказа
 type Order struct {
 	ID            uint      `json:"id" db:"id"`
-	UserID        uint      `json:"user_id" db:"user_id"`
-	State         State     `json:"state" db:"state"`
-	AcceptTime    int64     `json:"accept_time" db:"accept_time"`
-	KeepUntilDate time.Time `json:"date" db:"keep_until_date"`
-	PlaceDate     time.Time `json:"place_data" db:"place_date"`
-	Weight        int       `json:"weight" db:"weight"`
+	UserID        uint      `json:"user_id" db:"user_id" `
+	State         State     `json:"state" db:"state" `
+	AcceptTime    int64     `json:"accept_time" db:"accept_time" `
+	KeepUntilDate time.Time `json:"date" db:"keep_until_date" `
+	PlaceDate     time.Time `json:"place_data" db:"place_date" `
+	Weight        int       `json:"weight" db:"weight" `
 	Price         int       `json:"price" db:"price"`
-}
-
-// модель возврата
-type Return struct {
-	ID     uint `json:"order_id"`
-	UserID uint `json:"user_id"`
 }
 
 type State string

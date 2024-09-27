@@ -125,3 +125,23 @@ func (o *OrderStorage) UpdateState(ctx context.Context, id uint, state models.St
 	order.State = state
 	return nil
 }
+
+func (o *OrderStorage) GetByUserId(ctx context.Context, userId uint) ([]*models.Order, error) {
+	var orders []*models.Order
+	for _, order := range o.Data {
+		if order.UserID == userId {
+			orders = append(orders, order)
+		}
+	}
+	return orders, nil
+}
+
+func (o *OrderStorage) GetReturns(ctx context.Context, state models.State) ([]*models.Order, error) {
+	var orders []*models.Order
+	for _, order := range o.Data {
+		if order.State == state {
+			orders = append(orders, order)
+		}
+	}
+	return orders, nil
+}

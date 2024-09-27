@@ -101,11 +101,13 @@ func SortOrders(o []*models.Order) {
 
 func FilterOrders(ctx context.Context, s storage.Storage, id uint, inPuP bool) []*models.Order {
 	var filtered []*models.Order
-	var ids []uint
-	ids = s.GetIDs(ctx)
-	for _, o := range ids {
-		order, exists := s.GetItem(ctx, o)
-		if exists && order.UserID == id && (!inPuP || order.State == models.AcceptState || order.State == models.RefundedState) {
+	var ids []*models.Order
+	ids, err := s.GetByUserId(ctx, id)
+	if err != nil {
+		return nil
+	}
+	for _, order := range ids {
+		if order.UserID == id && (!inPuP || order.State == models.AcceptState || order.State == models.RefundedState) {
 			filtered = append(filtered, order)
 		}
 	}

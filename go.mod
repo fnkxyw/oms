@@ -12,6 +12,7 @@ require (
 )
 
 require (
+	github.com/brianvoe/gofakeit/v7 v7.0.4 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgio v1.0.0 // indirect

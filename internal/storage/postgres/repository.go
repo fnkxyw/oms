@@ -23,7 +23,7 @@ func NewPgRepositrory(pool *pgxpool.Pool) *PgRepository {
 //GetIDs() []uint
 
 func (r *PgRepository) AddToStorage(ctx context.Context, order *models.Order) {
-	_, err := r.pool.Exec(ctx, `INSERT INTO orders (id, user_id, state,accept_time,keep_until_date,place_date, weight,price) VALUES ($1, $2, $3,$4,$5,$6,$7,$8)`, order.ID, order.UserID, order.State, order.AcceptTime, order.KeepUntilDate, time.Time{}, order.Weight, order.Price)
+	_, err := r.pool.Exec(ctx, `INSERT INTO orders (id, user_id, state,accept_time,keep_until_date,place_date, weight,price) VALUES ($1, $2, $3,$4,$5,$6,$7,$8)`, order.ID, order.UserID, order.State, order.AcceptTime, order.KeepUntilDate, order.PlaceDate, order.Weight, order.Price)
 	if err != nil {
 		panic(err)
 	}
@@ -78,4 +78,25 @@ func (r *PgRepository) UpdateState(ctx context.Context, id uint, state models.St
 		return err
 	}
 	return nil
+}
+
+//GetByUserId(ctx context.Context, id uint) ([]*models.Order, error)
+//GetReturns(ctx context.Context, state models.State) ([]*models.Order, error)
+
+func (r *PgRepository) GetByUserId(ctx context.Context, userId uint) ([]*models.Order, error) {
+	orders := make([]*models.Order, 0)
+	err := pgxscan.Select(ctx, r.pool, &orders, `SELECT id, user_id, state,accept_time,keep_until_date,place_date,weight,price FROM orders WHERE user_id = $1`, userId)
+	if err != nil {
+		return nil, err
+	}
+	return orders, nil
+}
+
+func (r *PgRepository) GetReturns(ctx context.Context, state models.State) ([]*models.Order, error) {
+	orders := make([]*models.Order, 0)
+	err := pgxscan.Select(ctx, r.pool, &orders, `SELECT id, user_id, state,accept_time,keep_until_date,place_date,weight,price FROM orders WHERE state = $1`, state)
+	if err != nil {
+		return nil, err
+	}
+	return orders, nil
 }
