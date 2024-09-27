@@ -6,14 +6,14 @@ import (
 
 // модель заказа
 type Order struct {
-	ID            uint      `json:"id"`
-	UserID        uint      `json:"user_id"`
-	State         State     `json:"state"`
-	AcceptTime    int64     `json:"accept_time"`
-	KeepUntilDate time.Time `json:"date"`
-	PlaceDate     time.Time `json:"place_data"`
-	Weight        int       `json:"weight"`
-	Price         int       `json:"price"`
+	ID            uint      `json:"id" db:"id"`
+	UserID        uint      `json:"user_id" db:"user_id"`
+	State         State     `json:"state" db:"state"`
+	AcceptTime    int64     `json:"accept_time" db:"accept_time"`
+	KeepUntilDate time.Time `json:"date" db:"keep_until_date"`
+	PlaceDate     time.Time `json:"place_data" db:"place_date"`
+	Weight        int       `json:"weight" db:"weight"`
+	Price         int       `json:"price" db:"price"`
 }
 
 // модель возврата
@@ -26,9 +26,9 @@ type State string
 
 // состояния заказа
 var (
-	SoftDelete    = State("SoftDelete")
+	SoftDelete    = State("soft_delete")
 	AcceptState   = State("accept")
 	PlaceState    = State("place")
-	ReturnedState = State("returned")
-	NewState      = State("newState")
+	RefundedState = State("refunded")
+	NewState      = State("new_state")
 )

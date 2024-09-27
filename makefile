@@ -35,6 +35,7 @@ deps:
 #true чтобы прога сбилдилась даже если будут файлы   >5
 lint:
 	golangci-lint run
+	squawk migrations/*
 
 #очистить хранилища если будет необходимость
 cleanstorages:

@@ -2,10 +2,10 @@ package cli
 
 import (
 	"bufio"
+	"context"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/orderStorage"
-
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"os"
 	"strings"
 )
@@ -21,7 +21,7 @@ var helpText = `
      listReturns - allows you to get a list of returns
 `
 
-func Run(oS *orderStorage.OrderStorage) error {
+func Run(ctx context.Context, oS storage.Storage) error {
 	showHelp()
 
 	in := bufio.NewReader(os.Stdin)
@@ -38,24 +38,19 @@ func Run(oS *orderStorage.OrderStorage) error {
 
 		switch input {
 		case "exit":
-			err := oS.WriteToJSON()
-			if err != nil {
-				fmt.Println(err)
-			}
-
 			return nil
 		case "acceptOrder":
-			handleErr(controller.WAcceptOrder(oS))
+			handleErr(controller.WAcceptOrder(ctx, oS))
 		case "returnOrder":
-			handleErr(controller.WReturnOrder(oS))
+			handleErr(controller.WReturnOrder(ctx, oS))
 		case "placeOrder":
-			handleErr(controller.WPlaceOrder(oS))
+			handleErr(controller.WPlaceOrder(ctx, oS))
 		case "listOrders":
-			handleErr(controller.WListOrders(oS))
+			handleErr(controller.WListOrders(ctx, oS))
 		case "refundOrder":
-			handleErr(controller.WRefundOrder(oS))
+			handleErr(controller.WRefundOrder(ctx, oS))
 		case "listReturns":
-			handleErr(controller.WListReturns(oS))
+			handleErr(controller.WListReturns(ctx, oS))
 		case "help":
 			showHelp()
 		default:

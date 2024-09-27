@@ -160,7 +160,7 @@ func TestReturnOrder(t *testing.T) {
 	order := &models.Order{
 		ID:     6,
 		UserID: 1,
-		State:  models.ReturnedState,
+		State:  models.RefundedState,
 	}
 	storage.AddToStorage(order)
 
@@ -181,7 +181,7 @@ func TestReturnOrder_NoConsist(t *testing.T) {
 	order := &models.Order{
 		ID:     1,
 		UserID: 1,
-		State:  models.ReturnedState,
+		State:  models.RefundedState,
 	}
 	err := orders.ReturnOrder(storage, order.ID)
 	if !errors.Is(err, e.ErrNoConsist) {

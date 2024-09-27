@@ -118,7 +118,7 @@ func (s *OrderSuite) TestReturnOrder() {
 	order := &models.Order{
 		ID:     6,
 		UserID: 1,
-		State:  models.ReturnedState,
+		State:  models.RefundedState,
 	}
 	s.storage.AddToStorage(order)
 
@@ -132,7 +132,7 @@ func (s *OrderSuite) TestReturnOrder_NoCount() {
 	order := &models.Order{
 		ID:     1,
 		UserID: 1,
-		State:  models.ReturnedState,
+		State:  models.RefundedState,
 	}
 	err := orders.ReturnOrder(s.storage, order.ID)
 	s.ErrorIs(err, e.ErrNoConsist)
@@ -152,7 +152,7 @@ func (s *OrderSuite) TestFilterOrder() {
 	order2 := &models.Order{
 		ID:            8,
 		UserID:        1,
-		State:         models.ReturnedState,
+		State:         models.RefundedState,
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
 	order3 := &models.Order{

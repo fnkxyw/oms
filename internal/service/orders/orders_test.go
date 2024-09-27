@@ -124,7 +124,7 @@ func TestPlaceOrder_Success(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestReturnOrder_SuccessfulReturnedState(t *testing.T) {
+func TestReturnOrder_SuccessfulRefundedState(t *testing.T) {
 	t.Parallel()
 
 	ctrl := minimock.NewController(t)
@@ -134,7 +134,7 @@ func TestReturnOrder_SuccessfulReturnedState(t *testing.T) {
 	mockStorage.GetItemMock.When(uint(199)).Then(&models.Order{
 		ID:     199,
 		UserID: 1,
-		State:  models.ReturnedState,
+		State:  models.RefundedState,
 	}, true)
 
 	err := ReturnOrder(mockStorage, 199)

@@ -5,10 +5,10 @@ import (
 )
 
 func (o *Order) CanReturned() error {
-	if o.State == ReturnedState || (o.KeepUntilDate.Before(time.Now()) && o.State == AcceptState) {
-		o.State = SoftDelete
+	if o.State == RefundedState || (o.KeepUntilDate.Before(time.Now()) && o.State == AcceptState) {
+		return nil
 	} else {
 		return ErrCanReturned
 	}
-	return nil
+
 }

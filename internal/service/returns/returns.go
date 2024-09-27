@@ -1,6 +1,7 @@
 package returns
 
 import (
+	"context"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
@@ -9,8 +10,8 @@ import (
 	"time"
 )
 
-func RefundOrder(os storage.Storage, id uint, userId uint) error {
-	order, exists := os.GetItem(id)
+func RefundOrder(ctx context.Context, os storage.Storage, id uint, userId uint) error {
+	order, exists := os.GetItem(ctx, id)
 
 	if !exists {
 		return e.ErrCheckOrderID
@@ -25,15 +26,15 @@ func RefundOrder(os storage.Storage, id uint, userId uint) error {
 		return e.ErrIncorrectUserId
 	}
 
-	order.State = models.ReturnedState
+	os.UpdateState(ctx, id, models.RefundedState)
 
 	return nil
 }
 
-func ListReturns(os storage.Storage, limit, page int) error {
+func ListReturns(ctx context.Context, os storage.Storage, limit, page int) error {
 	var list []*models.Order
-	for _, v := range os.GetIDs() {
-		order, _ := os.GetItem(v)
+	for _, v := range os.GetIDs(ctx) {
+		order, _ := os.GetItem(ctx, v)
 		if order.State == models.SoftDelete {
 			list = append(list, order)
 		}

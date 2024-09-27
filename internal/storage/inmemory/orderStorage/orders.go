@@ -1,11 +1,13 @@
 package orderStorage
 
 import (
+	"context"
 	"encoding/json"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/errors"
 	"io"
 	"os"
+	"time"
 )
 
 type OrderStorage struct {
@@ -22,17 +24,17 @@ func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{Data: make(map[uint]*models.Order), path: "api/order.json"}
 }
 
-func (o *OrderStorage) AddToStorage(order *models.Order) {
+func (o *OrderStorage) AddToStorage(ctx context.Context, order *models.Order) {
 	o.Data[order.ID] = order
 
 }
 
-func (o *OrderStorage) IsConsist(id uint) bool {
+func (o *OrderStorage) IsConsist(ctx context.Context, id uint) bool {
 	_, ok := o.Data[id]
 	return ok
 }
 
-func (o *OrderStorage) DeleteFromStorage(id uint) {
+func (o *OrderStorage) DeleteFromStorage(ctx context.Context, id uint) {
 	delete(o.Data, id)
 }
 
@@ -87,12 +89,12 @@ func (o *OrderStorage) WriteToJSON() error {
 	return nil
 }
 
-func (o *OrderStorage) GetItem(id uint) (*models.Order, bool) {
+func (o *OrderStorage) GetItem(ctx context.Context, id uint) (*models.Order, bool) {
 	temp, ok := o.Data[id]
 	return temp, ok
 }
 
-func (o *OrderStorage) GetIDs() []uint {
+func (o *OrderStorage) GetIDs(ctx context.Context) []uint {
 	var ids []uint
 	for id := range o.Data {
 		ids = append(ids, id)
@@ -100,10 +102,26 @@ func (o *OrderStorage) GetIDs() []uint {
 	return ids
 }
 
-func (o *OrderStorage) GetPath() string {
+func (o *OrderStorage) GetPath(ctx context.Context) string {
 	return o.path
 }
 
-func (o *OrderStorage) SetPath(p string) {
+func (o *OrderStorage) SetPath(ctx context.Context, p string) {
 	o.path = p
+}
+
+//UpdateBeforePlace(ctx context.Context, id uint, state models.State, t time.Time) error
+//UpdateState(ctx context.Context, id uint, state models.State) error
+
+func (o *OrderStorage) UpdateBeforePlace(ctx context.Context, id uint, state models.State, t time.Time) error {
+	order := o.Data[id]
+	order.State = state
+	order.PlaceDate = t
+	return nil
+}
+
+func (o *OrderStorage) UpdateState(ctx context.Context, id uint, state models.State) error {
+	order := o.Data[id]
+	order.State = state
+	return nil
 }

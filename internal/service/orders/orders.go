@@ -1,6 +1,7 @@
 package orders
 
 import (
+	"context"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
@@ -10,8 +11,8 @@ import (
 	"time"
 )
 
-func AcceptOrder(s storage.Storage, or *models.Order) error {
-	if s.IsConsist(or.ID) {
+func AcceptOrder(ctx context.Context, s storage.Storage, or *models.Order) error {
+	if s.IsConsist(ctx, or.ID) {
 		return e.ErrIsConsist
 	}
 	if or.KeepUntilDate.Before(time.Now()) {
@@ -19,23 +20,23 @@ func AcceptOrder(s storage.Storage, or *models.Order) error {
 	}
 	or.State = models.AcceptState
 	or.AcceptTime = time.Now().Unix()
-	s.AddToStorage(or)
+	s.AddToStorage(ctx, or)
 	return nil
 }
 
 // доставить заказ юзеру
-func PlaceOrder(s storage.Storage, ids []uint) error {
+func PlaceOrder(ctx context.Context, s storage.Storage, ids []uint) error {
 	if len(ids) == 0 {
 		return fmt.Errorf("Length of ids array is 0 ")
 	}
 
-	err := CheckIDsOrders(s, ids)
+	err := CheckIDsOrders(ctx, s, ids)
 	if err != nil {
 		return err
 	}
 
 	for _, id := range ids {
-		order, exists := s.GetItem(id)
+		order, exists := s.GetItem(ctx, id)
 		if !exists {
 			return e.ErrNoConsist
 		}
@@ -51,16 +52,18 @@ func PlaceOrder(s storage.Storage, ids []uint) error {
 			return fmt.Errorf("Order by id: %d cannot be issued to the customer because the date is invalid", id)
 		}
 
-		order.State = models.PlaceState
-		order.PlaceDate = time.Now()
+		err := s.UpdateBeforePlace(ctx, id, models.PlaceState, time.Now())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
 }
 
-func ListOrders(s storage.Storage, id uint, n int, inPuP bool) error {
+func ListOrders(ctx context.Context, s storage.Storage, id uint, n int, inPuP bool) error {
 	var list []*models.Order
-	list = FilterOrders(s, id, inPuP)
+	list = FilterOrders(ctx, s, id, inPuP)
 	SortOrders(list)
 	if n < 1 {
 		n = 1
@@ -74,29 +77,35 @@ func ListOrders(s storage.Storage, id uint, n int, inPuP bool) error {
 }
 
 // вернуть заказ курьеру
-func ReturnOrder(s storage.Storage, id uint) error {
+func ReturnOrder(ctx context.Context, s storage.Storage, id uint) error {
 
-	order, exists := s.GetItem(id)
+	order, exists := s.GetItem(ctx, id)
 	if !exists {
 		return e.ErrNoConsist
 	}
-	return order.CanReturned()
-}
+	err := order.CanReturned()
+	if err != nil {
+		return err
+	}
 
-func SortOrders(o []*models.Order) error {
-	sort.Slice(o, func(i, j int) bool {
-		return o[i].AcceptTime < o[j].AcceptTime
-	})
+	s.DeleteFromStorage(ctx, order.ID)
+
 	return nil
 }
 
-func FilterOrders(s storage.Storage, id uint, inPuP bool) []*models.Order {
+func SortOrders(o []*models.Order) {
+	sort.Slice(o, func(i, j int) bool {
+		return o[i].AcceptTime < o[j].AcceptTime
+	})
+}
+
+func FilterOrders(ctx context.Context, s storage.Storage, id uint, inPuP bool) []*models.Order {
 	var filtered []*models.Order
 	var ids []uint
-	ids = s.GetIDs()
+	ids = s.GetIDs(ctx)
 	for _, o := range ids {
-		order, exists := s.GetItem(o)
-		if exists && order.UserID == id && (!inPuP || order.State == models.AcceptState || order.State == models.ReturnedState) {
+		order, exists := s.GetItem(ctx, o)
+		if exists && order.UserID == id && (!inPuP || order.State == models.AcceptState || order.State == models.RefundedState) {
 			filtered = append(filtered, order)
 		}
 	}
@@ -104,14 +113,14 @@ func FilterOrders(s storage.Storage, id uint, inPuP bool) []*models.Order {
 	return filtered
 }
 
-func CheckIDsOrders(s storage.Storage, ids []uint) error {
-	order, ok := s.GetItem(ids[0])
+func CheckIDsOrders(ctx context.Context, s storage.Storage, ids []uint) error {
+	order, ok := s.GetItem(ctx, ids[0])
 	if !ok {
 		return e.ErrNoConsist
 	}
 	temp := order.UserID
 	for _, id := range ids {
-		order, _ = s.GetItem(id)
+		order, _ = s.GetItem(ctx, id)
 		if order.UserID != temp {
 			return e.ErrNotAllIDs
 		}
