@@ -1,4 +1,4 @@
-package int
+package int_inMemoryStorage
 
 import (
 	"context"

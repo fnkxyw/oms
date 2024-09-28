@@ -68,6 +68,12 @@ compose-start:
 compose-stop:
 	docker-compose stop postgres
 
+compose-up-test:
+	docker-compose up -d postgres_test
+
+compose-down-test:
+	docker-compose down postgres_test
+
 goose-install:
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 
@@ -85,4 +91,4 @@ goose-status:
 
 
 .PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura compose-up compose-down compose-ps compose-start compose-stop
-.PHONY: goose-install goose-add goose-up goose-status goose-dowm
+.PHONY: goose-install goose-add goose-up goose-status goose-dowm  compose-up-test compose-down-test
