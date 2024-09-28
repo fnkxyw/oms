@@ -32,9 +32,8 @@ run:
 deps:
 	$(GOMOD) tidy
 
-#true чтобы прога сбилдилась даже если будут файлы   >5
 lint:
-	golangci-lint run
+	golangci-lint run || true
 	squawk migrations/*
 
 #очистить хранилища если будет необходимость

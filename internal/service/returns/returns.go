@@ -26,7 +26,10 @@ func RefundOrder(ctx context.Context, os storage.Storage, id uint, userId uint) 
 		return e.ErrIncorrectUserId
 	}
 
-	os.UpdateState(ctx, id, models.RefundedState)
+	err := os.UpdateState(ctx, id, models.RefundedState)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
