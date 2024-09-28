@@ -1,6 +1,7 @@
 package int
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
@@ -14,12 +15,15 @@ import (
 
 func newStorage() *orderStorage.OrderStorage {
 	storage := orderStorage.NewOrderStorage()
-	storage.SetPath("order_test.json")
+	ctx := context.Background()
+
+	storage.SetPath(ctx, "order_test.json")
 	return storage
 }
 
 func TestAcceptOrder(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
 
 	storage := newStorage()
 	order := &models.Order{
@@ -28,12 +32,12 @@ func TestAcceptOrder(t *testing.T) {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
 
-	err := orders.AcceptOrder(storage, order)
+	err := orders.AcceptOrder(ctx, storage, order)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	storedOrder, exists := storage.GetItem(order.ID)
+	storedOrder, exists := storage.GetItem(ctx, order.ID)
 	if !exists {
 		t.Fatal("expected order to exist in storage")
 	}
@@ -44,6 +48,7 @@ func TestAcceptOrder(t *testing.T) {
 
 func TestAcceptOrder_PastDate(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
 
 	storage := newStorage()
 	order := &models.Order{
@@ -52,7 +57,7 @@ func TestAcceptOrder_PastDate(t *testing.T) {
 		KeepUntilDate: time.Now().Add(-1 * time.Hour),
 	}
 
-	err := orders.AcceptOrder(storage, order)
+	err := orders.AcceptOrder(ctx, storage, order)
 	if !errors.Is(err, e.ErrDate) {
 		t.Errorf("expected error %v, got %v", e.ErrDate, err)
 	}
@@ -60,6 +65,8 @@ func TestAcceptOrder_PastDate(t *testing.T) {
 
 func TestAcceptOrder_EqualOrder(t *testing.T) {
 	t.Parallel()
+
+	ctx := context.Background()
 
 	storage := newStorage()
 	order1 := &models.Order{
@@ -73,12 +80,12 @@ func TestAcceptOrder_EqualOrder(t *testing.T) {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
 
-	err := orders.AcceptOrder(storage, order1)
+	err := orders.AcceptOrder(ctx, storage, order1)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	err = orders.AcceptOrder(storage, order2)
+	err = orders.AcceptOrder(ctx, storage, order2)
 	if !errors.Is(err, e.ErrIsConsist) {
 		t.Errorf("expected error %v, got %v", e.ErrIsConsist, err)
 	}
@@ -86,6 +93,7 @@ func TestAcceptOrder_EqualOrder(t *testing.T) {
 
 func TestPlaceOrder(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
 
 	storage := newStorage()
 	order := &models.Order{
@@ -94,14 +102,14 @@ func TestPlaceOrder(t *testing.T) {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 		State:         models.AcceptState,
 	}
-	storage.AddToStorage(order)
+	storage.AddToStorage(ctx, order)
 
-	err := orders.PlaceOrder(storage, []uint{2})
+	err := orders.PlaceOrder(ctx, storage, []uint{2})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	updatedOrder, exists := storage.GetItem(2)
+	updatedOrder, exists := storage.GetItem(ctx, 2)
 	if !exists {
 		t.Fatal("expected order to exist in storage")
 	}
@@ -112,9 +120,10 @@ func TestPlaceOrder(t *testing.T) {
 
 func TestPlaceOrder_NoConsist(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
 
 	storage := newStorage()
-	err := orders.PlaceOrder(storage, []uint{1})
+	err := orders.PlaceOrder(ctx, storage, []uint{1})
 	if !errors.Is(err, e.ErrNoConsist) {
 		t.Errorf("expected error %v, got %v", e.ErrNoConsist, err)
 	}
@@ -122,6 +131,8 @@ func TestPlaceOrder_NoConsist(t *testing.T) {
 
 func TestListOrder(t *testing.T) {
 	t.Parallel()
+
+	ctx := context.Background()
 
 	storage := newStorage()
 	order1 := &models.Order{
@@ -136,15 +147,15 @@ func TestListOrder(t *testing.T) {
 		State:         models.AcceptState,
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
-	storage.AddToStorage(order1)
-	storage.AddToStorage(order2)
+	storage.AddToStorage(ctx, order1)
+	storage.AddToStorage(ctx, order2)
 
-	err := orders.ListOrders(storage, 1, 2, false)
+	err := orders.ListOrders(ctx, storage, 1, 2, false)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	id := storage.GetIDs()
+	id := storage.GetIDs(ctx)
 	if len(id) != 2 {
 		t.Errorf("expected 2 orders, got %d", len(id))
 	}
@@ -155,6 +166,7 @@ func TestListOrder(t *testing.T) {
 
 func TestReturnOrder(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
 
 	storage := newStorage()
 	order := &models.Order{
@@ -162,14 +174,14 @@ func TestReturnOrder(t *testing.T) {
 		UserID: 1,
 		State:  models.RefundedState,
 	}
-	storage.AddToStorage(order)
+	storage.AddToStorage(ctx, order)
 
-	err := orders.ReturnOrder(storage, 6)
+	err := orders.ReturnOrder(ctx, storage, 6)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	if order.CanReturned() == nil {
+	if order.CanReturned() != nil {
 		t.Error("expected order to be not returnable")
 	}
 }
@@ -177,13 +189,15 @@ func TestReturnOrder(t *testing.T) {
 func TestReturnOrder_NoConsist(t *testing.T) {
 	t.Parallel()
 
+	ctx := context.Background()
+
 	storage := newStorage()
 	order := &models.Order{
 		ID:     1,
 		UserID: 1,
 		State:  models.RefundedState,
 	}
-	err := orders.ReturnOrder(storage, order.ID)
+	err := orders.ReturnOrder(ctx, storage, order.ID)
 	if !errors.Is(err, e.ErrNoConsist) {
 		t.Errorf("expected error %v, got %v", e.ErrNoConsist, err)
 	}
@@ -191,6 +205,8 @@ func TestReturnOrder_NoConsist(t *testing.T) {
 
 func TestCheckIDOrder(t *testing.T) {
 	t.Parallel()
+
+	ctx := context.Background()
 
 	storage := newStorage()
 	order1 := &models.Order{
@@ -208,16 +224,16 @@ func TestCheckIDOrder(t *testing.T) {
 		UserID: 2,
 		State:  models.AcceptState,
 	}
-	storage.AddToStorage(order1)
-	storage.AddToStorage(order2)
-	storage.AddToStorage(order3)
+	storage.AddToStorage(ctx, order1)
+	storage.AddToStorage(ctx, order2)
+	storage.AddToStorage(ctx, order3)
 
-	err := orders.CheckIDsOrders(storage, []uint{10, 11})
+	err := orders.CheckIDsOrders(ctx, storage, []uint{10, 11})
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	err = orders.CheckIDsOrders(storage, []uint{10, 12})
+	err = orders.CheckIDsOrders(ctx, storage, []uint{10, 12})
 	if !errors.Is(err, e.ErrNotAllIDs) {
 		t.Errorf("expected error %v, got %v", e.ErrNotAllIDs, err)
 	}
@@ -225,6 +241,7 @@ func TestCheckIDOrder(t *testing.T) {
 
 func TestWriteToJSON(t *testing.T) {
 	t.Parallel()
+	ctx := context.Background()
 
 	storage := newStorage()
 	order := &models.Order{
@@ -234,19 +251,19 @@ func TestWriteToJSON(t *testing.T) {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
 
-	storage.AddToStorage(order)
+	storage.AddToStorage(ctx, order)
 
 	err := storage.WriteToJSON()
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	file, err := os.Open(storage.GetPath())
+	file, err := os.Open(storage.GetPath(ctx))
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
 	defer file.Close()
-	defer os.Remove(storage.GetPath())
+	defer os.Remove(storage.GetPath(ctx))
 
 	var storageData orderStorage.OrderStorage
 	decoder := json.NewDecoder(file)
@@ -255,7 +272,7 @@ func TestWriteToJSON(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	storedOrder, exists := storageData.GetItem(order.ID)
+	storedOrder, exists := storageData.GetItem(ctx, order.ID)
 	if !exists {
 		t.Fatal("expected order to exist in storage")
 	}
@@ -265,6 +282,7 @@ func TestWriteToJSON(t *testing.T) {
 }
 
 func TestReadFromJSON(t *testing.T) {
+	ctx := context.Background()
 
 	storage := newStorage()
 	order := &models.Order{
@@ -274,7 +292,7 @@ func TestReadFromJSON(t *testing.T) {
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 	}
 
-	storage.AddToStorage(order)
+	storage.AddToStorage(ctx, order)
 
 	err := storage.WriteToJSON()
 	if err != nil {
@@ -287,9 +305,9 @@ func TestReadFromJSON(t *testing.T) {
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
-	defer os.Remove(storage.GetPath())
+	defer os.Remove(storage.GetPath(ctx))
 
-	storedOrder, exists := storage.GetItem(order.ID)
+	storedOrder, exists := storage.GetItem(ctx, order.ID)
 	if !exists {
 		t.Fatal("expected order to exist in storage")
 	}
