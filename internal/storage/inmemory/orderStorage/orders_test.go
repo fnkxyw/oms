@@ -149,7 +149,7 @@ func TestOrderStorage_GetOrderIDs(t *testing.T) {
 	os.AddToStorage(ctx, order7)
 
 	wantIDs := []uint{1, 2, 3, 4, 5, 6, 7}
-	got := os.GetIDs(ctx)
+	got, _ := os.GetIDs(ctx)
 	time.Sleep(1 * time.Millisecond)
 	sort.Slice(got, func(i, j int) bool {
 		return got[i] < got[j]

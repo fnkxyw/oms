@@ -29,7 +29,7 @@ func TestAcceptOrder_SuccessfulAcceptance(t *testing.T) {
 		KeepUntilDate: K,
 		State:         models.AcceptState,
 		AcceptTime:    T,
-	})
+	}).Return(nil)
 
 	order := &models.Order{
 		ID:            1,
@@ -161,7 +161,7 @@ func TestReturnOrder_SuccessfulRefundedState(t *testing.T) {
 		UserID: 1,
 		State:  models.RefundedState,
 	}, true)
-	mockStorage.DeleteFromStorageMock.Expect(ctx, uint(199)).Return()
+	mockStorage.DeleteFromStorageMock.Expect(ctx, uint(199)).Return(nil)
 
 	err := ReturnOrder(ctx, mockStorage, 199)
 	assert.NoError(t, err)
@@ -183,7 +183,7 @@ func TestReturnOrder_SuccessfulReturnExpired(t *testing.T) {
 		KeepUntilDate: time.Now().Add(-47 * time.Hour),
 	}, true)
 
-	mockStorage.DeleteFromStorageMock.Expect(ctx, uint(750)).Return()
+	mockStorage.DeleteFromStorageMock.Expect(ctx, uint(750)).Return(nil)
 
 	err := ReturnOrder(ctx, mockStorage, 750)
 	assert.NoError(t, err)

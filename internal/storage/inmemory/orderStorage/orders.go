@@ -24,9 +24,9 @@ func NewOrderStorage() *OrderStorage {
 	return &OrderStorage{Data: make(map[uint]*models.Order), path: "api/order.json"}
 }
 
-func (o *OrderStorage) AddToStorage(ctx context.Context, order *models.Order) {
+func (o *OrderStorage) AddToStorage(ctx context.Context, order *models.Order) error {
 	o.Data[order.ID] = order
-
+	return nil
 }
 
 func (o *OrderStorage) IsConsist(ctx context.Context, id uint) bool {
@@ -34,8 +34,9 @@ func (o *OrderStorage) IsConsist(ctx context.Context, id uint) bool {
 	return ok
 }
 
-func (o *OrderStorage) DeleteFromStorage(ctx context.Context, id uint) {
+func (o *OrderStorage) DeleteFromStorage(ctx context.Context, id uint) error {
 	delete(o.Data, id)
+	return nil
 }
 
 // считываем с JSON-a
@@ -94,12 +95,12 @@ func (o *OrderStorage) GetItem(ctx context.Context, id uint) (*models.Order, boo
 	return temp, ok
 }
 
-func (o *OrderStorage) GetIDs(ctx context.Context) []uint {
+func (o *OrderStorage) GetIDs(ctx context.Context) ([]uint, error) {
 	var ids []uint
 	for id := range o.Data {
 		ids = append(ids, id)
 	}
-	return ids
+	return ids, nil
 }
 
 func (o *OrderStorage) GetPath(ctx context.Context) string {

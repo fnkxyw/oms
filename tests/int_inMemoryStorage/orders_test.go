@@ -155,7 +155,7 @@ func TestListOrder(t *testing.T) {
 		t.Fatalf("expected no error, got %v", err)
 	}
 
-	id := storage.GetIDs(ctx)
+	id, _ := storage.GetIDs(ctx)
 	if len(id) != 2 {
 		t.Errorf("expected 2 orders, got %d", len(id))
 	}

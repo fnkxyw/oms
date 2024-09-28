@@ -123,7 +123,7 @@ func (s *OrderSuite) TestListOrder() {
 	err := orders.ListOrders(ctx, s.storage, 1, 2, false)
 	s.NoError(err)
 
-	ids := s.storage.GetIDs(ctx)
+	ids, _ := s.storage.GetIDs(ctx)
 	s.Len(ids, 2)
 	s.Contains(ids, uint(4))
 	s.Contains(ids, uint(5))
