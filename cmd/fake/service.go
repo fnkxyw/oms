@@ -5,13 +5,14 @@ import (
 	"math/rand"
 )
 
+var states = []models.State{
+	models.AcceptState,
+	models.RefundedState,
+	models.NewState,
+	models.PlaceState,
+	models.SoftDelete,
+}
+
 func generateState() models.State {
-	statements := []models.State{
-		models.AcceptState,
-		models.RefundedState,
-		models.NewState,
-		models.PlaceState,
-		models.SoftDelete,
-	}
-	return statements[rand.Intn(len(statements))]
+	return states[rand.Intn(len(states))]
 }

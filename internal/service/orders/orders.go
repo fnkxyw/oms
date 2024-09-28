@@ -20,7 +20,10 @@ func AcceptOrder(ctx context.Context, s storage.Storage, or *models.Order) error
 	}
 	or.State = models.AcceptState
 	or.AcceptTime = time.Now().Unix()
-	s.AddToStorage(ctx, or)
+	err := s.AddToStorage(ctx, or)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -88,7 +91,10 @@ func ReturnOrder(ctx context.Context, s storage.Storage, id uint) error {
 		return err
 	}
 
-	s.DeleteFromStorage(ctx, order.ID)
+	err = s.DeleteFromStorage(ctx, order.ID)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }

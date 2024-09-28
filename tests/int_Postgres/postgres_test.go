@@ -224,8 +224,7 @@ func TestGetByUserId(t *testing.T) {
 func TestGetReturns(t *testing.T) {
 	repo := postgres.NewPgRepository(pool)
 
-	// Test fetching orders with state models.NewState
-	resultOrders, err := repo.GetReturns(ctx, models.NewState)
+	resultOrders, err := repo.GetReturns(ctx, models.RefundedState)
 	if err != nil {
 		t.Fatalf("failed to get orders: %s", err)
 	}
