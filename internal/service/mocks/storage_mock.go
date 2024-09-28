@@ -5,8 +5,10 @@ package mocks
 //go:generate minimock -i gitlab.ozon.dev/akugnerevich/homework.git/internal/storage.Storage -o storage_mock_test.go -n StorageMock -p mocks
 
 import (
+	"context"
 	"sync"
 	mm_atomic "sync/atomic"
+	"time"
 	mm_time "time"
 
 	"github.com/gojuno/minimock/v3"
@@ -18,40 +20,68 @@ type StorageMock struct {
 	t          minimock.Tester
 	finishOnce sync.Once
 
-	funcAddToStorage          func(order *models.Order)
+	funcAddToStorage          func(ctx context.Context, order *models.Order)
 	funcAddToStorageOrigin    string
-	inspectFuncAddToStorage   func(order *models.Order)
+	inspectFuncAddToStorage   func(ctx context.Context, order *models.Order)
 	afterAddToStorageCounter  uint64
 	beforeAddToStorageCounter uint64
 	AddToStorageMock          mStorageMockAddToStorage
 
-	funcDeleteFromStorage          func(id uint)
+	funcDeleteFromStorage          func(ctx context.Context, id uint)
 	funcDeleteFromStorageOrigin    string
-	inspectFuncDeleteFromStorage   func(id uint)
+	inspectFuncDeleteFromStorage   func(ctx context.Context, id uint)
 	afterDeleteFromStorageCounter  uint64
 	beforeDeleteFromStorageCounter uint64
 	DeleteFromStorageMock          mStorageMockDeleteFromStorage
 
-	funcGetIDs          func() (ua1 []uint)
+	funcGetByUserId          func(ctx context.Context, userId uint) (opa1 []*models.Order, err error)
+	funcGetByUserIdOrigin    string
+	inspectFuncGetByUserId   func(ctx context.Context, userId uint)
+	afterGetByUserIdCounter  uint64
+	beforeGetByUserIdCounter uint64
+	GetByUserIdMock          mStorageMockGetByUserId
+
+	funcGetIDs          func(ctx context.Context) (ua1 []uint)
 	funcGetIDsOrigin    string
-	inspectFuncGetIDs   func()
+	inspectFuncGetIDs   func(ctx context.Context)
 	afterGetIDsCounter  uint64
 	beforeGetIDsCounter uint64
 	GetIDsMock          mStorageMockGetIDs
 
-	funcGetItem          func(id uint) (op1 *models.Order, b1 bool)
+	funcGetItem          func(ctx context.Context, id uint) (op1 *models.Order, b1 bool)
 	funcGetItemOrigin    string
-	inspectFuncGetItem   func(id uint)
+	inspectFuncGetItem   func(ctx context.Context, id uint)
 	afterGetItemCounter  uint64
 	beforeGetItemCounter uint64
 	GetItemMock          mStorageMockGetItem
 
-	funcIsConsist          func(id uint) (b1 bool)
+	funcGetReturns          func(ctx context.Context, state models.State) (opa1 []*models.Order, err error)
+	funcGetReturnsOrigin    string
+	inspectFuncGetReturns   func(ctx context.Context, state models.State)
+	afterGetReturnsCounter  uint64
+	beforeGetReturnsCounter uint64
+	GetReturnsMock          mStorageMockGetReturns
+
+	funcIsConsist          func(ctx context.Context, id uint) (b1 bool)
 	funcIsConsistOrigin    string
-	inspectFuncIsConsist   func(id uint)
+	inspectFuncIsConsist   func(ctx context.Context, id uint)
 	afterIsConsistCounter  uint64
 	beforeIsConsistCounter uint64
 	IsConsistMock          mStorageMockIsConsist
+
+	funcUpdateBeforePlace          func(ctx context.Context, id uint, state models.State, t time.Time) (err error)
+	funcUpdateBeforePlaceOrigin    string
+	inspectFuncUpdateBeforePlace   func(ctx context.Context, id uint, state models.State, t time.Time)
+	afterUpdateBeforePlaceCounter  uint64
+	beforeUpdateBeforePlaceCounter uint64
+	UpdateBeforePlaceMock          mStorageMockUpdateBeforePlace
+
+	funcUpdateState          func(ctx context.Context, id uint, state models.State) (err error)
+	funcUpdateStateOrigin    string
+	inspectFuncUpdateState   func(ctx context.Context, id uint, state models.State)
+	afterUpdateStateCounter  uint64
+	beforeUpdateStateCounter uint64
+	UpdateStateMock          mStorageMockUpdateState
 }
 
 // NewStorageMock returns a mock for mm_storage.Storage
@@ -68,13 +98,26 @@ func NewStorageMock(t minimock.Tester) *StorageMock {
 	m.DeleteFromStorageMock = mStorageMockDeleteFromStorage{mock: m}
 	m.DeleteFromStorageMock.callArgs = []*StorageMockDeleteFromStorageParams{}
 
+	m.GetByUserIdMock = mStorageMockGetByUserId{mock: m}
+	m.GetByUserIdMock.callArgs = []*StorageMockGetByUserIdParams{}
+
 	m.GetIDsMock = mStorageMockGetIDs{mock: m}
+	m.GetIDsMock.callArgs = []*StorageMockGetIDsParams{}
 
 	m.GetItemMock = mStorageMockGetItem{mock: m}
 	m.GetItemMock.callArgs = []*StorageMockGetItemParams{}
 
+	m.GetReturnsMock = mStorageMockGetReturns{mock: m}
+	m.GetReturnsMock.callArgs = []*StorageMockGetReturnsParams{}
+
 	m.IsConsistMock = mStorageMockIsConsist{mock: m}
 	m.IsConsistMock.callArgs = []*StorageMockIsConsistParams{}
+
+	m.UpdateBeforePlaceMock = mStorageMockUpdateBeforePlace{mock: m}
+	m.UpdateBeforePlaceMock.callArgs = []*StorageMockUpdateBeforePlaceParams{}
+
+	m.UpdateStateMock = mStorageMockUpdateState{mock: m}
+	m.UpdateStateMock.callArgs = []*StorageMockUpdateStateParams{}
 
 	t.Cleanup(m.MinimockFinish)
 
@@ -107,17 +150,20 @@ type StorageMockAddToStorageExpectation struct {
 
 // StorageMockAddToStorageParams contains parameters of the Storage.AddToStorage
 type StorageMockAddToStorageParams struct {
+	ctx   context.Context
 	order *models.Order
 }
 
 // StorageMockAddToStorageParamPtrs contains pointers to parameters of the Storage.AddToStorage
 type StorageMockAddToStorageParamPtrs struct {
+	ctx   *context.Context
 	order **models.Order
 }
 
 // StorageMockAddToStorageOrigins contains origins of expectations of the Storage.AddToStorage
 type StorageMockAddToStorageExpectationOrigins struct {
 	origin      string
+	originCtx   string
 	originOrder string
 }
 
@@ -132,7 +178,7 @@ func (mmAddToStorage *mStorageMockAddToStorage) Optional() *mStorageMockAddToSto
 }
 
 // Expect sets up expected params for Storage.AddToStorage
-func (mmAddToStorage *mStorageMockAddToStorage) Expect(order *models.Order) *mStorageMockAddToStorage {
+func (mmAddToStorage *mStorageMockAddToStorage) Expect(ctx context.Context, order *models.Order) *mStorageMockAddToStorage {
 	if mmAddToStorage.mock.funcAddToStorage != nil {
 		mmAddToStorage.mock.t.Fatalf("StorageMock.AddToStorage mock is already set by Set")
 	}
@@ -145,7 +191,7 @@ func (mmAddToStorage *mStorageMockAddToStorage) Expect(order *models.Order) *mSt
 		mmAddToStorage.mock.t.Fatalf("StorageMock.AddToStorage mock is already set by ExpectParams functions")
 	}
 
-	mmAddToStorage.defaultExpectation.params = &StorageMockAddToStorageParams{order}
+	mmAddToStorage.defaultExpectation.params = &StorageMockAddToStorageParams{ctx, order}
 	mmAddToStorage.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmAddToStorage.expectations {
 		if minimock.Equal(e.params, mmAddToStorage.defaultExpectation.params) {
@@ -156,8 +202,31 @@ func (mmAddToStorage *mStorageMockAddToStorage) Expect(order *models.Order) *mSt
 	return mmAddToStorage
 }
 
-// ExpectOrderParam1 sets up expected param order for Storage.AddToStorage
-func (mmAddToStorage *mStorageMockAddToStorage) ExpectOrderParam1(order *models.Order) *mStorageMockAddToStorage {
+// ExpectCtxParam1 sets up expected param ctx for Storage.AddToStorage
+func (mmAddToStorage *mStorageMockAddToStorage) ExpectCtxParam1(ctx context.Context) *mStorageMockAddToStorage {
+	if mmAddToStorage.mock.funcAddToStorage != nil {
+		mmAddToStorage.mock.t.Fatalf("StorageMock.AddToStorage mock is already set by Set")
+	}
+
+	if mmAddToStorage.defaultExpectation == nil {
+		mmAddToStorage.defaultExpectation = &StorageMockAddToStorageExpectation{}
+	}
+
+	if mmAddToStorage.defaultExpectation.params != nil {
+		mmAddToStorage.mock.t.Fatalf("StorageMock.AddToStorage mock is already set by Expect")
+	}
+
+	if mmAddToStorage.defaultExpectation.paramPtrs == nil {
+		mmAddToStorage.defaultExpectation.paramPtrs = &StorageMockAddToStorageParamPtrs{}
+	}
+	mmAddToStorage.defaultExpectation.paramPtrs.ctx = &ctx
+	mmAddToStorage.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmAddToStorage
+}
+
+// ExpectOrderParam2 sets up expected param order for Storage.AddToStorage
+func (mmAddToStorage *mStorageMockAddToStorage) ExpectOrderParam2(order *models.Order) *mStorageMockAddToStorage {
 	if mmAddToStorage.mock.funcAddToStorage != nil {
 		mmAddToStorage.mock.t.Fatalf("StorageMock.AddToStorage mock is already set by Set")
 	}
@@ -180,7 +249,7 @@ func (mmAddToStorage *mStorageMockAddToStorage) ExpectOrderParam1(order *models.
 }
 
 // Inspect accepts an inspector function that has same arguments as the Storage.AddToStorage
-func (mmAddToStorage *mStorageMockAddToStorage) Inspect(f func(order *models.Order)) *mStorageMockAddToStorage {
+func (mmAddToStorage *mStorageMockAddToStorage) Inspect(f func(ctx context.Context, order *models.Order)) *mStorageMockAddToStorage {
 	if mmAddToStorage.mock.inspectFuncAddToStorage != nil {
 		mmAddToStorage.mock.t.Fatalf("Inspect function is already set for StorageMock.AddToStorage")
 	}
@@ -205,7 +274,7 @@ func (mmAddToStorage *mStorageMockAddToStorage) Return() *StorageMock {
 }
 
 // Set uses given function f to mock the Storage.AddToStorage method
-func (mmAddToStorage *mStorageMockAddToStorage) Set(f func(order *models.Order)) *StorageMock {
+func (mmAddToStorage *mStorageMockAddToStorage) Set(f func(ctx context.Context, order *models.Order)) *StorageMock {
 	if mmAddToStorage.defaultExpectation != nil {
 		mmAddToStorage.mock.t.Fatalf("Default expectation is already set for the Storage.AddToStorage method")
 	}
@@ -241,17 +310,17 @@ func (mmAddToStorage *mStorageMockAddToStorage) invocationsDone() bool {
 }
 
 // AddToStorage implements mm_storage.Storage
-func (mmAddToStorage *StorageMock) AddToStorage(order *models.Order) {
+func (mmAddToStorage *StorageMock) AddToStorage(ctx context.Context, order *models.Order) {
 	mm_atomic.AddUint64(&mmAddToStorage.beforeAddToStorageCounter, 1)
 	defer mm_atomic.AddUint64(&mmAddToStorage.afterAddToStorageCounter, 1)
 
 	mmAddToStorage.t.Helper()
 
 	if mmAddToStorage.inspectFuncAddToStorage != nil {
-		mmAddToStorage.inspectFuncAddToStorage(order)
+		mmAddToStorage.inspectFuncAddToStorage(ctx, order)
 	}
 
-	mm_params := StorageMockAddToStorageParams{order}
+	mm_params := StorageMockAddToStorageParams{ctx, order}
 
 	// Record call args
 	mmAddToStorage.AddToStorageMock.mutex.Lock()
@@ -270,9 +339,14 @@ func (mmAddToStorage *StorageMock) AddToStorage(order *models.Order) {
 		mm_want := mmAddToStorage.AddToStorageMock.defaultExpectation.params
 		mm_want_ptrs := mmAddToStorage.AddToStorageMock.defaultExpectation.paramPtrs
 
-		mm_got := StorageMockAddToStorageParams{order}
+		mm_got := StorageMockAddToStorageParams{ctx, order}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmAddToStorage.t.Errorf("StorageMock.AddToStorage got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmAddToStorage.AddToStorageMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.order != nil && !minimock.Equal(*mm_want_ptrs.order, mm_got.order) {
 				mmAddToStorage.t.Errorf("StorageMock.AddToStorage got unexpected parameter order, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
@@ -288,10 +362,10 @@ func (mmAddToStorage *StorageMock) AddToStorage(order *models.Order) {
 
 	}
 	if mmAddToStorage.funcAddToStorage != nil {
-		mmAddToStorage.funcAddToStorage(order)
+		mmAddToStorage.funcAddToStorage(ctx, order)
 		return
 	}
-	mmAddToStorage.t.Fatalf("Unexpected call to StorageMock.AddToStorage. %v", order)
+	mmAddToStorage.t.Fatalf("Unexpected call to StorageMock.AddToStorage. %v %v", ctx, order)
 
 }
 
@@ -389,18 +463,21 @@ type StorageMockDeleteFromStorageExpectation struct {
 
 // StorageMockDeleteFromStorageParams contains parameters of the Storage.DeleteFromStorage
 type StorageMockDeleteFromStorageParams struct {
-	id uint
+	ctx context.Context
+	id  uint
 }
 
 // StorageMockDeleteFromStorageParamPtrs contains pointers to parameters of the Storage.DeleteFromStorage
 type StorageMockDeleteFromStorageParamPtrs struct {
-	id *uint
+	ctx *context.Context
+	id  *uint
 }
 
 // StorageMockDeleteFromStorageOrigins contains origins of expectations of the Storage.DeleteFromStorage
 type StorageMockDeleteFromStorageExpectationOrigins struct {
-	origin   string
-	originId string
+	origin    string
+	originCtx string
+	originId  string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -414,7 +491,7 @@ func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Optional() *mStorageMo
 }
 
 // Expect sets up expected params for Storage.DeleteFromStorage
-func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Expect(id uint) *mStorageMockDeleteFromStorage {
+func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Expect(ctx context.Context, id uint) *mStorageMockDeleteFromStorage {
 	if mmDeleteFromStorage.mock.funcDeleteFromStorage != nil {
 		mmDeleteFromStorage.mock.t.Fatalf("StorageMock.DeleteFromStorage mock is already set by Set")
 	}
@@ -427,7 +504,7 @@ func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Expect(id uint) *mStor
 		mmDeleteFromStorage.mock.t.Fatalf("StorageMock.DeleteFromStorage mock is already set by ExpectParams functions")
 	}
 
-	mmDeleteFromStorage.defaultExpectation.params = &StorageMockDeleteFromStorageParams{id}
+	mmDeleteFromStorage.defaultExpectation.params = &StorageMockDeleteFromStorageParams{ctx, id}
 	mmDeleteFromStorage.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmDeleteFromStorage.expectations {
 		if minimock.Equal(e.params, mmDeleteFromStorage.defaultExpectation.params) {
@@ -438,8 +515,31 @@ func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Expect(id uint) *mStor
 	return mmDeleteFromStorage
 }
 
-// ExpectIdParam1 sets up expected param id for Storage.DeleteFromStorage
-func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) ExpectIdParam1(id uint) *mStorageMockDeleteFromStorage {
+// ExpectCtxParam1 sets up expected param ctx for Storage.DeleteFromStorage
+func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) ExpectCtxParam1(ctx context.Context) *mStorageMockDeleteFromStorage {
+	if mmDeleteFromStorage.mock.funcDeleteFromStorage != nil {
+		mmDeleteFromStorage.mock.t.Fatalf("StorageMock.DeleteFromStorage mock is already set by Set")
+	}
+
+	if mmDeleteFromStorage.defaultExpectation == nil {
+		mmDeleteFromStorage.defaultExpectation = &StorageMockDeleteFromStorageExpectation{}
+	}
+
+	if mmDeleteFromStorage.defaultExpectation.params != nil {
+		mmDeleteFromStorage.mock.t.Fatalf("StorageMock.DeleteFromStorage mock is already set by Expect")
+	}
+
+	if mmDeleteFromStorage.defaultExpectation.paramPtrs == nil {
+		mmDeleteFromStorage.defaultExpectation.paramPtrs = &StorageMockDeleteFromStorageParamPtrs{}
+	}
+	mmDeleteFromStorage.defaultExpectation.paramPtrs.ctx = &ctx
+	mmDeleteFromStorage.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmDeleteFromStorage
+}
+
+// ExpectIdParam2 sets up expected param id for Storage.DeleteFromStorage
+func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) ExpectIdParam2(id uint) *mStorageMockDeleteFromStorage {
 	if mmDeleteFromStorage.mock.funcDeleteFromStorage != nil {
 		mmDeleteFromStorage.mock.t.Fatalf("StorageMock.DeleteFromStorage mock is already set by Set")
 	}
@@ -462,7 +562,7 @@ func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) ExpectIdParam1(id uint
 }
 
 // Inspect accepts an inspector function that has same arguments as the Storage.DeleteFromStorage
-func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Inspect(f func(id uint)) *mStorageMockDeleteFromStorage {
+func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Inspect(f func(ctx context.Context, id uint)) *mStorageMockDeleteFromStorage {
 	if mmDeleteFromStorage.mock.inspectFuncDeleteFromStorage != nil {
 		mmDeleteFromStorage.mock.t.Fatalf("Inspect function is already set for StorageMock.DeleteFromStorage")
 	}
@@ -487,7 +587,7 @@ func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Return() *StorageMock 
 }
 
 // Set uses given function f to mock the Storage.DeleteFromStorage method
-func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Set(f func(id uint)) *StorageMock {
+func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) Set(f func(ctx context.Context, id uint)) *StorageMock {
 	if mmDeleteFromStorage.defaultExpectation != nil {
 		mmDeleteFromStorage.mock.t.Fatalf("Default expectation is already set for the Storage.DeleteFromStorage method")
 	}
@@ -523,17 +623,17 @@ func (mmDeleteFromStorage *mStorageMockDeleteFromStorage) invocationsDone() bool
 }
 
 // DeleteFromStorage implements mm_storage.Storage
-func (mmDeleteFromStorage *StorageMock) DeleteFromStorage(id uint) {
+func (mmDeleteFromStorage *StorageMock) DeleteFromStorage(ctx context.Context, id uint) {
 	mm_atomic.AddUint64(&mmDeleteFromStorage.beforeDeleteFromStorageCounter, 1)
 	defer mm_atomic.AddUint64(&mmDeleteFromStorage.afterDeleteFromStorageCounter, 1)
 
 	mmDeleteFromStorage.t.Helper()
 
 	if mmDeleteFromStorage.inspectFuncDeleteFromStorage != nil {
-		mmDeleteFromStorage.inspectFuncDeleteFromStorage(id)
+		mmDeleteFromStorage.inspectFuncDeleteFromStorage(ctx, id)
 	}
 
-	mm_params := StorageMockDeleteFromStorageParams{id}
+	mm_params := StorageMockDeleteFromStorageParams{ctx, id}
 
 	// Record call args
 	mmDeleteFromStorage.DeleteFromStorageMock.mutex.Lock()
@@ -552,9 +652,14 @@ func (mmDeleteFromStorage *StorageMock) DeleteFromStorage(id uint) {
 		mm_want := mmDeleteFromStorage.DeleteFromStorageMock.defaultExpectation.params
 		mm_want_ptrs := mmDeleteFromStorage.DeleteFromStorageMock.defaultExpectation.paramPtrs
 
-		mm_got := StorageMockDeleteFromStorageParams{id}
+		mm_got := StorageMockDeleteFromStorageParams{ctx, id}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmDeleteFromStorage.t.Errorf("StorageMock.DeleteFromStorage got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmDeleteFromStorage.DeleteFromStorageMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
 				mmDeleteFromStorage.t.Errorf("StorageMock.DeleteFromStorage got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
@@ -570,10 +675,10 @@ func (mmDeleteFromStorage *StorageMock) DeleteFromStorage(id uint) {
 
 	}
 	if mmDeleteFromStorage.funcDeleteFromStorage != nil {
-		mmDeleteFromStorage.funcDeleteFromStorage(id)
+		mmDeleteFromStorage.funcDeleteFromStorage(ctx, id)
 		return
 	}
-	mmDeleteFromStorage.t.Fatalf("Unexpected call to StorageMock.DeleteFromStorage. %v", id)
+	mmDeleteFromStorage.t.Fatalf("Unexpected call to StorageMock.DeleteFromStorage. %v %v", ctx, id)
 
 }
 
@@ -645,11 +750,357 @@ func (m *StorageMock) MinimockDeleteFromStorageInspect() {
 	}
 }
 
+type mStorageMockGetByUserId struct {
+	optional           bool
+	mock               *StorageMock
+	defaultExpectation *StorageMockGetByUserIdExpectation
+	expectations       []*StorageMockGetByUserIdExpectation
+
+	callArgs []*StorageMockGetByUserIdParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// StorageMockGetByUserIdExpectation specifies expectation struct of the Storage.GetByUserId
+type StorageMockGetByUserIdExpectation struct {
+	mock               *StorageMock
+	params             *StorageMockGetByUserIdParams
+	paramPtrs          *StorageMockGetByUserIdParamPtrs
+	expectationOrigins StorageMockGetByUserIdExpectationOrigins
+	results            *StorageMockGetByUserIdResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// StorageMockGetByUserIdParams contains parameters of the Storage.GetByUserId
+type StorageMockGetByUserIdParams struct {
+	ctx    context.Context
+	userId uint
+}
+
+// StorageMockGetByUserIdParamPtrs contains pointers to parameters of the Storage.GetByUserId
+type StorageMockGetByUserIdParamPtrs struct {
+	ctx    *context.Context
+	userId *uint
+}
+
+// StorageMockGetByUserIdResults contains results of the Storage.GetByUserId
+type StorageMockGetByUserIdResults struct {
+	opa1 []*models.Order
+	err  error
+}
+
+// StorageMockGetByUserIdOrigins contains origins of expectations of the Storage.GetByUserId
+type StorageMockGetByUserIdExpectationOrigins struct {
+	origin       string
+	originCtx    string
+	originUserId string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetByUserId *mStorageMockGetByUserId) Optional() *mStorageMockGetByUserId {
+	mmGetByUserId.optional = true
+	return mmGetByUserId
+}
+
+// Expect sets up expected params for Storage.GetByUserId
+func (mmGetByUserId *mStorageMockGetByUserId) Expect(ctx context.Context, userId uint) *mStorageMockGetByUserId {
+	if mmGetByUserId.mock.funcGetByUserId != nil {
+		mmGetByUserId.mock.t.Fatalf("StorageMock.GetByUserId mock is already set by Set")
+	}
+
+	if mmGetByUserId.defaultExpectation == nil {
+		mmGetByUserId.defaultExpectation = &StorageMockGetByUserIdExpectation{}
+	}
+
+	if mmGetByUserId.defaultExpectation.paramPtrs != nil {
+		mmGetByUserId.mock.t.Fatalf("StorageMock.GetByUserId mock is already set by ExpectParams functions")
+	}
+
+	mmGetByUserId.defaultExpectation.params = &StorageMockGetByUserIdParams{ctx, userId}
+	mmGetByUserId.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetByUserId.expectations {
+		if minimock.Equal(e.params, mmGetByUserId.defaultExpectation.params) {
+			mmGetByUserId.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetByUserId.defaultExpectation.params)
+		}
+	}
+
+	return mmGetByUserId
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Storage.GetByUserId
+func (mmGetByUserId *mStorageMockGetByUserId) ExpectCtxParam1(ctx context.Context) *mStorageMockGetByUserId {
+	if mmGetByUserId.mock.funcGetByUserId != nil {
+		mmGetByUserId.mock.t.Fatalf("StorageMock.GetByUserId mock is already set by Set")
+	}
+
+	if mmGetByUserId.defaultExpectation == nil {
+		mmGetByUserId.defaultExpectation = &StorageMockGetByUserIdExpectation{}
+	}
+
+	if mmGetByUserId.defaultExpectation.params != nil {
+		mmGetByUserId.mock.t.Fatalf("StorageMock.GetByUserId mock is already set by Expect")
+	}
+
+	if mmGetByUserId.defaultExpectation.paramPtrs == nil {
+		mmGetByUserId.defaultExpectation.paramPtrs = &StorageMockGetByUserIdParamPtrs{}
+	}
+	mmGetByUserId.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetByUserId.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetByUserId
+}
+
+// ExpectUserIdParam2 sets up expected param userId for Storage.GetByUserId
+func (mmGetByUserId *mStorageMockGetByUserId) ExpectUserIdParam2(userId uint) *mStorageMockGetByUserId {
+	if mmGetByUserId.mock.funcGetByUserId != nil {
+		mmGetByUserId.mock.t.Fatalf("StorageMock.GetByUserId mock is already set by Set")
+	}
+
+	if mmGetByUserId.defaultExpectation == nil {
+		mmGetByUserId.defaultExpectation = &StorageMockGetByUserIdExpectation{}
+	}
+
+	if mmGetByUserId.defaultExpectation.params != nil {
+		mmGetByUserId.mock.t.Fatalf("StorageMock.GetByUserId mock is already set by Expect")
+	}
+
+	if mmGetByUserId.defaultExpectation.paramPtrs == nil {
+		mmGetByUserId.defaultExpectation.paramPtrs = &StorageMockGetByUserIdParamPtrs{}
+	}
+	mmGetByUserId.defaultExpectation.paramPtrs.userId = &userId
+	mmGetByUserId.defaultExpectation.expectationOrigins.originUserId = minimock.CallerInfo(1)
+
+	return mmGetByUserId
+}
+
+// Inspect accepts an inspector function that has same arguments as the Storage.GetByUserId
+func (mmGetByUserId *mStorageMockGetByUserId) Inspect(f func(ctx context.Context, userId uint)) *mStorageMockGetByUserId {
+	if mmGetByUserId.mock.inspectFuncGetByUserId != nil {
+		mmGetByUserId.mock.t.Fatalf("Inspect function is already set for StorageMock.GetByUserId")
+	}
+
+	mmGetByUserId.mock.inspectFuncGetByUserId = f
+
+	return mmGetByUserId
+}
+
+// Return sets up results that will be returned by Storage.GetByUserId
+func (mmGetByUserId *mStorageMockGetByUserId) Return(opa1 []*models.Order, err error) *StorageMock {
+	if mmGetByUserId.mock.funcGetByUserId != nil {
+		mmGetByUserId.mock.t.Fatalf("StorageMock.GetByUserId mock is already set by Set")
+	}
+
+	if mmGetByUserId.defaultExpectation == nil {
+		mmGetByUserId.defaultExpectation = &StorageMockGetByUserIdExpectation{mock: mmGetByUserId.mock}
+	}
+	mmGetByUserId.defaultExpectation.results = &StorageMockGetByUserIdResults{opa1, err}
+	mmGetByUserId.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetByUserId.mock
+}
+
+// Set uses given function f to mock the Storage.GetByUserId method
+func (mmGetByUserId *mStorageMockGetByUserId) Set(f func(ctx context.Context, userId uint) (opa1 []*models.Order, err error)) *StorageMock {
+	if mmGetByUserId.defaultExpectation != nil {
+		mmGetByUserId.mock.t.Fatalf("Default expectation is already set for the Storage.GetByUserId method")
+	}
+
+	if len(mmGetByUserId.expectations) > 0 {
+		mmGetByUserId.mock.t.Fatalf("Some expectations are already set for the Storage.GetByUserId method")
+	}
+
+	mmGetByUserId.mock.funcGetByUserId = f
+	mmGetByUserId.mock.funcGetByUserIdOrigin = minimock.CallerInfo(1)
+	return mmGetByUserId.mock
+}
+
+// When sets expectation for the Storage.GetByUserId which will trigger the result defined by the following
+// Then helper
+func (mmGetByUserId *mStorageMockGetByUserId) When(ctx context.Context, userId uint) *StorageMockGetByUserIdExpectation {
+	if mmGetByUserId.mock.funcGetByUserId != nil {
+		mmGetByUserId.mock.t.Fatalf("StorageMock.GetByUserId mock is already set by Set")
+	}
+
+	expectation := &StorageMockGetByUserIdExpectation{
+		mock:               mmGetByUserId.mock,
+		params:             &StorageMockGetByUserIdParams{ctx, userId},
+		expectationOrigins: StorageMockGetByUserIdExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetByUserId.expectations = append(mmGetByUserId.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Storage.GetByUserId return parameters for the expectation previously defined by the When method
+func (e *StorageMockGetByUserIdExpectation) Then(opa1 []*models.Order, err error) *StorageMock {
+	e.results = &StorageMockGetByUserIdResults{opa1, err}
+	return e.mock
+}
+
+// Times sets number of times Storage.GetByUserId should be invoked
+func (mmGetByUserId *mStorageMockGetByUserId) Times(n uint64) *mStorageMockGetByUserId {
+	if n == 0 {
+		mmGetByUserId.mock.t.Fatalf("Times of StorageMock.GetByUserId mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetByUserId.expectedInvocations, n)
+	mmGetByUserId.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetByUserId
+}
+
+func (mmGetByUserId *mStorageMockGetByUserId) invocationsDone() bool {
+	if len(mmGetByUserId.expectations) == 0 && mmGetByUserId.defaultExpectation == nil && mmGetByUserId.mock.funcGetByUserId == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetByUserId.mock.afterGetByUserIdCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetByUserId.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetByUserId implements mm_storage.Storage
+func (mmGetByUserId *StorageMock) GetByUserId(ctx context.Context, userId uint) (opa1 []*models.Order, err error) {
+	mm_atomic.AddUint64(&mmGetByUserId.beforeGetByUserIdCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetByUserId.afterGetByUserIdCounter, 1)
+
+	mmGetByUserId.t.Helper()
+
+	if mmGetByUserId.inspectFuncGetByUserId != nil {
+		mmGetByUserId.inspectFuncGetByUserId(ctx, userId)
+	}
+
+	mm_params := StorageMockGetByUserIdParams{ctx, userId}
+
+	// Record call args
+	mmGetByUserId.GetByUserIdMock.mutex.Lock()
+	mmGetByUserId.GetByUserIdMock.callArgs = append(mmGetByUserId.GetByUserIdMock.callArgs, &mm_params)
+	mmGetByUserId.GetByUserIdMock.mutex.Unlock()
+
+	for _, e := range mmGetByUserId.GetByUserIdMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.opa1, e.results.err
+		}
+	}
+
+	if mmGetByUserId.GetByUserIdMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetByUserId.GetByUserIdMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetByUserId.GetByUserIdMock.defaultExpectation.params
+		mm_want_ptrs := mmGetByUserId.GetByUserIdMock.defaultExpectation.paramPtrs
+
+		mm_got := StorageMockGetByUserIdParams{ctx, userId}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetByUserId.t.Errorf("StorageMock.GetByUserId got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetByUserId.GetByUserIdMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.userId != nil && !minimock.Equal(*mm_want_ptrs.userId, mm_got.userId) {
+				mmGetByUserId.t.Errorf("StorageMock.GetByUserId got unexpected parameter userId, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetByUserId.GetByUserIdMock.defaultExpectation.expectationOrigins.originUserId, *mm_want_ptrs.userId, mm_got.userId, minimock.Diff(*mm_want_ptrs.userId, mm_got.userId))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetByUserId.t.Errorf("StorageMock.GetByUserId got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetByUserId.GetByUserIdMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetByUserId.GetByUserIdMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetByUserId.t.Fatal("No results are set for the StorageMock.GetByUserId")
+		}
+		return (*mm_results).opa1, (*mm_results).err
+	}
+	if mmGetByUserId.funcGetByUserId != nil {
+		return mmGetByUserId.funcGetByUserId(ctx, userId)
+	}
+	mmGetByUserId.t.Fatalf("Unexpected call to StorageMock.GetByUserId. %v %v", ctx, userId)
+	return
+}
+
+// GetByUserIdAfterCounter returns a count of finished StorageMock.GetByUserId invocations
+func (mmGetByUserId *StorageMock) GetByUserIdAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetByUserId.afterGetByUserIdCounter)
+}
+
+// GetByUserIdBeforeCounter returns a count of StorageMock.GetByUserId invocations
+func (mmGetByUserId *StorageMock) GetByUserIdBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetByUserId.beforeGetByUserIdCounter)
+}
+
+// Calls returns a list of arguments used in each call to StorageMock.GetByUserId.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetByUserId *mStorageMockGetByUserId) Calls() []*StorageMockGetByUserIdParams {
+	mmGetByUserId.mutex.RLock()
+
+	argCopy := make([]*StorageMockGetByUserIdParams, len(mmGetByUserId.callArgs))
+	copy(argCopy, mmGetByUserId.callArgs)
+
+	mmGetByUserId.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetByUserIdDone returns true if the count of the GetByUserId invocations corresponds
+// the number of defined expectations
+func (m *StorageMock) MinimockGetByUserIdDone() bool {
+	if m.GetByUserIdMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetByUserIdMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetByUserIdMock.invocationsDone()
+}
+
+// MinimockGetByUserIdInspect logs each unmet expectation
+func (m *StorageMock) MinimockGetByUserIdInspect() {
+	for _, e := range m.GetByUserIdMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to StorageMock.GetByUserId at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetByUserIdCounter := mm_atomic.LoadUint64(&m.afterGetByUserIdCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetByUserIdMock.defaultExpectation != nil && afterGetByUserIdCounter < 1 {
+		if m.GetByUserIdMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to StorageMock.GetByUserId at\n%s", m.GetByUserIdMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to StorageMock.GetByUserId at\n%s with params: %#v", m.GetByUserIdMock.defaultExpectation.expectationOrigins.origin, *m.GetByUserIdMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetByUserId != nil && afterGetByUserIdCounter < 1 {
+		m.t.Errorf("Expected call to StorageMock.GetByUserId at\n%s", m.funcGetByUserIdOrigin)
+	}
+
+	if !m.GetByUserIdMock.invocationsDone() && afterGetByUserIdCounter > 0 {
+		m.t.Errorf("Expected %d calls to StorageMock.GetByUserId at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetByUserIdMock.expectedInvocations), m.GetByUserIdMock.expectedInvocationsOrigin, afterGetByUserIdCounter)
+	}
+}
+
 type mStorageMockGetIDs struct {
 	optional           bool
 	mock               *StorageMock
 	defaultExpectation *StorageMockGetIDsExpectation
 	expectations       []*StorageMockGetIDsExpectation
+
+	callArgs []*StorageMockGetIDsParams
+	mutex    sync.RWMutex
 
 	expectedInvocations       uint64
 	expectedInvocationsOrigin string
@@ -657,16 +1108,34 @@ type mStorageMockGetIDs struct {
 
 // StorageMockGetIDsExpectation specifies expectation struct of the Storage.GetIDs
 type StorageMockGetIDsExpectation struct {
-	mock *StorageMock
+	mock               *StorageMock
+	params             *StorageMockGetIDsParams
+	paramPtrs          *StorageMockGetIDsParamPtrs
+	expectationOrigins StorageMockGetIDsExpectationOrigins
+	results            *StorageMockGetIDsResults
+	returnOrigin       string
+	Counter            uint64
+}
 
-	results      *StorageMockGetIDsResults
-	returnOrigin string
-	Counter      uint64
+// StorageMockGetIDsParams contains parameters of the Storage.GetIDs
+type StorageMockGetIDsParams struct {
+	ctx context.Context
+}
+
+// StorageMockGetIDsParamPtrs contains pointers to parameters of the Storage.GetIDs
+type StorageMockGetIDsParamPtrs struct {
+	ctx *context.Context
 }
 
 // StorageMockGetIDsResults contains results of the Storage.GetIDs
 type StorageMockGetIDsResults struct {
 	ua1 []uint
+}
+
+// StorageMockGetIDsOrigins contains origins of expectations of the Storage.GetIDs
+type StorageMockGetIDsExpectationOrigins struct {
+	origin    string
+	originCtx string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -680,7 +1149,7 @@ func (mmGetIDs *mStorageMockGetIDs) Optional() *mStorageMockGetIDs {
 }
 
 // Expect sets up expected params for Storage.GetIDs
-func (mmGetIDs *mStorageMockGetIDs) Expect() *mStorageMockGetIDs {
+func (mmGetIDs *mStorageMockGetIDs) Expect(ctx context.Context) *mStorageMockGetIDs {
 	if mmGetIDs.mock.funcGetIDs != nil {
 		mmGetIDs.mock.t.Fatalf("StorageMock.GetIDs mock is already set by Set")
 	}
@@ -689,11 +1158,46 @@ func (mmGetIDs *mStorageMockGetIDs) Expect() *mStorageMockGetIDs {
 		mmGetIDs.defaultExpectation = &StorageMockGetIDsExpectation{}
 	}
 
+	if mmGetIDs.defaultExpectation.paramPtrs != nil {
+		mmGetIDs.mock.t.Fatalf("StorageMock.GetIDs mock is already set by ExpectParams functions")
+	}
+
+	mmGetIDs.defaultExpectation.params = &StorageMockGetIDsParams{ctx}
+	mmGetIDs.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetIDs.expectations {
+		if minimock.Equal(e.params, mmGetIDs.defaultExpectation.params) {
+			mmGetIDs.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetIDs.defaultExpectation.params)
+		}
+	}
+
+	return mmGetIDs
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Storage.GetIDs
+func (mmGetIDs *mStorageMockGetIDs) ExpectCtxParam1(ctx context.Context) *mStorageMockGetIDs {
+	if mmGetIDs.mock.funcGetIDs != nil {
+		mmGetIDs.mock.t.Fatalf("StorageMock.GetIDs mock is already set by Set")
+	}
+
+	if mmGetIDs.defaultExpectation == nil {
+		mmGetIDs.defaultExpectation = &StorageMockGetIDsExpectation{}
+	}
+
+	if mmGetIDs.defaultExpectation.params != nil {
+		mmGetIDs.mock.t.Fatalf("StorageMock.GetIDs mock is already set by Expect")
+	}
+
+	if mmGetIDs.defaultExpectation.paramPtrs == nil {
+		mmGetIDs.defaultExpectation.paramPtrs = &StorageMockGetIDsParamPtrs{}
+	}
+	mmGetIDs.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetIDs.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
 	return mmGetIDs
 }
 
 // Inspect accepts an inspector function that has same arguments as the Storage.GetIDs
-func (mmGetIDs *mStorageMockGetIDs) Inspect(f func()) *mStorageMockGetIDs {
+func (mmGetIDs *mStorageMockGetIDs) Inspect(f func(ctx context.Context)) *mStorageMockGetIDs {
 	if mmGetIDs.mock.inspectFuncGetIDs != nil {
 		mmGetIDs.mock.t.Fatalf("Inspect function is already set for StorageMock.GetIDs")
 	}
@@ -718,7 +1222,7 @@ func (mmGetIDs *mStorageMockGetIDs) Return(ua1 []uint) *StorageMock {
 }
 
 // Set uses given function f to mock the Storage.GetIDs method
-func (mmGetIDs *mStorageMockGetIDs) Set(f func() (ua1 []uint)) *StorageMock {
+func (mmGetIDs *mStorageMockGetIDs) Set(f func(ctx context.Context) (ua1 []uint)) *StorageMock {
 	if mmGetIDs.defaultExpectation != nil {
 		mmGetIDs.mock.t.Fatalf("Default expectation is already set for the Storage.GetIDs method")
 	}
@@ -730,6 +1234,28 @@ func (mmGetIDs *mStorageMockGetIDs) Set(f func() (ua1 []uint)) *StorageMock {
 	mmGetIDs.mock.funcGetIDs = f
 	mmGetIDs.mock.funcGetIDsOrigin = minimock.CallerInfo(1)
 	return mmGetIDs.mock
+}
+
+// When sets expectation for the Storage.GetIDs which will trigger the result defined by the following
+// Then helper
+func (mmGetIDs *mStorageMockGetIDs) When(ctx context.Context) *StorageMockGetIDsExpectation {
+	if mmGetIDs.mock.funcGetIDs != nil {
+		mmGetIDs.mock.t.Fatalf("StorageMock.GetIDs mock is already set by Set")
+	}
+
+	expectation := &StorageMockGetIDsExpectation{
+		mock:               mmGetIDs.mock,
+		params:             &StorageMockGetIDsParams{ctx},
+		expectationOrigins: StorageMockGetIDsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetIDs.expectations = append(mmGetIDs.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Storage.GetIDs return parameters for the expectation previously defined by the When method
+func (e *StorageMockGetIDsExpectation) Then(ua1 []uint) *StorageMock {
+	e.results = &StorageMockGetIDsResults{ua1}
+	return e.mock
 }
 
 // Times sets number of times Storage.GetIDs should be invoked
@@ -754,18 +1280,48 @@ func (mmGetIDs *mStorageMockGetIDs) invocationsDone() bool {
 }
 
 // GetIDs implements mm_storage.Storage
-func (mmGetIDs *StorageMock) GetIDs() (ua1 []uint) {
+func (mmGetIDs *StorageMock) GetIDs(ctx context.Context) (ua1 []uint) {
 	mm_atomic.AddUint64(&mmGetIDs.beforeGetIDsCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetIDs.afterGetIDsCounter, 1)
 
 	mmGetIDs.t.Helper()
 
 	if mmGetIDs.inspectFuncGetIDs != nil {
-		mmGetIDs.inspectFuncGetIDs()
+		mmGetIDs.inspectFuncGetIDs(ctx)
+	}
+
+	mm_params := StorageMockGetIDsParams{ctx}
+
+	// Record call args
+	mmGetIDs.GetIDsMock.mutex.Lock()
+	mmGetIDs.GetIDsMock.callArgs = append(mmGetIDs.GetIDsMock.callArgs, &mm_params)
+	mmGetIDs.GetIDsMock.mutex.Unlock()
+
+	for _, e := range mmGetIDs.GetIDsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.ua1
+		}
 	}
 
 	if mmGetIDs.GetIDsMock.defaultExpectation != nil {
 		mm_atomic.AddUint64(&mmGetIDs.GetIDsMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetIDs.GetIDsMock.defaultExpectation.params
+		mm_want_ptrs := mmGetIDs.GetIDsMock.defaultExpectation.paramPtrs
+
+		mm_got := StorageMockGetIDsParams{ctx}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetIDs.t.Errorf("StorageMock.GetIDs got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetIDs.GetIDsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetIDs.t.Errorf("StorageMock.GetIDs got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetIDs.GetIDsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
 
 		mm_results := mmGetIDs.GetIDsMock.defaultExpectation.results
 		if mm_results == nil {
@@ -774,9 +1330,9 @@ func (mmGetIDs *StorageMock) GetIDs() (ua1 []uint) {
 		return (*mm_results).ua1
 	}
 	if mmGetIDs.funcGetIDs != nil {
-		return mmGetIDs.funcGetIDs()
+		return mmGetIDs.funcGetIDs(ctx)
 	}
-	mmGetIDs.t.Fatalf("Unexpected call to StorageMock.GetIDs.")
+	mmGetIDs.t.Fatalf("Unexpected call to StorageMock.GetIDs. %v", ctx)
 	return
 }
 
@@ -788,6 +1344,19 @@ func (mmGetIDs *StorageMock) GetIDsAfterCounter() uint64 {
 // GetIDsBeforeCounter returns a count of StorageMock.GetIDs invocations
 func (mmGetIDs *StorageMock) GetIDsBeforeCounter() uint64 {
 	return mm_atomic.LoadUint64(&mmGetIDs.beforeGetIDsCounter)
+}
+
+// Calls returns a list of arguments used in each call to StorageMock.GetIDs.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetIDs *mStorageMockGetIDs) Calls() []*StorageMockGetIDsParams {
+	mmGetIDs.mutex.RLock()
+
+	argCopy := make([]*StorageMockGetIDsParams, len(mmGetIDs.callArgs))
+	copy(argCopy, mmGetIDs.callArgs)
+
+	mmGetIDs.mutex.RUnlock()
+
+	return argCopy
 }
 
 // MinimockGetIDsDone returns true if the count of the GetIDs invocations corresponds
@@ -811,14 +1380,18 @@ func (m *StorageMock) MinimockGetIDsDone() bool {
 func (m *StorageMock) MinimockGetIDsInspect() {
 	for _, e := range m.GetIDsMock.expectations {
 		if mm_atomic.LoadUint64(&e.Counter) < 1 {
-			m.t.Error("Expected call to StorageMock.GetIDs")
+			m.t.Errorf("Expected call to StorageMock.GetIDs at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
 		}
 	}
 
 	afterGetIDsCounter := mm_atomic.LoadUint64(&m.afterGetIDsCounter)
 	// if default expectation was set then invocations count should be greater than zero
 	if m.GetIDsMock.defaultExpectation != nil && afterGetIDsCounter < 1 {
-		m.t.Errorf("Expected call to StorageMock.GetIDs at\n%s", m.GetIDsMock.defaultExpectation.returnOrigin)
+		if m.GetIDsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to StorageMock.GetIDs at\n%s", m.GetIDsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to StorageMock.GetIDs at\n%s with params: %#v", m.GetIDsMock.defaultExpectation.expectationOrigins.origin, *m.GetIDsMock.defaultExpectation.params)
+		}
 	}
 	// if func was set then invocations count should be greater than zero
 	if m.funcGetIDs != nil && afterGetIDsCounter < 1 {
@@ -857,12 +1430,14 @@ type StorageMockGetItemExpectation struct {
 
 // StorageMockGetItemParams contains parameters of the Storage.GetItem
 type StorageMockGetItemParams struct {
-	id uint
+	ctx context.Context
+	id  uint
 }
 
 // StorageMockGetItemParamPtrs contains pointers to parameters of the Storage.GetItem
 type StorageMockGetItemParamPtrs struct {
-	id *uint
+	ctx *context.Context
+	id  *uint
 }
 
 // StorageMockGetItemResults contains results of the Storage.GetItem
@@ -873,8 +1448,9 @@ type StorageMockGetItemResults struct {
 
 // StorageMockGetItemOrigins contains origins of expectations of the Storage.GetItem
 type StorageMockGetItemExpectationOrigins struct {
-	origin   string
-	originId string
+	origin    string
+	originCtx string
+	originId  string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -888,7 +1464,7 @@ func (mmGetItem *mStorageMockGetItem) Optional() *mStorageMockGetItem {
 }
 
 // Expect sets up expected params for Storage.GetItem
-func (mmGetItem *mStorageMockGetItem) Expect(id uint) *mStorageMockGetItem {
+func (mmGetItem *mStorageMockGetItem) Expect(ctx context.Context, id uint) *mStorageMockGetItem {
 	if mmGetItem.mock.funcGetItem != nil {
 		mmGetItem.mock.t.Fatalf("StorageMock.GetItem mock is already set by Set")
 	}
@@ -901,7 +1477,7 @@ func (mmGetItem *mStorageMockGetItem) Expect(id uint) *mStorageMockGetItem {
 		mmGetItem.mock.t.Fatalf("StorageMock.GetItem mock is already set by ExpectParams functions")
 	}
 
-	mmGetItem.defaultExpectation.params = &StorageMockGetItemParams{id}
+	mmGetItem.defaultExpectation.params = &StorageMockGetItemParams{ctx, id}
 	mmGetItem.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmGetItem.expectations {
 		if minimock.Equal(e.params, mmGetItem.defaultExpectation.params) {
@@ -912,8 +1488,31 @@ func (mmGetItem *mStorageMockGetItem) Expect(id uint) *mStorageMockGetItem {
 	return mmGetItem
 }
 
-// ExpectIdParam1 sets up expected param id for Storage.GetItem
-func (mmGetItem *mStorageMockGetItem) ExpectIdParam1(id uint) *mStorageMockGetItem {
+// ExpectCtxParam1 sets up expected param ctx for Storage.GetItem
+func (mmGetItem *mStorageMockGetItem) ExpectCtxParam1(ctx context.Context) *mStorageMockGetItem {
+	if mmGetItem.mock.funcGetItem != nil {
+		mmGetItem.mock.t.Fatalf("StorageMock.GetItem mock is already set by Set")
+	}
+
+	if mmGetItem.defaultExpectation == nil {
+		mmGetItem.defaultExpectation = &StorageMockGetItemExpectation{}
+	}
+
+	if mmGetItem.defaultExpectation.params != nil {
+		mmGetItem.mock.t.Fatalf("StorageMock.GetItem mock is already set by Expect")
+	}
+
+	if mmGetItem.defaultExpectation.paramPtrs == nil {
+		mmGetItem.defaultExpectation.paramPtrs = &StorageMockGetItemParamPtrs{}
+	}
+	mmGetItem.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetItem.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetItem
+}
+
+// ExpectIdParam2 sets up expected param id for Storage.GetItem
+func (mmGetItem *mStorageMockGetItem) ExpectIdParam2(id uint) *mStorageMockGetItem {
 	if mmGetItem.mock.funcGetItem != nil {
 		mmGetItem.mock.t.Fatalf("StorageMock.GetItem mock is already set by Set")
 	}
@@ -936,7 +1535,7 @@ func (mmGetItem *mStorageMockGetItem) ExpectIdParam1(id uint) *mStorageMockGetIt
 }
 
 // Inspect accepts an inspector function that has same arguments as the Storage.GetItem
-func (mmGetItem *mStorageMockGetItem) Inspect(f func(id uint)) *mStorageMockGetItem {
+func (mmGetItem *mStorageMockGetItem) Inspect(f func(ctx context.Context, id uint)) *mStorageMockGetItem {
 	if mmGetItem.mock.inspectFuncGetItem != nil {
 		mmGetItem.mock.t.Fatalf("Inspect function is already set for StorageMock.GetItem")
 	}
@@ -961,7 +1560,7 @@ func (mmGetItem *mStorageMockGetItem) Return(op1 *models.Order, b1 bool) *Storag
 }
 
 // Set uses given function f to mock the Storage.GetItem method
-func (mmGetItem *mStorageMockGetItem) Set(f func(id uint) (op1 *models.Order, b1 bool)) *StorageMock {
+func (mmGetItem *mStorageMockGetItem) Set(f func(ctx context.Context, id uint) (op1 *models.Order, b1 bool)) *StorageMock {
 	if mmGetItem.defaultExpectation != nil {
 		mmGetItem.mock.t.Fatalf("Default expectation is already set for the Storage.GetItem method")
 	}
@@ -977,14 +1576,14 @@ func (mmGetItem *mStorageMockGetItem) Set(f func(id uint) (op1 *models.Order, b1
 
 // When sets expectation for the Storage.GetItem which will trigger the result defined by the following
 // Then helper
-func (mmGetItem *mStorageMockGetItem) When(id uint) *StorageMockGetItemExpectation {
+func (mmGetItem *mStorageMockGetItem) When(ctx context.Context, id uint) *StorageMockGetItemExpectation {
 	if mmGetItem.mock.funcGetItem != nil {
 		mmGetItem.mock.t.Fatalf("StorageMock.GetItem mock is already set by Set")
 	}
 
 	expectation := &StorageMockGetItemExpectation{
 		mock:               mmGetItem.mock,
-		params:             &StorageMockGetItemParams{id},
+		params:             &StorageMockGetItemParams{ctx, id},
 		expectationOrigins: StorageMockGetItemExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmGetItem.expectations = append(mmGetItem.expectations, expectation)
@@ -1019,17 +1618,17 @@ func (mmGetItem *mStorageMockGetItem) invocationsDone() bool {
 }
 
 // GetItem implements mm_storage.Storage
-func (mmGetItem *StorageMock) GetItem(id uint) (op1 *models.Order, b1 bool) {
+func (mmGetItem *StorageMock) GetItem(ctx context.Context, id uint) (op1 *models.Order, b1 bool) {
 	mm_atomic.AddUint64(&mmGetItem.beforeGetItemCounter, 1)
 	defer mm_atomic.AddUint64(&mmGetItem.afterGetItemCounter, 1)
 
 	mmGetItem.t.Helper()
 
 	if mmGetItem.inspectFuncGetItem != nil {
-		mmGetItem.inspectFuncGetItem(id)
+		mmGetItem.inspectFuncGetItem(ctx, id)
 	}
 
-	mm_params := StorageMockGetItemParams{id}
+	mm_params := StorageMockGetItemParams{ctx, id}
 
 	// Record call args
 	mmGetItem.GetItemMock.mutex.Lock()
@@ -1048,9 +1647,14 @@ func (mmGetItem *StorageMock) GetItem(id uint) (op1 *models.Order, b1 bool) {
 		mm_want := mmGetItem.GetItemMock.defaultExpectation.params
 		mm_want_ptrs := mmGetItem.GetItemMock.defaultExpectation.paramPtrs
 
-		mm_got := StorageMockGetItemParams{id}
+		mm_got := StorageMockGetItemParams{ctx, id}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetItem.t.Errorf("StorageMock.GetItem got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetItem.GetItemMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
 				mmGetItem.t.Errorf("StorageMock.GetItem got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
@@ -1069,9 +1673,9 @@ func (mmGetItem *StorageMock) GetItem(id uint) (op1 *models.Order, b1 bool) {
 		return (*mm_results).op1, (*mm_results).b1
 	}
 	if mmGetItem.funcGetItem != nil {
-		return mmGetItem.funcGetItem(id)
+		return mmGetItem.funcGetItem(ctx, id)
 	}
-	mmGetItem.t.Fatalf("Unexpected call to StorageMock.GetItem. %v", id)
+	mmGetItem.t.Fatalf("Unexpected call to StorageMock.GetItem. %v %v", ctx, id)
 	return
 }
 
@@ -1143,6 +1747,349 @@ func (m *StorageMock) MinimockGetItemInspect() {
 	}
 }
 
+type mStorageMockGetReturns struct {
+	optional           bool
+	mock               *StorageMock
+	defaultExpectation *StorageMockGetReturnsExpectation
+	expectations       []*StorageMockGetReturnsExpectation
+
+	callArgs []*StorageMockGetReturnsParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// StorageMockGetReturnsExpectation specifies expectation struct of the Storage.GetReturns
+type StorageMockGetReturnsExpectation struct {
+	mock               *StorageMock
+	params             *StorageMockGetReturnsParams
+	paramPtrs          *StorageMockGetReturnsParamPtrs
+	expectationOrigins StorageMockGetReturnsExpectationOrigins
+	results            *StorageMockGetReturnsResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// StorageMockGetReturnsParams contains parameters of the Storage.GetReturns
+type StorageMockGetReturnsParams struct {
+	ctx   context.Context
+	state models.State
+}
+
+// StorageMockGetReturnsParamPtrs contains pointers to parameters of the Storage.GetReturns
+type StorageMockGetReturnsParamPtrs struct {
+	ctx   *context.Context
+	state *models.State
+}
+
+// StorageMockGetReturnsResults contains results of the Storage.GetReturns
+type StorageMockGetReturnsResults struct {
+	opa1 []*models.Order
+	err  error
+}
+
+// StorageMockGetReturnsOrigins contains origins of expectations of the Storage.GetReturns
+type StorageMockGetReturnsExpectationOrigins struct {
+	origin      string
+	originCtx   string
+	originState string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmGetReturns *mStorageMockGetReturns) Optional() *mStorageMockGetReturns {
+	mmGetReturns.optional = true
+	return mmGetReturns
+}
+
+// Expect sets up expected params for Storage.GetReturns
+func (mmGetReturns *mStorageMockGetReturns) Expect(ctx context.Context, state models.State) *mStorageMockGetReturns {
+	if mmGetReturns.mock.funcGetReturns != nil {
+		mmGetReturns.mock.t.Fatalf("StorageMock.GetReturns mock is already set by Set")
+	}
+
+	if mmGetReturns.defaultExpectation == nil {
+		mmGetReturns.defaultExpectation = &StorageMockGetReturnsExpectation{}
+	}
+
+	if mmGetReturns.defaultExpectation.paramPtrs != nil {
+		mmGetReturns.mock.t.Fatalf("StorageMock.GetReturns mock is already set by ExpectParams functions")
+	}
+
+	mmGetReturns.defaultExpectation.params = &StorageMockGetReturnsParams{ctx, state}
+	mmGetReturns.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmGetReturns.expectations {
+		if minimock.Equal(e.params, mmGetReturns.defaultExpectation.params) {
+			mmGetReturns.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmGetReturns.defaultExpectation.params)
+		}
+	}
+
+	return mmGetReturns
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Storage.GetReturns
+func (mmGetReturns *mStorageMockGetReturns) ExpectCtxParam1(ctx context.Context) *mStorageMockGetReturns {
+	if mmGetReturns.mock.funcGetReturns != nil {
+		mmGetReturns.mock.t.Fatalf("StorageMock.GetReturns mock is already set by Set")
+	}
+
+	if mmGetReturns.defaultExpectation == nil {
+		mmGetReturns.defaultExpectation = &StorageMockGetReturnsExpectation{}
+	}
+
+	if mmGetReturns.defaultExpectation.params != nil {
+		mmGetReturns.mock.t.Fatalf("StorageMock.GetReturns mock is already set by Expect")
+	}
+
+	if mmGetReturns.defaultExpectation.paramPtrs == nil {
+		mmGetReturns.defaultExpectation.paramPtrs = &StorageMockGetReturnsParamPtrs{}
+	}
+	mmGetReturns.defaultExpectation.paramPtrs.ctx = &ctx
+	mmGetReturns.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmGetReturns
+}
+
+// ExpectStateParam2 sets up expected param state for Storage.GetReturns
+func (mmGetReturns *mStorageMockGetReturns) ExpectStateParam2(state models.State) *mStorageMockGetReturns {
+	if mmGetReturns.mock.funcGetReturns != nil {
+		mmGetReturns.mock.t.Fatalf("StorageMock.GetReturns mock is already set by Set")
+	}
+
+	if mmGetReturns.defaultExpectation == nil {
+		mmGetReturns.defaultExpectation = &StorageMockGetReturnsExpectation{}
+	}
+
+	if mmGetReturns.defaultExpectation.params != nil {
+		mmGetReturns.mock.t.Fatalf("StorageMock.GetReturns mock is already set by Expect")
+	}
+
+	if mmGetReturns.defaultExpectation.paramPtrs == nil {
+		mmGetReturns.defaultExpectation.paramPtrs = &StorageMockGetReturnsParamPtrs{}
+	}
+	mmGetReturns.defaultExpectation.paramPtrs.state = &state
+	mmGetReturns.defaultExpectation.expectationOrigins.originState = minimock.CallerInfo(1)
+
+	return mmGetReturns
+}
+
+// Inspect accepts an inspector function that has same arguments as the Storage.GetReturns
+func (mmGetReturns *mStorageMockGetReturns) Inspect(f func(ctx context.Context, state models.State)) *mStorageMockGetReturns {
+	if mmGetReturns.mock.inspectFuncGetReturns != nil {
+		mmGetReturns.mock.t.Fatalf("Inspect function is already set for StorageMock.GetReturns")
+	}
+
+	mmGetReturns.mock.inspectFuncGetReturns = f
+
+	return mmGetReturns
+}
+
+// Return sets up results that will be returned by Storage.GetReturns
+func (mmGetReturns *mStorageMockGetReturns) Return(opa1 []*models.Order, err error) *StorageMock {
+	if mmGetReturns.mock.funcGetReturns != nil {
+		mmGetReturns.mock.t.Fatalf("StorageMock.GetReturns mock is already set by Set")
+	}
+
+	if mmGetReturns.defaultExpectation == nil {
+		mmGetReturns.defaultExpectation = &StorageMockGetReturnsExpectation{mock: mmGetReturns.mock}
+	}
+	mmGetReturns.defaultExpectation.results = &StorageMockGetReturnsResults{opa1, err}
+	mmGetReturns.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmGetReturns.mock
+}
+
+// Set uses given function f to mock the Storage.GetReturns method
+func (mmGetReturns *mStorageMockGetReturns) Set(f func(ctx context.Context, state models.State) (opa1 []*models.Order, err error)) *StorageMock {
+	if mmGetReturns.defaultExpectation != nil {
+		mmGetReturns.mock.t.Fatalf("Default expectation is already set for the Storage.GetReturns method")
+	}
+
+	if len(mmGetReturns.expectations) > 0 {
+		mmGetReturns.mock.t.Fatalf("Some expectations are already set for the Storage.GetReturns method")
+	}
+
+	mmGetReturns.mock.funcGetReturns = f
+	mmGetReturns.mock.funcGetReturnsOrigin = minimock.CallerInfo(1)
+	return mmGetReturns.mock
+}
+
+// When sets expectation for the Storage.GetReturns which will trigger the result defined by the following
+// Then helper
+func (mmGetReturns *mStorageMockGetReturns) When(ctx context.Context, state models.State) *StorageMockGetReturnsExpectation {
+	if mmGetReturns.mock.funcGetReturns != nil {
+		mmGetReturns.mock.t.Fatalf("StorageMock.GetReturns mock is already set by Set")
+	}
+
+	expectation := &StorageMockGetReturnsExpectation{
+		mock:               mmGetReturns.mock,
+		params:             &StorageMockGetReturnsParams{ctx, state},
+		expectationOrigins: StorageMockGetReturnsExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmGetReturns.expectations = append(mmGetReturns.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Storage.GetReturns return parameters for the expectation previously defined by the When method
+func (e *StorageMockGetReturnsExpectation) Then(opa1 []*models.Order, err error) *StorageMock {
+	e.results = &StorageMockGetReturnsResults{opa1, err}
+	return e.mock
+}
+
+// Times sets number of times Storage.GetReturns should be invoked
+func (mmGetReturns *mStorageMockGetReturns) Times(n uint64) *mStorageMockGetReturns {
+	if n == 0 {
+		mmGetReturns.mock.t.Fatalf("Times of StorageMock.GetReturns mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmGetReturns.expectedInvocations, n)
+	mmGetReturns.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmGetReturns
+}
+
+func (mmGetReturns *mStorageMockGetReturns) invocationsDone() bool {
+	if len(mmGetReturns.expectations) == 0 && mmGetReturns.defaultExpectation == nil && mmGetReturns.mock.funcGetReturns == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmGetReturns.mock.afterGetReturnsCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmGetReturns.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// GetReturns implements mm_storage.Storage
+func (mmGetReturns *StorageMock) GetReturns(ctx context.Context, state models.State) (opa1 []*models.Order, err error) {
+	mm_atomic.AddUint64(&mmGetReturns.beforeGetReturnsCounter, 1)
+	defer mm_atomic.AddUint64(&mmGetReturns.afterGetReturnsCounter, 1)
+
+	mmGetReturns.t.Helper()
+
+	if mmGetReturns.inspectFuncGetReturns != nil {
+		mmGetReturns.inspectFuncGetReturns(ctx, state)
+	}
+
+	mm_params := StorageMockGetReturnsParams{ctx, state}
+
+	// Record call args
+	mmGetReturns.GetReturnsMock.mutex.Lock()
+	mmGetReturns.GetReturnsMock.callArgs = append(mmGetReturns.GetReturnsMock.callArgs, &mm_params)
+	mmGetReturns.GetReturnsMock.mutex.Unlock()
+
+	for _, e := range mmGetReturns.GetReturnsMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.opa1, e.results.err
+		}
+	}
+
+	if mmGetReturns.GetReturnsMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmGetReturns.GetReturnsMock.defaultExpectation.Counter, 1)
+		mm_want := mmGetReturns.GetReturnsMock.defaultExpectation.params
+		mm_want_ptrs := mmGetReturns.GetReturnsMock.defaultExpectation.paramPtrs
+
+		mm_got := StorageMockGetReturnsParams{ctx, state}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmGetReturns.t.Errorf("StorageMock.GetReturns got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetReturns.GetReturnsMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.state != nil && !minimock.Equal(*mm_want_ptrs.state, mm_got.state) {
+				mmGetReturns.t.Errorf("StorageMock.GetReturns got unexpected parameter state, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmGetReturns.GetReturnsMock.defaultExpectation.expectationOrigins.originState, *mm_want_ptrs.state, mm_got.state, minimock.Diff(*mm_want_ptrs.state, mm_got.state))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmGetReturns.t.Errorf("StorageMock.GetReturns got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmGetReturns.GetReturnsMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmGetReturns.GetReturnsMock.defaultExpectation.results
+		if mm_results == nil {
+			mmGetReturns.t.Fatal("No results are set for the StorageMock.GetReturns")
+		}
+		return (*mm_results).opa1, (*mm_results).err
+	}
+	if mmGetReturns.funcGetReturns != nil {
+		return mmGetReturns.funcGetReturns(ctx, state)
+	}
+	mmGetReturns.t.Fatalf("Unexpected call to StorageMock.GetReturns. %v %v", ctx, state)
+	return
+}
+
+// GetReturnsAfterCounter returns a count of finished StorageMock.GetReturns invocations
+func (mmGetReturns *StorageMock) GetReturnsAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetReturns.afterGetReturnsCounter)
+}
+
+// GetReturnsBeforeCounter returns a count of StorageMock.GetReturns invocations
+func (mmGetReturns *StorageMock) GetReturnsBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmGetReturns.beforeGetReturnsCounter)
+}
+
+// Calls returns a list of arguments used in each call to StorageMock.GetReturns.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmGetReturns *mStorageMockGetReturns) Calls() []*StorageMockGetReturnsParams {
+	mmGetReturns.mutex.RLock()
+
+	argCopy := make([]*StorageMockGetReturnsParams, len(mmGetReturns.callArgs))
+	copy(argCopy, mmGetReturns.callArgs)
+
+	mmGetReturns.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockGetReturnsDone returns true if the count of the GetReturns invocations corresponds
+// the number of defined expectations
+func (m *StorageMock) MinimockGetReturnsDone() bool {
+	if m.GetReturnsMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.GetReturnsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.GetReturnsMock.invocationsDone()
+}
+
+// MinimockGetReturnsInspect logs each unmet expectation
+func (m *StorageMock) MinimockGetReturnsInspect() {
+	for _, e := range m.GetReturnsMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to StorageMock.GetReturns at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterGetReturnsCounter := mm_atomic.LoadUint64(&m.afterGetReturnsCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.GetReturnsMock.defaultExpectation != nil && afterGetReturnsCounter < 1 {
+		if m.GetReturnsMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to StorageMock.GetReturns at\n%s", m.GetReturnsMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to StorageMock.GetReturns at\n%s with params: %#v", m.GetReturnsMock.defaultExpectation.expectationOrigins.origin, *m.GetReturnsMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcGetReturns != nil && afterGetReturnsCounter < 1 {
+		m.t.Errorf("Expected call to StorageMock.GetReturns at\n%s", m.funcGetReturnsOrigin)
+	}
+
+	if !m.GetReturnsMock.invocationsDone() && afterGetReturnsCounter > 0 {
+		m.t.Errorf("Expected %d calls to StorageMock.GetReturns at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.GetReturnsMock.expectedInvocations), m.GetReturnsMock.expectedInvocationsOrigin, afterGetReturnsCounter)
+	}
+}
+
 type mStorageMockIsConsist struct {
 	optional           bool
 	mock               *StorageMock
@@ -1169,12 +2116,14 @@ type StorageMockIsConsistExpectation struct {
 
 // StorageMockIsConsistParams contains parameters of the Storage.IsConsist
 type StorageMockIsConsistParams struct {
-	id uint
+	ctx context.Context
+	id  uint
 }
 
 // StorageMockIsConsistParamPtrs contains pointers to parameters of the Storage.IsConsist
 type StorageMockIsConsistParamPtrs struct {
-	id *uint
+	ctx *context.Context
+	id  *uint
 }
 
 // StorageMockIsConsistResults contains results of the Storage.IsConsist
@@ -1184,8 +2133,9 @@ type StorageMockIsConsistResults struct {
 
 // StorageMockIsConsistOrigins contains origins of expectations of the Storage.IsConsist
 type StorageMockIsConsistExpectationOrigins struct {
-	origin   string
-	originId string
+	origin    string
+	originCtx string
+	originId  string
 }
 
 // Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
@@ -1199,7 +2149,7 @@ func (mmIsConsist *mStorageMockIsConsist) Optional() *mStorageMockIsConsist {
 }
 
 // Expect sets up expected params for Storage.IsConsist
-func (mmIsConsist *mStorageMockIsConsist) Expect(id uint) *mStorageMockIsConsist {
+func (mmIsConsist *mStorageMockIsConsist) Expect(ctx context.Context, id uint) *mStorageMockIsConsist {
 	if mmIsConsist.mock.funcIsConsist != nil {
 		mmIsConsist.mock.t.Fatalf("StorageMock.IsConsist mock is already set by Set")
 	}
@@ -1212,7 +2162,7 @@ func (mmIsConsist *mStorageMockIsConsist) Expect(id uint) *mStorageMockIsConsist
 		mmIsConsist.mock.t.Fatalf("StorageMock.IsConsist mock is already set by ExpectParams functions")
 	}
 
-	mmIsConsist.defaultExpectation.params = &StorageMockIsConsistParams{id}
+	mmIsConsist.defaultExpectation.params = &StorageMockIsConsistParams{ctx, id}
 	mmIsConsist.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
 	for _, e := range mmIsConsist.expectations {
 		if minimock.Equal(e.params, mmIsConsist.defaultExpectation.params) {
@@ -1223,8 +2173,31 @@ func (mmIsConsist *mStorageMockIsConsist) Expect(id uint) *mStorageMockIsConsist
 	return mmIsConsist
 }
 
-// ExpectIdParam1 sets up expected param id for Storage.IsConsist
-func (mmIsConsist *mStorageMockIsConsist) ExpectIdParam1(id uint) *mStorageMockIsConsist {
+// ExpectCtxParam1 sets up expected param ctx for Storage.IsConsist
+func (mmIsConsist *mStorageMockIsConsist) ExpectCtxParam1(ctx context.Context) *mStorageMockIsConsist {
+	if mmIsConsist.mock.funcIsConsist != nil {
+		mmIsConsist.mock.t.Fatalf("StorageMock.IsConsist mock is already set by Set")
+	}
+
+	if mmIsConsist.defaultExpectation == nil {
+		mmIsConsist.defaultExpectation = &StorageMockIsConsistExpectation{}
+	}
+
+	if mmIsConsist.defaultExpectation.params != nil {
+		mmIsConsist.mock.t.Fatalf("StorageMock.IsConsist mock is already set by Expect")
+	}
+
+	if mmIsConsist.defaultExpectation.paramPtrs == nil {
+		mmIsConsist.defaultExpectation.paramPtrs = &StorageMockIsConsistParamPtrs{}
+	}
+	mmIsConsist.defaultExpectation.paramPtrs.ctx = &ctx
+	mmIsConsist.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmIsConsist
+}
+
+// ExpectIdParam2 sets up expected param id for Storage.IsConsist
+func (mmIsConsist *mStorageMockIsConsist) ExpectIdParam2(id uint) *mStorageMockIsConsist {
 	if mmIsConsist.mock.funcIsConsist != nil {
 		mmIsConsist.mock.t.Fatalf("StorageMock.IsConsist mock is already set by Set")
 	}
@@ -1247,7 +2220,7 @@ func (mmIsConsist *mStorageMockIsConsist) ExpectIdParam1(id uint) *mStorageMockI
 }
 
 // Inspect accepts an inspector function that has same arguments as the Storage.IsConsist
-func (mmIsConsist *mStorageMockIsConsist) Inspect(f func(id uint)) *mStorageMockIsConsist {
+func (mmIsConsist *mStorageMockIsConsist) Inspect(f func(ctx context.Context, id uint)) *mStorageMockIsConsist {
 	if mmIsConsist.mock.inspectFuncIsConsist != nil {
 		mmIsConsist.mock.t.Fatalf("Inspect function is already set for StorageMock.IsConsist")
 	}
@@ -1272,7 +2245,7 @@ func (mmIsConsist *mStorageMockIsConsist) Return(b1 bool) *StorageMock {
 }
 
 // Set uses given function f to mock the Storage.IsConsist method
-func (mmIsConsist *mStorageMockIsConsist) Set(f func(id uint) (b1 bool)) *StorageMock {
+func (mmIsConsist *mStorageMockIsConsist) Set(f func(ctx context.Context, id uint) (b1 bool)) *StorageMock {
 	if mmIsConsist.defaultExpectation != nil {
 		mmIsConsist.mock.t.Fatalf("Default expectation is already set for the Storage.IsConsist method")
 	}
@@ -1288,14 +2261,14 @@ func (mmIsConsist *mStorageMockIsConsist) Set(f func(id uint) (b1 bool)) *Storag
 
 // When sets expectation for the Storage.IsConsist which will trigger the result defined by the following
 // Then helper
-func (mmIsConsist *mStorageMockIsConsist) When(id uint) *StorageMockIsConsistExpectation {
+func (mmIsConsist *mStorageMockIsConsist) When(ctx context.Context, id uint) *StorageMockIsConsistExpectation {
 	if mmIsConsist.mock.funcIsConsist != nil {
 		mmIsConsist.mock.t.Fatalf("StorageMock.IsConsist mock is already set by Set")
 	}
 
 	expectation := &StorageMockIsConsistExpectation{
 		mock:               mmIsConsist.mock,
-		params:             &StorageMockIsConsistParams{id},
+		params:             &StorageMockIsConsistParams{ctx, id},
 		expectationOrigins: StorageMockIsConsistExpectationOrigins{origin: minimock.CallerInfo(1)},
 	}
 	mmIsConsist.expectations = append(mmIsConsist.expectations, expectation)
@@ -1330,17 +2303,17 @@ func (mmIsConsist *mStorageMockIsConsist) invocationsDone() bool {
 }
 
 // IsConsist implements mm_storage.Storage
-func (mmIsConsist *StorageMock) IsConsist(id uint) (b1 bool) {
+func (mmIsConsist *StorageMock) IsConsist(ctx context.Context, id uint) (b1 bool) {
 	mm_atomic.AddUint64(&mmIsConsist.beforeIsConsistCounter, 1)
 	defer mm_atomic.AddUint64(&mmIsConsist.afterIsConsistCounter, 1)
 
 	mmIsConsist.t.Helper()
 
 	if mmIsConsist.inspectFuncIsConsist != nil {
-		mmIsConsist.inspectFuncIsConsist(id)
+		mmIsConsist.inspectFuncIsConsist(ctx, id)
 	}
 
-	mm_params := StorageMockIsConsistParams{id}
+	mm_params := StorageMockIsConsistParams{ctx, id}
 
 	// Record call args
 	mmIsConsist.IsConsistMock.mutex.Lock()
@@ -1359,9 +2332,14 @@ func (mmIsConsist *StorageMock) IsConsist(id uint) (b1 bool) {
 		mm_want := mmIsConsist.IsConsistMock.defaultExpectation.params
 		mm_want_ptrs := mmIsConsist.IsConsistMock.defaultExpectation.paramPtrs
 
-		mm_got := StorageMockIsConsistParams{id}
+		mm_got := StorageMockIsConsistParams{ctx, id}
 
 		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmIsConsist.t.Errorf("StorageMock.IsConsist got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmIsConsist.IsConsistMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
 
 			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
 				mmIsConsist.t.Errorf("StorageMock.IsConsist got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
@@ -1380,9 +2358,9 @@ func (mmIsConsist *StorageMock) IsConsist(id uint) (b1 bool) {
 		return (*mm_results).b1
 	}
 	if mmIsConsist.funcIsConsist != nil {
-		return mmIsConsist.funcIsConsist(id)
+		return mmIsConsist.funcIsConsist(ctx, id)
 	}
-	mmIsConsist.t.Fatalf("Unexpected call to StorageMock.IsConsist. %v", id)
+	mmIsConsist.t.Fatalf("Unexpected call to StorageMock.IsConsist. %v %v", ctx, id)
 	return
 }
 
@@ -1454,6 +2432,783 @@ func (m *StorageMock) MinimockIsConsistInspect() {
 	}
 }
 
+type mStorageMockUpdateBeforePlace struct {
+	optional           bool
+	mock               *StorageMock
+	defaultExpectation *StorageMockUpdateBeforePlaceExpectation
+	expectations       []*StorageMockUpdateBeforePlaceExpectation
+
+	callArgs []*StorageMockUpdateBeforePlaceParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// StorageMockUpdateBeforePlaceExpectation specifies expectation struct of the Storage.UpdateBeforePlace
+type StorageMockUpdateBeforePlaceExpectation struct {
+	mock               *StorageMock
+	params             *StorageMockUpdateBeforePlaceParams
+	paramPtrs          *StorageMockUpdateBeforePlaceParamPtrs
+	expectationOrigins StorageMockUpdateBeforePlaceExpectationOrigins
+	results            *StorageMockUpdateBeforePlaceResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// StorageMockUpdateBeforePlaceParams contains parameters of the Storage.UpdateBeforePlace
+type StorageMockUpdateBeforePlaceParams struct {
+	ctx   context.Context
+	id    uint
+	state models.State
+	t     time.Time
+}
+
+// StorageMockUpdateBeforePlaceParamPtrs contains pointers to parameters of the Storage.UpdateBeforePlace
+type StorageMockUpdateBeforePlaceParamPtrs struct {
+	ctx   *context.Context
+	id    *uint
+	state *models.State
+	t     *time.Time
+}
+
+// StorageMockUpdateBeforePlaceResults contains results of the Storage.UpdateBeforePlace
+type StorageMockUpdateBeforePlaceResults struct {
+	err error
+}
+
+// StorageMockUpdateBeforePlaceOrigins contains origins of expectations of the Storage.UpdateBeforePlace
+type StorageMockUpdateBeforePlaceExpectationOrigins struct {
+	origin      string
+	originCtx   string
+	originId    string
+	originState string
+	originT     string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) Optional() *mStorageMockUpdateBeforePlace {
+	mmUpdateBeforePlace.optional = true
+	return mmUpdateBeforePlace
+}
+
+// Expect sets up expected params for Storage.UpdateBeforePlace
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) Expect(ctx context.Context, id uint, state models.State, t time.Time) *mStorageMockUpdateBeforePlace {
+	if mmUpdateBeforePlace.mock.funcUpdateBeforePlace != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Set")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation == nil {
+		mmUpdateBeforePlace.defaultExpectation = &StorageMockUpdateBeforePlaceExpectation{}
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation.paramPtrs != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by ExpectParams functions")
+	}
+
+	mmUpdateBeforePlace.defaultExpectation.params = &StorageMockUpdateBeforePlaceParams{ctx, id, state, t}
+	mmUpdateBeforePlace.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdateBeforePlace.expectations {
+		if minimock.Equal(e.params, mmUpdateBeforePlace.defaultExpectation.params) {
+			mmUpdateBeforePlace.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateBeforePlace.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdateBeforePlace
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Storage.UpdateBeforePlace
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) ExpectCtxParam1(ctx context.Context) *mStorageMockUpdateBeforePlace {
+	if mmUpdateBeforePlace.mock.funcUpdateBeforePlace != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Set")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation == nil {
+		mmUpdateBeforePlace.defaultExpectation = &StorageMockUpdateBeforePlaceExpectation{}
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation.params != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Expect")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation.paramPtrs == nil {
+		mmUpdateBeforePlace.defaultExpectation.paramPtrs = &StorageMockUpdateBeforePlaceParamPtrs{}
+	}
+	mmUpdateBeforePlace.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdateBeforePlace.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdateBeforePlace
+}
+
+// ExpectIdParam2 sets up expected param id for Storage.UpdateBeforePlace
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) ExpectIdParam2(id uint) *mStorageMockUpdateBeforePlace {
+	if mmUpdateBeforePlace.mock.funcUpdateBeforePlace != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Set")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation == nil {
+		mmUpdateBeforePlace.defaultExpectation = &StorageMockUpdateBeforePlaceExpectation{}
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation.params != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Expect")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation.paramPtrs == nil {
+		mmUpdateBeforePlace.defaultExpectation.paramPtrs = &StorageMockUpdateBeforePlaceParamPtrs{}
+	}
+	mmUpdateBeforePlace.defaultExpectation.paramPtrs.id = &id
+	mmUpdateBeforePlace.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+
+	return mmUpdateBeforePlace
+}
+
+// ExpectStateParam3 sets up expected param state for Storage.UpdateBeforePlace
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) ExpectStateParam3(state models.State) *mStorageMockUpdateBeforePlace {
+	if mmUpdateBeforePlace.mock.funcUpdateBeforePlace != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Set")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation == nil {
+		mmUpdateBeforePlace.defaultExpectation = &StorageMockUpdateBeforePlaceExpectation{}
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation.params != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Expect")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation.paramPtrs == nil {
+		mmUpdateBeforePlace.defaultExpectation.paramPtrs = &StorageMockUpdateBeforePlaceParamPtrs{}
+	}
+	mmUpdateBeforePlace.defaultExpectation.paramPtrs.state = &state
+	mmUpdateBeforePlace.defaultExpectation.expectationOrigins.originState = minimock.CallerInfo(1)
+
+	return mmUpdateBeforePlace
+}
+
+// ExpectTParam4 sets up expected param t for Storage.UpdateBeforePlace
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) ExpectTParam4(t time.Time) *mStorageMockUpdateBeforePlace {
+	if mmUpdateBeforePlace.mock.funcUpdateBeforePlace != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Set")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation == nil {
+		mmUpdateBeforePlace.defaultExpectation = &StorageMockUpdateBeforePlaceExpectation{}
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation.params != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Expect")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation.paramPtrs == nil {
+		mmUpdateBeforePlace.defaultExpectation.paramPtrs = &StorageMockUpdateBeforePlaceParamPtrs{}
+	}
+	mmUpdateBeforePlace.defaultExpectation.paramPtrs.t = &t
+	mmUpdateBeforePlace.defaultExpectation.expectationOrigins.originT = minimock.CallerInfo(1)
+
+	return mmUpdateBeforePlace
+}
+
+// Inspect accepts an inspector function that has same arguments as the Storage.UpdateBeforePlace
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) Inspect(f func(ctx context.Context, id uint, state models.State, t time.Time)) *mStorageMockUpdateBeforePlace {
+	if mmUpdateBeforePlace.mock.inspectFuncUpdateBeforePlace != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("Inspect function is already set for StorageMock.UpdateBeforePlace")
+	}
+
+	mmUpdateBeforePlace.mock.inspectFuncUpdateBeforePlace = f
+
+	return mmUpdateBeforePlace
+}
+
+// Return sets up results that will be returned by Storage.UpdateBeforePlace
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) Return(err error) *StorageMock {
+	if mmUpdateBeforePlace.mock.funcUpdateBeforePlace != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Set")
+	}
+
+	if mmUpdateBeforePlace.defaultExpectation == nil {
+		mmUpdateBeforePlace.defaultExpectation = &StorageMockUpdateBeforePlaceExpectation{mock: mmUpdateBeforePlace.mock}
+	}
+	mmUpdateBeforePlace.defaultExpectation.results = &StorageMockUpdateBeforePlaceResults{err}
+	mmUpdateBeforePlace.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdateBeforePlace.mock
+}
+
+// Set uses given function f to mock the Storage.UpdateBeforePlace method
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) Set(f func(ctx context.Context, id uint, state models.State, t time.Time) (err error)) *StorageMock {
+	if mmUpdateBeforePlace.defaultExpectation != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("Default expectation is already set for the Storage.UpdateBeforePlace method")
+	}
+
+	if len(mmUpdateBeforePlace.expectations) > 0 {
+		mmUpdateBeforePlace.mock.t.Fatalf("Some expectations are already set for the Storage.UpdateBeforePlace method")
+	}
+
+	mmUpdateBeforePlace.mock.funcUpdateBeforePlace = f
+	mmUpdateBeforePlace.mock.funcUpdateBeforePlaceOrigin = minimock.CallerInfo(1)
+	return mmUpdateBeforePlace.mock
+}
+
+// When sets expectation for the Storage.UpdateBeforePlace which will trigger the result defined by the following
+// Then helper
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) When(ctx context.Context, id uint, state models.State, t time.Time) *StorageMockUpdateBeforePlaceExpectation {
+	if mmUpdateBeforePlace.mock.funcUpdateBeforePlace != nil {
+		mmUpdateBeforePlace.mock.t.Fatalf("StorageMock.UpdateBeforePlace mock is already set by Set")
+	}
+
+	expectation := &StorageMockUpdateBeforePlaceExpectation{
+		mock:               mmUpdateBeforePlace.mock,
+		params:             &StorageMockUpdateBeforePlaceParams{ctx, id, state, t},
+		expectationOrigins: StorageMockUpdateBeforePlaceExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdateBeforePlace.expectations = append(mmUpdateBeforePlace.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Storage.UpdateBeforePlace return parameters for the expectation previously defined by the When method
+func (e *StorageMockUpdateBeforePlaceExpectation) Then(err error) *StorageMock {
+	e.results = &StorageMockUpdateBeforePlaceResults{err}
+	return e.mock
+}
+
+// Times sets number of times Storage.UpdateBeforePlace should be invoked
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) Times(n uint64) *mStorageMockUpdateBeforePlace {
+	if n == 0 {
+		mmUpdateBeforePlace.mock.t.Fatalf("Times of StorageMock.UpdateBeforePlace mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdateBeforePlace.expectedInvocations, n)
+	mmUpdateBeforePlace.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdateBeforePlace
+}
+
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) invocationsDone() bool {
+	if len(mmUpdateBeforePlace.expectations) == 0 && mmUpdateBeforePlace.defaultExpectation == nil && mmUpdateBeforePlace.mock.funcUpdateBeforePlace == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdateBeforePlace.mock.afterUpdateBeforePlaceCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateBeforePlace.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdateBeforePlace implements mm_storage.Storage
+func (mmUpdateBeforePlace *StorageMock) UpdateBeforePlace(ctx context.Context, id uint, state models.State, t time.Time) (err error) {
+	mm_atomic.AddUint64(&mmUpdateBeforePlace.beforeUpdateBeforePlaceCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdateBeforePlace.afterUpdateBeforePlaceCounter, 1)
+
+	mmUpdateBeforePlace.t.Helper()
+
+	if mmUpdateBeforePlace.inspectFuncUpdateBeforePlace != nil {
+		mmUpdateBeforePlace.inspectFuncUpdateBeforePlace(ctx, id, state, t)
+	}
+
+	mm_params := StorageMockUpdateBeforePlaceParams{ctx, id, state, t}
+
+	// Record call args
+	mmUpdateBeforePlace.UpdateBeforePlaceMock.mutex.Lock()
+	mmUpdateBeforePlace.UpdateBeforePlaceMock.callArgs = append(mmUpdateBeforePlace.UpdateBeforePlaceMock.callArgs, &mm_params)
+	mmUpdateBeforePlace.UpdateBeforePlaceMock.mutex.Unlock()
+
+	for _, e := range mmUpdateBeforePlace.UpdateBeforePlaceMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation.paramPtrs
+
+		mm_got := StorageMockUpdateBeforePlaceParams{ctx, id, state, t}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdateBeforePlace.t.Errorf("StorageMock.UpdateBeforePlace got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmUpdateBeforePlace.t.Errorf("StorageMock.UpdateBeforePlace got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+			if mm_want_ptrs.state != nil && !minimock.Equal(*mm_want_ptrs.state, mm_got.state) {
+				mmUpdateBeforePlace.t.Errorf("StorageMock.UpdateBeforePlace got unexpected parameter state, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation.expectationOrigins.originState, *mm_want_ptrs.state, mm_got.state, minimock.Diff(*mm_want_ptrs.state, mm_got.state))
+			}
+
+			if mm_want_ptrs.t != nil && !minimock.Equal(*mm_want_ptrs.t, mm_got.t) {
+				mmUpdateBeforePlace.t.Errorf("StorageMock.UpdateBeforePlace got unexpected parameter t, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation.expectationOrigins.originT, *mm_want_ptrs.t, mm_got.t, minimock.Diff(*mm_want_ptrs.t, mm_got.t))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdateBeforePlace.t.Errorf("StorageMock.UpdateBeforePlace got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdateBeforePlace.UpdateBeforePlaceMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdateBeforePlace.t.Fatal("No results are set for the StorageMock.UpdateBeforePlace")
+		}
+		return (*mm_results).err
+	}
+	if mmUpdateBeforePlace.funcUpdateBeforePlace != nil {
+		return mmUpdateBeforePlace.funcUpdateBeforePlace(ctx, id, state, t)
+	}
+	mmUpdateBeforePlace.t.Fatalf("Unexpected call to StorageMock.UpdateBeforePlace. %v %v %v %v", ctx, id, state, t)
+	return
+}
+
+// UpdateBeforePlaceAfterCounter returns a count of finished StorageMock.UpdateBeforePlace invocations
+func (mmUpdateBeforePlace *StorageMock) UpdateBeforePlaceAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateBeforePlace.afterUpdateBeforePlaceCounter)
+}
+
+// UpdateBeforePlaceBeforeCounter returns a count of StorageMock.UpdateBeforePlace invocations
+func (mmUpdateBeforePlace *StorageMock) UpdateBeforePlaceBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateBeforePlace.beforeUpdateBeforePlaceCounter)
+}
+
+// Calls returns a list of arguments used in each call to StorageMock.UpdateBeforePlace.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdateBeforePlace *mStorageMockUpdateBeforePlace) Calls() []*StorageMockUpdateBeforePlaceParams {
+	mmUpdateBeforePlace.mutex.RLock()
+
+	argCopy := make([]*StorageMockUpdateBeforePlaceParams, len(mmUpdateBeforePlace.callArgs))
+	copy(argCopy, mmUpdateBeforePlace.callArgs)
+
+	mmUpdateBeforePlace.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdateBeforePlaceDone returns true if the count of the UpdateBeforePlace invocations corresponds
+// the number of defined expectations
+func (m *StorageMock) MinimockUpdateBeforePlaceDone() bool {
+	if m.UpdateBeforePlaceMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdateBeforePlaceMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdateBeforePlaceMock.invocationsDone()
+}
+
+// MinimockUpdateBeforePlaceInspect logs each unmet expectation
+func (m *StorageMock) MinimockUpdateBeforePlaceInspect() {
+	for _, e := range m.UpdateBeforePlaceMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to StorageMock.UpdateBeforePlace at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdateBeforePlaceCounter := mm_atomic.LoadUint64(&m.afterUpdateBeforePlaceCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdateBeforePlaceMock.defaultExpectation != nil && afterUpdateBeforePlaceCounter < 1 {
+		if m.UpdateBeforePlaceMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to StorageMock.UpdateBeforePlace at\n%s", m.UpdateBeforePlaceMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to StorageMock.UpdateBeforePlace at\n%s with params: %#v", m.UpdateBeforePlaceMock.defaultExpectation.expectationOrigins.origin, *m.UpdateBeforePlaceMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdateBeforePlace != nil && afterUpdateBeforePlaceCounter < 1 {
+		m.t.Errorf("Expected call to StorageMock.UpdateBeforePlace at\n%s", m.funcUpdateBeforePlaceOrigin)
+	}
+
+	if !m.UpdateBeforePlaceMock.invocationsDone() && afterUpdateBeforePlaceCounter > 0 {
+		m.t.Errorf("Expected %d calls to StorageMock.UpdateBeforePlace at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdateBeforePlaceMock.expectedInvocations), m.UpdateBeforePlaceMock.expectedInvocationsOrigin, afterUpdateBeforePlaceCounter)
+	}
+}
+
+type mStorageMockUpdateState struct {
+	optional           bool
+	mock               *StorageMock
+	defaultExpectation *StorageMockUpdateStateExpectation
+	expectations       []*StorageMockUpdateStateExpectation
+
+	callArgs []*StorageMockUpdateStateParams
+	mutex    sync.RWMutex
+
+	expectedInvocations       uint64
+	expectedInvocationsOrigin string
+}
+
+// StorageMockUpdateStateExpectation specifies expectation struct of the Storage.UpdateState
+type StorageMockUpdateStateExpectation struct {
+	mock               *StorageMock
+	params             *StorageMockUpdateStateParams
+	paramPtrs          *StorageMockUpdateStateParamPtrs
+	expectationOrigins StorageMockUpdateStateExpectationOrigins
+	results            *StorageMockUpdateStateResults
+	returnOrigin       string
+	Counter            uint64
+}
+
+// StorageMockUpdateStateParams contains parameters of the Storage.UpdateState
+type StorageMockUpdateStateParams struct {
+	ctx   context.Context
+	id    uint
+	state models.State
+}
+
+// StorageMockUpdateStateParamPtrs contains pointers to parameters of the Storage.UpdateState
+type StorageMockUpdateStateParamPtrs struct {
+	ctx   *context.Context
+	id    *uint
+	state *models.State
+}
+
+// StorageMockUpdateStateResults contains results of the Storage.UpdateState
+type StorageMockUpdateStateResults struct {
+	err error
+}
+
+// StorageMockUpdateStateOrigins contains origins of expectations of the Storage.UpdateState
+type StorageMockUpdateStateExpectationOrigins struct {
+	origin      string
+	originCtx   string
+	originId    string
+	originState string
+}
+
+// Marks this method to be optional. The default behavior of any method with Return() is '1 or more', meaning
+// the test will fail minimock's automatic final call check if the mocked method was not called at least once.
+// Optional() makes method check to work in '0 or more' mode.
+// It is NOT RECOMMENDED to use this option unless you really need it, as default behaviour helps to
+// catch the problems when the expected method call is totally skipped during test run.
+func (mmUpdateState *mStorageMockUpdateState) Optional() *mStorageMockUpdateState {
+	mmUpdateState.optional = true
+	return mmUpdateState
+}
+
+// Expect sets up expected params for Storage.UpdateState
+func (mmUpdateState *mStorageMockUpdateState) Expect(ctx context.Context, id uint, state models.State) *mStorageMockUpdateState {
+	if mmUpdateState.mock.funcUpdateState != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by Set")
+	}
+
+	if mmUpdateState.defaultExpectation == nil {
+		mmUpdateState.defaultExpectation = &StorageMockUpdateStateExpectation{}
+	}
+
+	if mmUpdateState.defaultExpectation.paramPtrs != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by ExpectParams functions")
+	}
+
+	mmUpdateState.defaultExpectation.params = &StorageMockUpdateStateParams{ctx, id, state}
+	mmUpdateState.defaultExpectation.expectationOrigins.origin = minimock.CallerInfo(1)
+	for _, e := range mmUpdateState.expectations {
+		if minimock.Equal(e.params, mmUpdateState.defaultExpectation.params) {
+			mmUpdateState.mock.t.Fatalf("Expectation set by When has same params: %#v", *mmUpdateState.defaultExpectation.params)
+		}
+	}
+
+	return mmUpdateState
+}
+
+// ExpectCtxParam1 sets up expected param ctx for Storage.UpdateState
+func (mmUpdateState *mStorageMockUpdateState) ExpectCtxParam1(ctx context.Context) *mStorageMockUpdateState {
+	if mmUpdateState.mock.funcUpdateState != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by Set")
+	}
+
+	if mmUpdateState.defaultExpectation == nil {
+		mmUpdateState.defaultExpectation = &StorageMockUpdateStateExpectation{}
+	}
+
+	if mmUpdateState.defaultExpectation.params != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by Expect")
+	}
+
+	if mmUpdateState.defaultExpectation.paramPtrs == nil {
+		mmUpdateState.defaultExpectation.paramPtrs = &StorageMockUpdateStateParamPtrs{}
+	}
+	mmUpdateState.defaultExpectation.paramPtrs.ctx = &ctx
+	mmUpdateState.defaultExpectation.expectationOrigins.originCtx = minimock.CallerInfo(1)
+
+	return mmUpdateState
+}
+
+// ExpectIdParam2 sets up expected param id for Storage.UpdateState
+func (mmUpdateState *mStorageMockUpdateState) ExpectIdParam2(id uint) *mStorageMockUpdateState {
+	if mmUpdateState.mock.funcUpdateState != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by Set")
+	}
+
+	if mmUpdateState.defaultExpectation == nil {
+		mmUpdateState.defaultExpectation = &StorageMockUpdateStateExpectation{}
+	}
+
+	if mmUpdateState.defaultExpectation.params != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by Expect")
+	}
+
+	if mmUpdateState.defaultExpectation.paramPtrs == nil {
+		mmUpdateState.defaultExpectation.paramPtrs = &StorageMockUpdateStateParamPtrs{}
+	}
+	mmUpdateState.defaultExpectation.paramPtrs.id = &id
+	mmUpdateState.defaultExpectation.expectationOrigins.originId = minimock.CallerInfo(1)
+
+	return mmUpdateState
+}
+
+// ExpectStateParam3 sets up expected param state for Storage.UpdateState
+func (mmUpdateState *mStorageMockUpdateState) ExpectStateParam3(state models.State) *mStorageMockUpdateState {
+	if mmUpdateState.mock.funcUpdateState != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by Set")
+	}
+
+	if mmUpdateState.defaultExpectation == nil {
+		mmUpdateState.defaultExpectation = &StorageMockUpdateStateExpectation{}
+	}
+
+	if mmUpdateState.defaultExpectation.params != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by Expect")
+	}
+
+	if mmUpdateState.defaultExpectation.paramPtrs == nil {
+		mmUpdateState.defaultExpectation.paramPtrs = &StorageMockUpdateStateParamPtrs{}
+	}
+	mmUpdateState.defaultExpectation.paramPtrs.state = &state
+	mmUpdateState.defaultExpectation.expectationOrigins.originState = minimock.CallerInfo(1)
+
+	return mmUpdateState
+}
+
+// Inspect accepts an inspector function that has same arguments as the Storage.UpdateState
+func (mmUpdateState *mStorageMockUpdateState) Inspect(f func(ctx context.Context, id uint, state models.State)) *mStorageMockUpdateState {
+	if mmUpdateState.mock.inspectFuncUpdateState != nil {
+		mmUpdateState.mock.t.Fatalf("Inspect function is already set for StorageMock.UpdateState")
+	}
+
+	mmUpdateState.mock.inspectFuncUpdateState = f
+
+	return mmUpdateState
+}
+
+// Return sets up results that will be returned by Storage.UpdateState
+func (mmUpdateState *mStorageMockUpdateState) Return(err error) *StorageMock {
+	if mmUpdateState.mock.funcUpdateState != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by Set")
+	}
+
+	if mmUpdateState.defaultExpectation == nil {
+		mmUpdateState.defaultExpectation = &StorageMockUpdateStateExpectation{mock: mmUpdateState.mock}
+	}
+	mmUpdateState.defaultExpectation.results = &StorageMockUpdateStateResults{err}
+	mmUpdateState.defaultExpectation.returnOrigin = minimock.CallerInfo(1)
+	return mmUpdateState.mock
+}
+
+// Set uses given function f to mock the Storage.UpdateState method
+func (mmUpdateState *mStorageMockUpdateState) Set(f func(ctx context.Context, id uint, state models.State) (err error)) *StorageMock {
+	if mmUpdateState.defaultExpectation != nil {
+		mmUpdateState.mock.t.Fatalf("Default expectation is already set for the Storage.UpdateState method")
+	}
+
+	if len(mmUpdateState.expectations) > 0 {
+		mmUpdateState.mock.t.Fatalf("Some expectations are already set for the Storage.UpdateState method")
+	}
+
+	mmUpdateState.mock.funcUpdateState = f
+	mmUpdateState.mock.funcUpdateStateOrigin = minimock.CallerInfo(1)
+	return mmUpdateState.mock
+}
+
+// When sets expectation for the Storage.UpdateState which will trigger the result defined by the following
+// Then helper
+func (mmUpdateState *mStorageMockUpdateState) When(ctx context.Context, id uint, state models.State) *StorageMockUpdateStateExpectation {
+	if mmUpdateState.mock.funcUpdateState != nil {
+		mmUpdateState.mock.t.Fatalf("StorageMock.UpdateState mock is already set by Set")
+	}
+
+	expectation := &StorageMockUpdateStateExpectation{
+		mock:               mmUpdateState.mock,
+		params:             &StorageMockUpdateStateParams{ctx, id, state},
+		expectationOrigins: StorageMockUpdateStateExpectationOrigins{origin: minimock.CallerInfo(1)},
+	}
+	mmUpdateState.expectations = append(mmUpdateState.expectations, expectation)
+	return expectation
+}
+
+// Then sets up Storage.UpdateState return parameters for the expectation previously defined by the When method
+func (e *StorageMockUpdateStateExpectation) Then(err error) *StorageMock {
+	e.results = &StorageMockUpdateStateResults{err}
+	return e.mock
+}
+
+// Times sets number of times Storage.UpdateState should be invoked
+func (mmUpdateState *mStorageMockUpdateState) Times(n uint64) *mStorageMockUpdateState {
+	if n == 0 {
+		mmUpdateState.mock.t.Fatalf("Times of StorageMock.UpdateState mock can not be zero")
+	}
+	mm_atomic.StoreUint64(&mmUpdateState.expectedInvocations, n)
+	mmUpdateState.expectedInvocationsOrigin = minimock.CallerInfo(1)
+	return mmUpdateState
+}
+
+func (mmUpdateState *mStorageMockUpdateState) invocationsDone() bool {
+	if len(mmUpdateState.expectations) == 0 && mmUpdateState.defaultExpectation == nil && mmUpdateState.mock.funcUpdateState == nil {
+		return true
+	}
+
+	totalInvocations := mm_atomic.LoadUint64(&mmUpdateState.mock.afterUpdateStateCounter)
+	expectedInvocations := mm_atomic.LoadUint64(&mmUpdateState.expectedInvocations)
+
+	return totalInvocations > 0 && (expectedInvocations == 0 || expectedInvocations == totalInvocations)
+}
+
+// UpdateState implements mm_storage.Storage
+func (mmUpdateState *StorageMock) UpdateState(ctx context.Context, id uint, state models.State) (err error) {
+	mm_atomic.AddUint64(&mmUpdateState.beforeUpdateStateCounter, 1)
+	defer mm_atomic.AddUint64(&mmUpdateState.afterUpdateStateCounter, 1)
+
+	mmUpdateState.t.Helper()
+
+	if mmUpdateState.inspectFuncUpdateState != nil {
+		mmUpdateState.inspectFuncUpdateState(ctx, id, state)
+	}
+
+	mm_params := StorageMockUpdateStateParams{ctx, id, state}
+
+	// Record call args
+	mmUpdateState.UpdateStateMock.mutex.Lock()
+	mmUpdateState.UpdateStateMock.callArgs = append(mmUpdateState.UpdateStateMock.callArgs, &mm_params)
+	mmUpdateState.UpdateStateMock.mutex.Unlock()
+
+	for _, e := range mmUpdateState.UpdateStateMock.expectations {
+		if minimock.Equal(*e.params, mm_params) {
+			mm_atomic.AddUint64(&e.Counter, 1)
+			return e.results.err
+		}
+	}
+
+	if mmUpdateState.UpdateStateMock.defaultExpectation != nil {
+		mm_atomic.AddUint64(&mmUpdateState.UpdateStateMock.defaultExpectation.Counter, 1)
+		mm_want := mmUpdateState.UpdateStateMock.defaultExpectation.params
+		mm_want_ptrs := mmUpdateState.UpdateStateMock.defaultExpectation.paramPtrs
+
+		mm_got := StorageMockUpdateStateParams{ctx, id, state}
+
+		if mm_want_ptrs != nil {
+
+			if mm_want_ptrs.ctx != nil && !minimock.Equal(*mm_want_ptrs.ctx, mm_got.ctx) {
+				mmUpdateState.t.Errorf("StorageMock.UpdateState got unexpected parameter ctx, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateState.UpdateStateMock.defaultExpectation.expectationOrigins.originCtx, *mm_want_ptrs.ctx, mm_got.ctx, minimock.Diff(*mm_want_ptrs.ctx, mm_got.ctx))
+			}
+
+			if mm_want_ptrs.id != nil && !minimock.Equal(*mm_want_ptrs.id, mm_got.id) {
+				mmUpdateState.t.Errorf("StorageMock.UpdateState got unexpected parameter id, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateState.UpdateStateMock.defaultExpectation.expectationOrigins.originId, *mm_want_ptrs.id, mm_got.id, minimock.Diff(*mm_want_ptrs.id, mm_got.id))
+			}
+
+			if mm_want_ptrs.state != nil && !minimock.Equal(*mm_want_ptrs.state, mm_got.state) {
+				mmUpdateState.t.Errorf("StorageMock.UpdateState got unexpected parameter state, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+					mmUpdateState.UpdateStateMock.defaultExpectation.expectationOrigins.originState, *mm_want_ptrs.state, mm_got.state, minimock.Diff(*mm_want_ptrs.state, mm_got.state))
+			}
+
+		} else if mm_want != nil && !minimock.Equal(*mm_want, mm_got) {
+			mmUpdateState.t.Errorf("StorageMock.UpdateState got unexpected parameters, expected at\n%s:\nwant: %#v\n got: %#v%s\n",
+				mmUpdateState.UpdateStateMock.defaultExpectation.expectationOrigins.origin, *mm_want, mm_got, minimock.Diff(*mm_want, mm_got))
+		}
+
+		mm_results := mmUpdateState.UpdateStateMock.defaultExpectation.results
+		if mm_results == nil {
+			mmUpdateState.t.Fatal("No results are set for the StorageMock.UpdateState")
+		}
+		return (*mm_results).err
+	}
+	if mmUpdateState.funcUpdateState != nil {
+		return mmUpdateState.funcUpdateState(ctx, id, state)
+	}
+	mmUpdateState.t.Fatalf("Unexpected call to StorageMock.UpdateState. %v %v %v", ctx, id, state)
+	return
+}
+
+// UpdateStateAfterCounter returns a count of finished StorageMock.UpdateState invocations
+func (mmUpdateState *StorageMock) UpdateStateAfterCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateState.afterUpdateStateCounter)
+}
+
+// UpdateStateBeforeCounter returns a count of StorageMock.UpdateState invocations
+func (mmUpdateState *StorageMock) UpdateStateBeforeCounter() uint64 {
+	return mm_atomic.LoadUint64(&mmUpdateState.beforeUpdateStateCounter)
+}
+
+// Calls returns a list of arguments used in each call to StorageMock.UpdateState.
+// The list is in the same order as the calls were made (i.e. recent calls have a higher index)
+func (mmUpdateState *mStorageMockUpdateState) Calls() []*StorageMockUpdateStateParams {
+	mmUpdateState.mutex.RLock()
+
+	argCopy := make([]*StorageMockUpdateStateParams, len(mmUpdateState.callArgs))
+	copy(argCopy, mmUpdateState.callArgs)
+
+	mmUpdateState.mutex.RUnlock()
+
+	return argCopy
+}
+
+// MinimockUpdateStateDone returns true if the count of the UpdateState invocations corresponds
+// the number of defined expectations
+func (m *StorageMock) MinimockUpdateStateDone() bool {
+	if m.UpdateStateMock.optional {
+		// Optional methods provide '0 or more' call count restriction.
+		return true
+	}
+
+	for _, e := range m.UpdateStateMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			return false
+		}
+	}
+
+	return m.UpdateStateMock.invocationsDone()
+}
+
+// MinimockUpdateStateInspect logs each unmet expectation
+func (m *StorageMock) MinimockUpdateStateInspect() {
+	for _, e := range m.UpdateStateMock.expectations {
+		if mm_atomic.LoadUint64(&e.Counter) < 1 {
+			m.t.Errorf("Expected call to StorageMock.UpdateState at\n%s with params: %#v", e.expectationOrigins.origin, *e.params)
+		}
+	}
+
+	afterUpdateStateCounter := mm_atomic.LoadUint64(&m.afterUpdateStateCounter)
+	// if default expectation was set then invocations count should be greater than zero
+	if m.UpdateStateMock.defaultExpectation != nil && afterUpdateStateCounter < 1 {
+		if m.UpdateStateMock.defaultExpectation.params == nil {
+			m.t.Errorf("Expected call to StorageMock.UpdateState at\n%s", m.UpdateStateMock.defaultExpectation.returnOrigin)
+		} else {
+			m.t.Errorf("Expected call to StorageMock.UpdateState at\n%s with params: %#v", m.UpdateStateMock.defaultExpectation.expectationOrigins.origin, *m.UpdateStateMock.defaultExpectation.params)
+		}
+	}
+	// if func was set then invocations count should be greater than zero
+	if m.funcUpdateState != nil && afterUpdateStateCounter < 1 {
+		m.t.Errorf("Expected call to StorageMock.UpdateState at\n%s", m.funcUpdateStateOrigin)
+	}
+
+	if !m.UpdateStateMock.invocationsDone() && afterUpdateStateCounter > 0 {
+		m.t.Errorf("Expected %d calls to StorageMock.UpdateState at\n%s but found %d calls",
+			mm_atomic.LoadUint64(&m.UpdateStateMock.expectedInvocations), m.UpdateStateMock.expectedInvocationsOrigin, afterUpdateStateCounter)
+	}
+}
+
 // MinimockFinish checks that all mocked methods have been called the expected number of times
 func (m *StorageMock) MinimockFinish() {
 	m.finishOnce.Do(func() {
@@ -1462,11 +3217,19 @@ func (m *StorageMock) MinimockFinish() {
 
 			m.MinimockDeleteFromStorageInspect()
 
+			m.MinimockGetByUserIdInspect()
+
 			m.MinimockGetIDsInspect()
 
 			m.MinimockGetItemInspect()
 
+			m.MinimockGetReturnsInspect()
+
 			m.MinimockIsConsistInspect()
+
+			m.MinimockUpdateBeforePlaceInspect()
+
+			m.MinimockUpdateStateInspect()
 		}
 	})
 }
@@ -1492,7 +3255,11 @@ func (m *StorageMock) minimockDone() bool {
 	return done &&
 		m.MinimockAddToStorageDone() &&
 		m.MinimockDeleteFromStorageDone() &&
+		m.MinimockGetByUserIdDone() &&
 		m.MinimockGetIDsDone() &&
 		m.MinimockGetItemDone() &&
-		m.MinimockIsConsistDone()
+		m.MinimockGetReturnsDone() &&
+		m.MinimockIsConsistDone() &&
+		m.MinimockUpdateBeforePlaceDone() &&
+		m.MinimockUpdateStateDone()
 }
