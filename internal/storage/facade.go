@@ -35,19 +35,22 @@ func NewStorageFacade(
 }
 
 func (s storageFacade) AcceptOrder(ctx context.Context, or *models.Order) error {
-	if s.pgRepository.IsConsist(ctx, or.ID) {
-		return e.ErrIsConsist
-	}
-	if or.KeepUntilDate.Before(time.Now()) {
-		return e.ErrDate
-	}
-	or.State = models.AcceptState
-	or.AcceptTime = time.Now().Unix()
-	err := s.pgRepository.AddToStorage(ctx, or)
-	if err != nil {
-		return err
-	}
-	return nil
+	return s.txManager.RunReadCommited(ctx, func(ctxTx context.Context) error {
+
+		if s.pgRepository.IsConsist(ctx, or.ID) {
+			return e.ErrIsConsist
+		}
+		if or.KeepUntilDate.Before(time.Now()) {
+			return e.ErrDate
+		}
+		or.State = models.AcceptState
+		or.AcceptTime = time.Now().Unix()
+		err := s.pgRepository.AddToStorage(ctx, or)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
 }
 
 func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint) error {

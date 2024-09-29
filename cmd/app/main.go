@@ -10,7 +10,6 @@ import (
 )
 
 func main() {
-	//oS := orderStorage.NewOrderStorage()
 	const psqlDSN = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 	ctx := context.Background()
 	pool, err := pgxpool.New(ctx, psqlDSN)
@@ -19,7 +18,6 @@ func main() {
 	}
 	defer pool.Close()
 	oS := newStorageFacade(pool)
-	//oS.AddToStorage(ctx, &models.Order{ID: 3, UserID: 1, State: models.AcceptState})
 
 	//err = signals.SignalSearch(*oS)
 	//if err != nil {
@@ -30,7 +28,7 @@ func main() {
 	if err != nil {
 		return
 	}
-	//oS.WriteToJSON()
+
 }
 
 func newStorageFacade(pool *pgxpool.Pool) storage.Facade {
