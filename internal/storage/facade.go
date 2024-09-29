@@ -13,7 +13,7 @@ type Facade interface {
 	AcceptOrder(ctx context.Context, or *models.Order) error
 	PlaceOrder(ctx context.Context, ids []uint) error
 	ReturnOrder(ctx context.Context, id uint) error
-	ListOrders(ctx context.Context, id uint, n int, inPuP bool) ([]models.Order, error)
+	ListOrders(ctx context.Context, id uint, inPuP bool) ([]models.Order, error)
 	RefundOrder(ctx context.Context, id uint, userId uint) error
 	ListReturns(ctx context.Context, limit, page int) ([]models.Order, error)
 	CheckIDsOrders(ctx context.Context, ids []uint) error
@@ -99,7 +99,7 @@ func (s storageFacade) ReturnOrder(ctx context.Context, id uint) error {
 	})
 }
 
-func (s storageFacade) ListOrders(ctx context.Context, id uint, n int, inPuP bool) ([]models.Order, error) {
+func (s storageFacade) ListOrders(ctx context.Context, id uint, inPuP bool) ([]models.Order, error) {
 	var list []models.Order
 	list, err := s.pgRepository.GetOrders(ctx, id, inPuP)
 	if err != nil {

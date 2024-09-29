@@ -29,7 +29,7 @@ func ReturnOrder(ctx context.Context, s storage.Facade, id uint) error {
 }
 
 func ListOrders(ctx context.Context, s storage.Facade, id uint, n int, inPuP bool) error {
-	list, err := s.ListOrders(ctx, id, n, inPuP)
+	list, err := s.ListOrders(ctx, id, inPuP)
 	if err != nil {
 		return err
 	}
