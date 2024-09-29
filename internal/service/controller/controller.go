@@ -9,7 +9,7 @@ import (
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 )
 
-func WAcceptOrder(ctx context.Context, s storage.Storage) error {
+func WAcceptOrder(ctx context.Context, s storage.Facade) error {
 	order, packageType, needWrapping, err := inputs.CollectOrderInput()
 	if err != nil {
 		return err
@@ -28,7 +28,7 @@ func WAcceptOrder(ctx context.Context, s storage.Storage) error {
 	return nil
 }
 
-func WReturnOrder(ctx context.Context, s storage.Storage) error {
+func WReturnOrder(ctx context.Context, s storage.Facade) error {
 	id, err := inputs.InputOrderID()
 	if err != nil {
 		return err
@@ -37,7 +37,7 @@ func WReturnOrder(ctx context.Context, s storage.Storage) error {
 	return orders.ReturnOrder(ctx, s, id)
 }
 
-func WPlaceOrder(ctx context.Context, s storage.Storage) error {
+func WPlaceOrder(ctx context.Context, s storage.Facade) error {
 	uintdata, err := inputs.InputOrderIDs()
 	if err != nil {
 		return err
@@ -46,7 +46,7 @@ func WPlaceOrder(ctx context.Context, s storage.Storage) error {
 	return orders.PlaceOrder(ctx, s, uintdata)
 }
 
-func WListOrders(ctx context.Context, s storage.Storage) error {
+func WListOrders(ctx context.Context, s storage.Facade) error {
 	id, err := inputs.InputUserID()
 	if err != nil {
 		return err
@@ -71,7 +71,7 @@ func WListOrders(ctx context.Context, s storage.Storage) error {
 	return nil
 }
 
-func WRefundOrder(ctx context.Context, oS storage.Storage) error {
+func WRefundOrder(ctx context.Context, oS storage.Facade) error {
 	orderId, userId, err := inputs.InputOrderAndUserID()
 	if err != nil {
 		return err
@@ -80,7 +80,7 @@ func WRefundOrder(ctx context.Context, oS storage.Storage) error {
 	return returns.RefundOrder(ctx, oS, orderId, userId)
 }
 
-func WListReturns(ctx context.Context, oS storage.Storage) error {
+func WListReturns(ctx context.Context, oS storage.Facade) error {
 	limit, page, err := inputs.InputReturnsPagination()
 	if err != nil {
 		return err

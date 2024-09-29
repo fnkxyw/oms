@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/jackc/pgx/v5/pgxpool"
 	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/postgres"
 	"log"
 )
@@ -17,7 +18,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer pool.Close()
-	oS := postgres.NewPgRepository(pool)
+	oS := newStorageFacade(pool)
 	//oS.AddToStorage(ctx, &models.Order{ID: 3, UserID: 1, State: models.AcceptState})
 
 	//err = signals.SignalSearch(*oS)
@@ -30,4 +31,12 @@ func main() {
 		return
 	}
 	//oS.WriteToJSON()
+}
+
+func newStorageFacade(pool *pgxpool.Pool) storage.Facade {
+	txManager := postgres.NewTxManager(pool)
+
+	pgRepository := postgres.NewPgRepository(txManager)
+
+	return storage.NewStorageFacade(txManager, pgRepository)
 }

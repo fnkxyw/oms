@@ -21,7 +21,7 @@ var helpText = `
      listReturns - allows you to get a list of returns
 `
 
-func Run(ctx context.Context, oS storage.Storage) error {
+func Run(ctx context.Context, oS storage.Facade) error {
 	showHelp()
 
 	in := bufio.NewReader(os.Stdin)
