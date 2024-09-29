@@ -2,9 +2,14 @@ package postgres
 
 import (
 	"context"
+	"errors"
 	"github.com/jackc/pgx/v5"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	"time"
+)
+
+var (
+	ErrorNotFoundContact = errors.New("contact not found")
 )
 
 type PgRepository struct {
@@ -37,7 +42,15 @@ func (r *PgRepository) IsConsist(ctx context.Context, id uint) bool {
 
 func (r *PgRepository) DeleteFromStorage(ctx context.Context, id uint) error {
 	tx := r.txManager.GetQueryEngine(ctx)
-	_, err := tx.Exec(ctx, `UPDATE orders SET state = $1 WHERE id = $2`, models.SoftDelete, id)
+	result, err := tx.Exec(ctx, `UPDATE orders SET state = $1 WHERE id = $2`, models.SoftDelete, id)
+	if err != nil {
+		return err
+	}
+	rowsAffected := result.RowsAffected()
+	if rowsAffected == 0 {
+		return ErrorNotFoundContact
+	}
+
 	return err
 }
 
