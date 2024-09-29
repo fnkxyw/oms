@@ -13,8 +13,8 @@ type Storage interface {
 	IsConsist(ctx context.Context, id uint) bool
 
 	GetItem(ctx context.Context, id uint) (*models.Order, bool)
-	GetByUserId(ctx context.Context, userId uint) ([]models.Order, error)
-	ListReturns(ctx context.Context, limit, page int) ([]models.Order, error)
+	GetOrders(ctx context.Context, userId uint, inPuP bool) ([]models.Order, error)
+	GetReturns(ctx context.Context, limit, page int) ([]models.Order, error)
 
 	UpdateBeforePlace(ctx context.Context, id uint, state models.State, t time.Time) error
 	UpdateState(ctx context.Context, id uint, state models.State) error

@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"sort"
 	"time"
@@ -64,21 +63,6 @@ func PlaceOrder(ctx context.Context, s storage.Storage, ids []uint) error {
 	return nil
 }
 
-func ListOrders(ctx context.Context, s storage.Storage, id uint, n int, inPuP bool) error {
-	var list []models.Order
-	list = FilterOrders(ctx, s, id, inPuP)
-	SortOrders(list)
-	if n < 1 {
-		n = 1
-	} else if n > len(list) {
-		n = len(list)
-	}
-	if !inPuP {
-		list = list[:n]
-	}
-	return pagination.ScrollPagination(list, 1)
-}
-
 // вернуть заказ курьеру
 func ReturnOrder(ctx context.Context, s storage.Storage, id uint) error {
 
@@ -99,26 +83,32 @@ func ReturnOrder(ctx context.Context, s storage.Storage, id uint) error {
 	return nil
 }
 
-func SortOrders(o []models.Order) {
-	sort.Slice(o, func(i, j int) bool {
-		return o[i].AcceptTime < o[j].AcceptTime
-	})
+func ListOrders(ctx context.Context, s storage.Storage, id uint, n int, inPuP bool) error {
+	var list []models.Order
+	list, err := s.GetOrders(ctx, id, inPuP)
+	if err != nil {
+		return err
+	}
+	SortOrders(list)
+	if n < 1 {
+		n = 1
+	} else if n > len(list) {
+		n = len(list)
+	}
+	if !inPuP {
+		list = list[:n]
+	}
+	for _, v := range list {
+		fmt.Printf("OrderID: %v, Reciver: %v, State: %v, Price: %v₽, Date until which it will be stored: %v \n",
+			v.ID, v.UserID, v.State, v.Price, v.KeepUntilDate)
+	}
+	return nil
 }
 
-func FilterOrders(ctx context.Context, s storage.Storage, id uint, inPuP bool) []models.Order {
-	var filtered []models.Order
-	var ids []models.Order
-	ids, err := s.GetByUserId(ctx, id)
-	if err != nil {
-		return nil
-	}
-	for _, order := range ids {
-		if order.UserID == id && (!inPuP || order.State == models.AcceptState || order.State == models.RefundedState) {
-			filtered = append(filtered, order)
-		}
-	}
-
-	return filtered
+func SortOrders(o []models.Order) {
+	sort.Slice(o, func(i, j int) bool {
+		return o[i].AcceptTime > o[j].AcceptTime
+	})
 }
 
 func CheckIDsOrders(ctx context.Context, s storage.Storage, ids []uint) error {

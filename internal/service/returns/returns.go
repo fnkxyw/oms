@@ -36,7 +36,7 @@ func RefundOrder(ctx context.Context, os storage.Storage, id uint, userId uint) 
 
 func ListReturns(ctx context.Context, os storage.Storage, limit, page int) error {
 	var list []models.Order
-	list, err := os.ListReturns(ctx, page-1, limit)
+	list, err := os.GetReturns(ctx, page-1, limit)
 	if err != nil {
 		return err
 	}

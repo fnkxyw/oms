@@ -106,8 +106,8 @@ func InputOrderIDs() ([]uint, error) {
 
 func InputListChoice() (int, error) {
 	var choice int
-	fmt.Println("1. List all orderStorage which consists on our PuP\n" +
-		"2. List last N orderStorage")
+	fmt.Println("1. List all orders which consists on our PuP\n" +
+		"2. List last N orders")
 	fmt.Print(">")
 	_, err := fmt.Scan(&choice)
 	if err != nil {
