@@ -138,7 +138,7 @@ func InputOrderAndUserID() (uint, uint, error) {
 
 func InputReturnsPagination() (int, int, error) {
 	var limit, page int
-	fmt.Print("Input max Returns on one page and Page\n>")
+	fmt.Print("Input max Returns on one page and Page[1,2,...,n]\n>")
 	_, err := fmt.Scan(&limit, &page)
 	if err != nil {
 		return 0, 0, fmt.Errorf("Error scanning pagination input: %w", err)

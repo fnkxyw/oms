@@ -72,8 +72,8 @@ func (r *PgRepository) GetByUserId(ctx context.Context, userId uint) ([]models.O
 	return orders, nil
 }
 
-func (r *PgRepository) GetReturns(ctx context.Context) ([]models.Order, error) {
-	rows, err := r.pool.Query(ctx, `SELECT id, user_id, state, accept_time, keep_until_date, place_date, weight, price FROM orders WHERE state = $1`, models.RefundedState)
+func (r *PgRepository) ListReturns(ctx context.Context, page, limit int) ([]models.Order, error) {
+	rows, err := r.pool.Query(ctx, `SELECT id, user_id, state, accept_time, keep_until_date, place_date, weight, price FROM orders WHERE state = $1 LIMIT $2 OFFSET $3`, models.RefundedState, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}

@@ -2,9 +2,9 @@ package returns
 
 import (
 	"context"
+	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/pagination"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 
 	"time"
@@ -36,9 +36,12 @@ func RefundOrder(ctx context.Context, os storage.Storage, id uint, userId uint) 
 
 func ListReturns(ctx context.Context, os storage.Storage, limit, page int) error {
 	var list []models.Order
-	list, err := os.GetReturns(ctx)
+	list, err := os.ListReturns(ctx, page-1, limit)
 	if err != nil {
 		return err
 	}
-	return pagination.PagePagination(list, page, limit)
+	for _, v := range list {
+		fmt.Printf("OrderID: %d, UserID: %d \n", v.ID, v.UserID)
+	}
+	return nil
 }

@@ -14,7 +14,7 @@ type Storage interface {
 
 	GetItem(ctx context.Context, id uint) (*models.Order, bool)
 	GetByUserId(ctx context.Context, userId uint) ([]models.Order, error)
-	GetReturns(ctx context.Context) ([]models.Order, error)
+	ListReturns(ctx context.Context, limit, page int) ([]models.Order, error)
 
 	UpdateBeforePlace(ctx context.Context, id uint, state models.State, t time.Time) error
 	UpdateState(ctx context.Context, id uint, state models.State) error
