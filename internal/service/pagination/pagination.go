@@ -10,7 +10,7 @@ import (
 )
 
 // пагинация скроллом
-func ScrollPagination(orders []*models.Order, limit int) error {
+func ScrollPagination(orders []models.Order, limit int) error {
 	total := len(orders)
 	lastIndex := 0
 
@@ -46,7 +46,7 @@ func ScrollPagination(orders []*models.Order, limit int) error {
 
 }
 
-func PagePagination(returns []*models.Order, page, limit int) error {
+func PagePagination(returns []models.Order, page, limit int) error {
 	if page < 1 || limit < 1 {
 		return e.ErrLimitPage
 	}

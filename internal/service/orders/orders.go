@@ -65,7 +65,7 @@ func PlaceOrder(ctx context.Context, s storage.Storage, ids []uint) error {
 }
 
 func ListOrders(ctx context.Context, s storage.Storage, id uint, n int, inPuP bool) error {
-	var list []*models.Order
+	var list []models.Order
 	list = FilterOrders(ctx, s, id, inPuP)
 	SortOrders(list)
 	if n < 1 {
@@ -99,15 +99,15 @@ func ReturnOrder(ctx context.Context, s storage.Storage, id uint) error {
 	return nil
 }
 
-func SortOrders(o []*models.Order) {
+func SortOrders(o []models.Order) {
 	sort.Slice(o, func(i, j int) bool {
 		return o[i].AcceptTime < o[j].AcceptTime
 	})
 }
 
-func FilterOrders(ctx context.Context, s storage.Storage, id uint, inPuP bool) []*models.Order {
-	var filtered []*models.Order
-	var ids []*models.Order
+func FilterOrders(ctx context.Context, s storage.Storage, id uint, inPuP bool) []models.Order {
+	var filtered []models.Order
+	var ids []models.Order
 	ids, err := s.GetByUserId(ctx, id)
 	if err != nil {
 		return nil

@@ -172,18 +172,6 @@ func TestGetItem(t *testing.T) {
 	}
 }
 
-func TestGetIDs(t *testing.T) {
-	repo := postgres.NewPgRepository(pool)
-
-	ids, err := repo.GetIDs(ctx)
-	if len(ids) == 0 {
-		t.Fatal("expected to get order IDs, but got none")
-	}
-	if err != nil {
-		t.Fatal("failed to get ids")
-	}
-}
-
 func TestUpdateState(t *testing.T) {
 	repo := postgres.NewPgRepository(pool)
 
