@@ -14,7 +14,6 @@ type QueryEngine interface {
 
 type TransactionManager interface {
 	GetQueryEngine(ctx context.Context) QueryEngine
-	RunReadUncommitted(ctx context.Context, fn func(ctxTx context.Context) error) error
 	RunSerializable(ctx context.Context, fn func(ctxTx context.Context) error) error
 	RunReadCommited(ctx context.Context, fn func(ctxTx context.Context) error) error
 }

@@ -37,9 +37,6 @@ func NewStorageFacade(
 func (s storageFacade) AcceptOrder(ctx context.Context, or *models.Order) error {
 	return s.txManager.RunReadCommited(ctx, func(ctxTx context.Context) error {
 
-		if s.pgRepository.IsConsist(ctx, or.ID) {
-			return e.ErrIsConsist
-		}
 		if or.KeepUntilDate.Before(time.Now()) {
 			return e.ErrDate
 		}
@@ -55,27 +52,31 @@ func (s storageFacade) AcceptOrder(ctx context.Context, or *models.Order) error 
 
 func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint) error {
 	return s.txManager.RunSerializable(ctx, func(ctxT context.Context) error {
-		for _, id := range ids {
-			order, exists := s.pgRepository.GetItem(ctx, id)
-			if !exists {
-				return e.ErrNoConsist
-			}
-			if order.State == models.PlaceState {
-				return fmt.Errorf("Order by id: %d is already placed", id)
+		orders, exists := s.pgRepository.GetItems(ctxT, ids)
+		if !exists {
+			return e.ErrNoConsist
+		}
+
+		baseUserID := orders[0].UserID
+		for _, order := range orders {
+			if order.UserID != baseUserID {
+				return e.ErrNotAllIDs
 			}
 
-			if order.State == models.SoftDelete {
-				return fmt.Errorf("Order by id: %d was deleted", id)
+			switch order.State {
+			case models.PlaceState:
+				return fmt.Errorf("Order by id: %d is already placed", order.ID)
+			case models.SoftDelete:
+				return fmt.Errorf("Order by id: %d was deleted", order.ID)
 			}
 
 			if !order.KeepUntilDate.After(time.Now()) {
-				return fmt.Errorf("Order by id: %d cannot be issued to the customer because the date is invalid", id)
+				return fmt.Errorf("Order by id: %d cannot be issued to the customer because the date is invalid", order.ID)
 			}
+		}
 
-			err := s.pgRepository.UpdateBeforePlace(ctx, id, models.PlaceState, time.Now())
-			if err != nil {
-				return err
-			}
+		if err := s.pgRepository.UpdateBeforePlace(ctxT, ids, time.Now()); err != nil {
+			return err
 		}
 
 		return nil
@@ -104,7 +105,7 @@ func (s storageFacade) ReturnOrder(ctx context.Context, id uint) error {
 
 func (s storageFacade) ListOrders(ctx context.Context, id uint, inPuP bool) ([]models.Order, error) {
 	var list []models.Order
-	list, err := s.pgRepository.GetOrders(ctx, id, inPuP)
+	list, err := s.pgRepository.GetUserOrders(ctx, id, inPuP)
 	if err != nil {
 		return nil, err
 	}
@@ -143,9 +144,6 @@ func (s storageFacade) ListReturns(ctx context.Context, limit, page int) ([]mode
 	list, err := s.pgRepository.GetReturns(ctx, page-1, limit)
 	if err != nil {
 		return nil, err
-	}
-	for _, v := range list {
-		fmt.Printf("OrderID: %d, UserID: %d \n", v.ID, v.UserID)
 	}
 	return list, nil
 }

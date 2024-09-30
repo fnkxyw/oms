@@ -16,13 +16,9 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	defer pool.Close()
 	oS := newStorageFacade(pool)
-
-	//err = signals.SignalSearch(*oS)
-	//if err != nil {
-	//	return
-	//}
 
 	err = c.Run(ctx, oS)
 	if err != nil {
@@ -33,7 +29,6 @@ func main() {
 
 func newStorageFacade(pool *pgxpool.Pool) storage.Facade {
 	txManager := postgres.NewTxManager(pool)
-
 	pgRepository := postgres.NewPgRepository(txManager)
 
 	return storage.NewStorageFacade(txManager, pgRepository)

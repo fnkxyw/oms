@@ -1,21 +1,22 @@
 
-
 version: '3.1'
 
 volumes:
-  postgresql_data:
+  postgresql_master_data:
+  postgresql_replica_data:
 
 services:
-  postgres:
+  postgres-master:
     image: postgres:15-alpine
+    container_name: postgres_master
     ports:
       - "5432:5432"
     restart: always
-    volumes:
-      - postgresql_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    container_name: postgres_db
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - postgresql_master_data:/var/lib/postgresql/data
 

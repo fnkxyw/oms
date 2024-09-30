@@ -4,7 +4,7 @@ GORUN = $(GOCMD) run
 GOMOD = $(GOCMD) mod
 GOCYCLO = $(GOPATH)/bin/gocyclo
 GOCOGNIT = $(GOPATH)/bin/gocognit
-
+DSN := "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
 
@@ -54,40 +54,36 @@ coverage-cobertura:
 	gocover-cobertura < coverage.txt > coverage.xml
 
 compose-up:
-	docker-compose up -d postgres
+	docker-compose up -d postgres-master
 
 compose-down:
-	docker-compose down postgres
+	docker-compose down
 
 compose-ps:
 	docker-compose ps
 
 compose-start:
-	docker-compose start postgres
+	docker-compose start
 
-compose-stop:
-	docker-compose stop postgres
+compose-stop:public
+	docker-compose stop
 
-compose-up-test:
-	docker-compose up -d postgres_test
 
-compose-down-test:
-	docker-compose down postgres_test
 
 goose-install:
 	go install github.com/pressly/goose/v3/cmd/goose@latest
 
 goose-add:
-	goose -dir ./migrations postgres "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" create rename sql
+	goose -dir ./migrations postgres $(DSN) create rename sql
 
 goose-down:
-	goose -dir ./migrations postgres "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" reset
+	goose -dir ./migrations postgres $(DSN) reset
 
 goose-up:
-	goose -dir ./migrations postgres "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" up
+	goose -dir ./migrations postgres $(DSN) up
 
 goose-status:
-	goose -dir ./migrations postgres "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable" status
+	goose -dir ./migrations postgres $(DSN) status
 
 
 .PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura compose-up compose-down compose-ps compose-start compose-stop
