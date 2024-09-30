@@ -22,15 +22,18 @@ type Facade interface {
 type storageFacade struct {
 	txManager    postgres.TransactionManager
 	pgRepository *postgres.PgRepository
+	pgReplica    *postgres.PgRepository
 }
 
 func NewStorageFacade(
 	txManager postgres.TransactionManager,
 	pgRepository *postgres.PgRepository,
+	pgReplica *postgres.PgRepository,
 ) *storageFacade {
 	return &storageFacade{
 		txManager:    txManager,
 		pgRepository: pgRepository,
+		pgReplica:    pgReplica,
 	}
 }
 
@@ -86,7 +89,7 @@ func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint) error {
 func (s storageFacade) ReturnOrder(ctx context.Context, id uint) error {
 	return s.txManager.RunSerializable(ctx, func(ctxTx context.Context) error {
 
-		order, exists := s.pgRepository.GetItem(ctx, id)
+		order, exists := s.pgReplica.GetItem(ctx, id)
 		if !exists {
 			return e.ErrNoConsist
 		}

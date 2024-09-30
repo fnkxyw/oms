@@ -11,14 +11,20 @@ import (
 
 func main() {
 	const psqlDSN = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+	const psqlDSNr = "postgres://replicator:replicator_password@localhost:5434/postgres"
 	ctx := context.Background()
 	pool, err := pgxpool.New(ctx, psqlDSN)
 	if err != nil {
 		log.Fatal(err)
 	}
+	poolRep, err := pgxpool.New(ctx, psqlDSNr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	defer pool.Close()
-	oS := newStorageFacade(pool)
+	defer poolRep.Close()
+	oS := newStorageFacade(pool, poolRep)
 
 	err = c.Run(ctx, oS)
 	if err != nil {
@@ -27,9 +33,11 @@ func main() {
 
 }
 
-func newStorageFacade(pool *pgxpool.Pool) storage.Facade {
+func newStorageFacade(pool *pgxpool.Pool, poolRep *pgxpool.Pool) storage.Facade {
 	txManager := postgres.NewTxManager(pool)
+	txManagerRepl := postgres.NewTxManager(poolRep)
 	pgRepository := postgres.NewPgRepository(txManager)
+	pgRepositoryReplica := postgres.NewPgRepository(txManagerRepl)
 
-	return storage.NewStorageFacade(txManager, pgRepository)
+	return storage.NewStorageFacade(txManager, pgRepository, pgRepositoryReplica)
 }
