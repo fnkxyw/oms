@@ -5,7 +5,6 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/postgres"
 	"log"
 )
 
@@ -24,20 +23,11 @@ func main() {
 
 	defer pool.Close()
 	defer poolRep.Close()
-	oS := newStorageFacade(pool, poolRep)
+	oS := storage.NewStorageFacade(pool)
 
 	err = c.Run(ctx, oS)
 	if err != nil {
 		return
 	}
 
-}
-
-func newStorageFacade(pool *pgxpool.Pool, poolRep *pgxpool.Pool) storage.Facade {
-	txManager := postgres.NewTxManager(pool)
-	txManagerRepl := postgres.NewTxManager(poolRep)
-	pgRepository := postgres.NewPgRepository(txManager)
-	pgRepositoryReplica := postgres.NewPgRepository(txManagerRepl)
-
-	return storage.NewStorageFacade(txManager, pgRepository, pgRepositoryReplica)
 }

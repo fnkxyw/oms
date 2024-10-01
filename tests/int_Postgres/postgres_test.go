@@ -3,8 +3,9 @@ package int_Postgres
 import (
 	"context"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/postgres"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"log"
 	"testing"
 	"time"
@@ -61,7 +62,6 @@ func TestSetup(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	// Run migrations
 	if err := goose.Up(db, "../../migrations"); err != nil {
 		t.Fatalf("failed to run migrations: %s", err)
 	}
@@ -116,8 +116,8 @@ func seedTestData(ctx context.Context, pool *pgxpool.Pool) error {
 	return nil
 }
 
-func TestAddToStorage(t *testing.T) {
-	repo := postgres.NewPgRepository(pool)
+func TestAcceptOrder(t *testing.T) {
+	storageFacade := storage.NewStorageFacade(pool)
 
 	order := &models.Order{
 		ID:            4,
@@ -125,108 +125,81 @@ func TestAddToStorage(t *testing.T) {
 		State:         models.NewState,
 		AcceptTime:    time.Now().Unix(),
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
-		PlaceDate:     time.Now(),
-		Weight:        3.0,
-		Price:         40.0,
+		Weight:        1.0,
+		Price:         15.0,
 	}
 
-	repo.AddToStorage(ctx, order)
+	err := storageFacade.AcceptOrder(context.Background(), order)
+	assert.NoError(t, err, "Expected no error when accepting order")
 
-	item, found := repo.GetItem(ctx, 4)
-	if !found || item.ID != 4 {
-		t.Fatalf("expected to find order with ID 4, got %v", item)
+	acceptedOrder, exists := storageFacade.GetItem(context.Background(), order.ID)
+	assert.True(t, exists)
+	assert.Equal(t, models.AcceptState, acceptedOrder.State)
+}
+
+func TestPlaceOrder(t *testing.T) {
+
+	storageFacade := storage.NewStorageFacade(pool)
+
+	orderIDs := []uint{1, 2}
+
+	err := storageFacade.PlaceOrder(context.Background(), orderIDs)
+	assert.NoError(t, err)
+
+	for _, id := range orderIDs {
+		order, exists := storageFacade.GetItem(context.Background(), id)
+		assert.True(t, exists)
+		assert.Equal(t, models.PlaceState, order.State)
 	}
 }
 
-func TestIsConsist(t *testing.T) {
-	repo := postgres.NewPgRepository(pool)
+func TestReturnOrder(t *testing.T) {
 
-	exists := repo.IsConsist(ctx, 1)
-	if !exists {
-		t.Fatal("expected order with ID 1 to exist")
-	}
+	storageFacade := storage.NewStorageFacade(pool)
 
-	exists = repo.IsConsist(ctx, 100)
-	if exists {
-		t.Fatal("expected order with ID 100 to not exist")
-	}
+	orderID := uint(3)
+
+	err := storageFacade.ReturnOrder(context.Background(), orderID)
+	assert.Error(t, err)
+
+	order, exists := storageFacade.GetItem(context.Background(), orderID)
+	assert.True(t, exists)
+	assert.Equal(t, models.PlaceState, order.State)
 }
 
-func TestDeleteFromStorage(t *testing.T) {
-	repo := postgres.NewPgRepository(pool)
+func TestRefundOrder(t *testing.T) {
 
-	repo.DeleteFromStorage(ctx, 1)
+	storageFacade := storage.NewStorageFacade(pool)
 
-	deletedOrder, found := repo.GetItem(ctx, 1)
-	if !found || deletedOrder.State != models.SoftDelete {
-		t.Fatalf("expected order with ID 1 to be marked as deleted, but found: %v", deletedOrder)
-	}
+	orderID := uint(3)
+	userID := uint(2)
+
+	err := storageFacade.RefundOrder(context.Background(), orderID, userID)
+	assert.NoError(t, err)
+
+	order, exists := storageFacade.GetItem(context.Background(), orderID)
+	assert.True(t, exists)
+	assert.Equal(t, models.RefundedState, order.State)
 }
 
-func TestGetItem(t *testing.T) {
-	repo := postgres.NewPgRepository(pool)
+func TestListOrders(t *testing.T) {
 
-	order, found := repo.GetItem(ctx, 2)
-	if !found || order.ID != 2 {
-		t.Fatalf("expected to find order with ID 2, got %v", order)
-	}
+	storageFacade := storage.NewStorageFacade(pool)
+
+	userID := uint(1)
+
+	orders, err := storageFacade.ListOrders(context.Background(), userID, true)
+	assert.NoError(t, err)
+	assert.Greater(t, len(orders), 0)
 }
 
-func TestUpdateState(t *testing.T) {
-	repo := postgres.NewPgRepository(pool)
+func TestListReturns(t *testing.T) {
 
-	err := repo.UpdateState(ctx, 2, models.AcceptState)
-	if err != nil {
-		t.Fatalf("failed to update state: %s", err)
-	}
+	storageFacade := storage.NewStorageFacade(pool)
 
-	updatedOrder, _ := repo.GetItem(ctx, 2)
-	if updatedOrder.State != models.AcceptState {
-		t.Fatalf("expected state to be %s, got %s", models.AcceptState, updatedOrder.State)
-	}
-}
-
-func TestUpdateBeforePlace(t *testing.T) {
-	repo := postgres.NewPgRepository(pool)
-
-	err := repo.UpdateBeforePlace(ctx, 2, models.PlaceState, time.Now())
-	if err != nil {
-		t.Fatalf("failed to update order before placing: %s", err)
-	}
-
-	updatedOrder, _ := repo.GetItem(ctx, 2)
-	if updatedOrder.State != models.PlaceState {
-		t.Fatalf("expected state to be %s, got %s", models.PlaceState, updatedOrder.State)
-	}
-}
-
-func TestGetByUserId(t *testing.T) {
-	repo := postgres.NewPgRepository(pool)
-
-	orders, err := repo.GetByUserId(ctx, 1)
-	if err != nil || len(orders) == 0 {
-		t.Fatalf("expected to find orders for user ID 1, got error: %v", err)
-	}
-}
-
-func TestGetReturns(t *testing.T) {
-	repo := postgres.NewPgRepository(pool)
-
-	resultOrders, err := repo.GetReturns(ctx, models.RefundedState)
-	if err != nil {
-		t.Fatalf("failed to get orders: %s", err)
-	}
-
-	expectedCount := 1
-	if len(resultOrders) != expectedCount {
-		t.Fatalf("expected %d orders, got %d", expectedCount, len(resultOrders))
-	}
-
-	for _, order := range resultOrders {
-		if order.State != models.NewState {
-			t.Fatalf("expected order state to be %s, got %s", models.NewState, order.State)
-		}
-	}
+	returns, err := storageFacade.ListReturns(context.Background(), 10, 1)
+	assert.NoError(t, err)
+	assert.Greater(t, len(returns), 0)
 }
 
 func TestTeardown(t *testing.T) {

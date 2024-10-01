@@ -2,44 +2,33 @@ package orders
 
 import (
 	"context"
+	"fmt"
 	"github.com/gojuno/minimock/v3"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/mocks"
 
 	"testing"
 	"time"
 )
 
-func TestAcceptOrder_SuccessfulAcceptance(t *testing.T) {
+func TestAcceptOrder(t *testing.T) {
 	t.Parallel()
+	mc := minimock.NewController(t)
+	defer mc.Finish()
 
-	ctx := context.Background()
+	mockStorage := mocks.NewFacadeMock(mc)
+	ctx := context.TODO()
+	order := &models.Order{ID: 1}
 
-	ctrl := minimock.NewController(t)
-	defer ctrl.Finish()
-
-	K := time.Now().Add(24 * time.Hour)
-	T := time.Now().Unix()
-	mockStorage := mocks.NewStorageMock(ctrl)
-
-	mockStorage.IsConsistMock.When(ctx, uint(1)).Then(false)
-	mockStorage.AddToStorageMock.Expect(ctx, &models.Order{
-		ID:            1,
-		KeepUntilDate: K,
-		State:         models.AcceptState,
-		AcceptTime:    T,
-	}).Return(nil)
-
-	order := &models.Order{
-		ID:            1,
-		KeepUntilDate: K,
-		State:         models.AcceptState,
-		AcceptTime:    T,
-	}
+	mockStorage.AcceptOrderMock.Expect(ctx, order).Return(nil)
 
 	err := AcceptOrder(ctx, mockStorage, order)
-	assert.NoError(t, err)
+
+	require.NoError(t, err)
+	mockStorage.MinimockFinish()
 }
 
 func TestAcceptOrder_OrderAlreadyExists(t *testing.T) {
@@ -50,15 +39,15 @@ func TestAcceptOrder_OrderAlreadyExists(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
-
-	mockStorage.IsConsistMock.When(ctx, uint(4)).Then(true)
+	mockStorage := mocks.NewFacadeMock(ctrl)
 
 	order := &models.Order{
 		ID:            4,
 		KeepUntilDate: time.Now().Add(24 * time.Hour),
 		State:         models.AcceptState,
 	}
+
+	mockStorage.AcceptOrderMock.Expect(ctx, order).Return(e.ErrIsConsist)
 
 	err := AcceptOrder(ctx, mockStorage, order)
 	assert.Error(t, err)
@@ -72,15 +61,15 @@ func TestAcceptOrder_OrderExpired(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
-
-	mockStorage.IsConsistMock.When(ctx, uint(2)).Then(false)
+	mockStorage := mocks.NewFacadeMock(ctrl)
 
 	order := &models.Order{
 		ID:            2,
 		KeepUntilDate: time.Now().Add(-24 * time.Hour),
 		State:         models.AcceptState,
 	}
+
+	mockStorage.AcceptOrderMock.Expect(ctx, order).Return(e.ErrTimeExpired)
 
 	err := AcceptOrder(ctx, mockStorage, order)
 	assert.Error(t, err)
@@ -94,7 +83,7 @@ func TestPlaceOrder_EmptyIDs(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
+	mockStorage := mocks.NewFacadeMock(ctrl)
 
 	err := PlaceOrder(ctx, mockStorage, []uint{})
 	assert.Error(t, err)
@@ -108,12 +97,8 @@ func TestPlaceOrder_NoConsist(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
-	mockStorage.GetItemMock.Expect(ctx, uint(1)).Return(&models.Order{
-		ID:            1,
-		State:         models.NewState,
-		KeepUntilDate: time.Now().Add(24 * time.Hour),
-	}, false)
+	mockStorage := mocks.NewFacadeMock(ctrl)
+	mockStorage.PlaceOrderMock.Expect(ctx, []uint{1}).Return(e.ErrNoConsist)
 
 	err := PlaceOrder(ctx, mockStorage, []uint{1})
 	assert.Error(t, err)
@@ -126,21 +111,9 @@ func TestPlaceOrder_Success(t *testing.T) {
 
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
-	currentTime := time.Now()
-	mockStorage := mocks.NewStorageMock(ctrl)
-	mockStorage.GetItemMock.When(ctx, uint(5)).Then(&models.Order{
-		ID:            5,
-		State:         models.AcceptState,
-		KeepUntilDate: time.Now().Add(24 * time.Hour),
-	}, true)
+	mockStorage := mocks.NewFacadeMock(ctrl)
 
-	mockStorage.UpdateBeforePlaceMock.Set(func(ctx context.Context, id uint, state models.State, placeTime time.Time) error {
-		assert.Equal(t, uint(5), id)
-		assert.Equal(t, models.PlaceState, state)
-		assert.WithinDuration(t, currentTime, placeTime, time.Second)
-
-		return nil
-	})
+	mockStorage.PlaceOrderMock.Expect(ctx, []uint{5}).Return(nil)
 
 	err := PlaceOrder(ctx, mockStorage, []uint{5})
 
@@ -155,13 +128,8 @@ func TestReturnOrder_SuccessfulRefundedState(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
-	mockStorage.GetItemMock.When(ctx, uint(199)).Then(&models.Order{
-		ID:     199,
-		UserID: 1,
-		State:  models.RefundedState,
-	}, true)
-	mockStorage.DeleteFromStorageMock.Expect(ctx, uint(199)).Return(nil)
+	mockStorage := mocks.NewFacadeMock(ctrl)
+	mockStorage.ReturnOrderMock.Expect(ctx, uint(199)).Return(nil)
 
 	err := ReturnOrder(ctx, mockStorage, 199)
 	assert.NoError(t, err)
@@ -175,21 +143,13 @@ func TestReturnOrder_SuccessfulReturnExpired(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
-	mockStorage.GetItemMock.When(ctx, uint(750)).Then(&models.Order{
-		ID:            750,
-		UserID:        10,
-		State:         models.AcceptState,
-		KeepUntilDate: time.Now().Add(-47 * time.Hour),
-	}, true)
-
-	mockStorage.DeleteFromStorageMock.Expect(ctx, uint(750)).Return(nil)
+	mockStorage := mocks.NewFacadeMock(ctrl)
+	mockStorage.ReturnOrderMock.Expect(ctx, uint(750)).Return(nil)
 
 	err := ReturnOrder(ctx, mockStorage, 750)
 	assert.NoError(t, err)
 }
 
-// Тест, когда заказ не найден
 func TestReturnOrder_NoOrderFound(t *testing.T) {
 	t.Parallel()
 
@@ -198,14 +158,13 @@ func TestReturnOrder_NoOrderFound(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
-	mockStorage.GetItemMock.When(ctx, uint(191)).Then(&models.Order{}, false)
+	mockStorage := mocks.NewFacadeMock(ctrl)
+	mockStorage.ReturnOrderMock.Expect(ctx, uint(191)).Return(fmt.Errorf("order not found"))
 
 	err := ReturnOrder(ctx, mockStorage, 191)
 	assert.Error(t, err)
 }
 
-// Тест, когда заказ не может быть возвращен
 func TestReturnOrder_OrderCannotBeReturned(t *testing.T) {
 	t.Parallel()
 
@@ -214,13 +173,8 @@ func TestReturnOrder_OrderCannotBeReturned(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
-	mockStorage.GetItemMock.When(ctx, uint(150)).Then(&models.Order{
-		ID:            150,
-		UserID:        1,
-		State:         models.AcceptState,
-		KeepUntilDate: time.Now().Add(24 * time.Hour),
-	}, true)
+	mockStorage := mocks.NewFacadeMock(ctrl)
+	mockStorage.ReturnOrderMock.Expect(ctx, uint(150)).Return(fmt.Errorf("order cannot be returned"))
 
 	err := ReturnOrder(ctx, mockStorage, 150)
 	assert.Error(t, err)
@@ -235,9 +189,9 @@ func TestListOrders_NoOrdersAvailable(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
+	mockStorage := mocks.NewFacadeMock(ctrl)
 
-	mockStorage.GetByUserIdMock.Expect(ctx, uint(912)).Return(nil, nil)
+	mockStorage.ListOrdersMock.Expect(ctx, uint(912), false).Return(nil, nil)
 
 	err := ListOrders(ctx, mockStorage, uint(912), 1, false)
 
@@ -252,9 +206,9 @@ func TestListOrders_NoConsist(t *testing.T) {
 	ctrl := minimock.NewController(t)
 	defer ctrl.Finish()
 
-	mockStorage := mocks.NewStorageMock(ctrl)
+	mockStorage := mocks.NewFacadeMock(ctrl)
 
-	mockStorage.GetByUserIdMock.Expect(ctx, uint(1)).Return([]*models.Order{
+	mockStorage.ListOrdersMock.Expect(ctx, uint(1), false).Return([]models.Order{
 		{ID: 912, UserID: 1, State: models.AcceptState},
 	}, nil)
 

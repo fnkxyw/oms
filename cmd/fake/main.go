@@ -5,7 +5,7 @@ import (
 	"github.com/brianvoe/gofakeit/v7"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/postgres"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"log"
 	"math/rand"
 	"time"
@@ -20,9 +20,8 @@ func main() {
 		log.Fatal(err)
 	}
 	defer pool.Close()
-	rep := postgres.NewPgRepository(pool)
-
-	for i := 0; i < 100000; i++ {
+	rep := storage.NewStorageFacade(pool)
+	for i := 0; i < 200000; i++ {
 		order := models.Order{
 			ID:            uint(i + 1),
 			UserID:        uint(gofakeit.Number(1, 10)),
@@ -34,7 +33,10 @@ func main() {
 			Price:         gofakeit.Number(10, 10000),
 		}
 
-		rep.AddToStorage(ctx, &order)
+		err := rep.PgRepo.AddToStorage(ctx, &order)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 }

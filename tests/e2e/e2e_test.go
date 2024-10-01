@@ -3,19 +3,25 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5/pgxpool"
 	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
-	orderStorage "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/orderStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	"log"
 	"os"
 	"testing"
 	"time"
 )
 
-func TestApp(t *testing.T) {
-	orderStorage := orderStorage.NewOrderStorage()
-	ctx := context.Background()
+const psqlDSN = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 
-	orderStorage.SetPath(ctx, "e2e_order.json")
-	defer os.Remove(orderStorage.GetPath(ctx))
+func TestApp(t *testing.T) {
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, psqlDSN)
+	if err != nil {
+		log.Fatal(err)
+	}
+	storageFacade := storage.NewStorageFacade(pool)
 
 	originalStdin := os.Stdin
 	defer func() { os.Stdin = originalStdin }()
@@ -43,21 +49,22 @@ func TestApp(t *testing.T) {
 		})
 	}()
 
-	if err = c.Run(ctx, orderStorage); err != nil {
+	if err = c.Run(ctx, storageFacade); err != nil {
 		t.Errorf("Ошибка в e2e тесте: %v", err)
 	}
-	ok := orderStorage.IsConsist(ctx, 10)
-	if ok {
+	order, _ := storageFacade.GetItem(ctx, 10)
+	if order.State != models.SoftDelete {
 		t.Errorf("Ошибка: заказ с ID %d найден в orderStorage", 10)
 	}
 }
 
 func TestAppSecond(t *testing.T) {
-	orderStorage := orderStorage.NewOrderStorage()
 	ctx := context.Background()
-
-	orderStorage.SetPath(ctx, "e2e_order2.json")
-	defer os.Remove(orderStorage.GetPath(ctx))
+	pool, err := pgxpool.New(ctx, psqlDSN)
+	if err != nil {
+		log.Fatal(err)
+	}
+	storageFacade := storage.NewStorageFacade(pool)
 
 	originalStdin := os.Stdin
 	defer func() { os.Stdin = originalStdin }()
@@ -87,14 +94,14 @@ func TestAppSecond(t *testing.T) {
 		})
 	}()
 
-	if err = c.Run(ctx, orderStorage); err != nil {
+	if err = c.Run(ctx, storageFacade); err != nil {
 		t.Errorf("Ошибка в e2e тесте: %v", err)
 	}
 
-	if !orderStorage.IsConsist(ctx, 10) {
+	order, ok := storageFacade.GetItem(ctx, 10)
+	if !ok {
 		t.Errorf("Ошибка: заказ с ID %d не найден в orderStorage", 10)
 	}
-	order, _ := orderStorage.GetItem(ctx, 10)
 	if order.Weight != 10 {
 		t.Errorf("Данные в orderStorage неверные")
 	}
@@ -106,6 +113,6 @@ func executeCommands(writer *os.File, commands []string) {
 		if err != nil {
 			fmt.Printf("Ошибка записи команды %s: %v\n", cmd, err)
 		}
-		time.Sleep(1 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 }

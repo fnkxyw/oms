@@ -3,7 +3,6 @@ package postgres
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
@@ -12,10 +11,10 @@ import (
 )
 
 var (
-	ErrorNotFoundOrder = errors.New("contact not found")
+	ErrorNotFoundOrder = errors.New("order not found")
 )
 
-const OrderFields = "id, user_id, state, accept_time, keep_until_date, place_date, weight, price"
+const orderFields = "id, user_id, state, accept_time, keep_until_date, place_date, weight, price"
 
 type PgRepository struct {
 	txManager TransactionManager
@@ -35,7 +34,9 @@ func (r *PgRepository) AddToStorage(ctx context.Context, order *models.Order) er
 	if err != nil {
 		var pgErr *pgconn.PgError
 		if errors.As(err, &pgErr) {
-			return e.ErrIsConsist
+			if pgErr.Code == "23505" {
+				return e.ErrIsConsist
+			}
 		}
 		return err
 	}
@@ -59,7 +60,7 @@ func (r *PgRepository) DeleteFromStorage(ctx context.Context, id uint) error {
 
 func (r *PgRepository) GetItem(ctx context.Context, id uint) (*models.Order, bool) {
 	tx := r.txManager.GetQueryEngine(ctx)
-	query := fmt.Sprintf(`SELECT %s FROM orders WHERE id = $1`, OrderFields)
+	const query = `SELECT ` + orderFields + ` FROM orders WHERE id = $1`
 	rows, err := tx.Query(ctx, query, id)
 	if err != nil {
 		return nil, false
@@ -89,7 +90,7 @@ func (r *PgRepository) UpdateState(ctx context.Context, id uint, state models.St
 
 func (r *PgRepository) GetUserOrders(ctx context.Context, userId uint, inPuP bool) ([]models.Order, error) {
 	tx := r.txManager.GetQueryEngine(ctx)
-	query := fmt.Sprintf(`SELECT %s FROM orders WHERE user_id = $1`, OrderFields)
+	const query = `SELECT ` + orderFields + ` FROM orders WHERE user_id = $1`
 	rows, err := tx.Query(ctx, query, userId)
 	if err != nil {
 		return nil, err
@@ -111,7 +112,9 @@ func (r *PgRepository) GetUserOrders(ctx context.Context, userId uint, inPuP boo
 
 func (r *PgRepository) GetReturns(ctx context.Context, page, limit int) ([]models.Order, error) {
 	tx := r.txManager.GetQueryEngine(ctx)
-	rows, err := tx.Query(ctx, `SELECT * FROM orders WHERE state = $1 LIMIT $2 OFFSET $3`, models.RefundedState, limit, page*limit)
+	const query = `SELECT ` + orderFields + ` FROM orders WHERE state = $1 LIMIT $2 OFFSET $3`
+
+	rows, err := tx.Query(ctx, query, models.RefundedState, limit, page*limit)
 	if err != nil {
 		return nil, err
 	}
@@ -126,8 +129,7 @@ func (r *PgRepository) GetReturns(ctx context.Context, page, limit int) ([]model
 
 func (r *PgRepository) GetItems(ctx context.Context, ids []uint) ([]models.Order, bool) {
 	tx := r.txManager.GetQueryEngine(ctx)
-
-	query := fmt.Sprintf(`SELECT %s FROM orders WHERE id = ANY($1)`, OrderFields)
+	const query = `SELECT ` + orderFields + ` FROM orders WHERE id = ANY($1)`
 
 	rows, err := tx.Query(ctx, query, ids)
 	if err != nil {
