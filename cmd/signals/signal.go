@@ -1,9 +1,8 @@
-package sygnal
+package signals
 
 import (
 	"fmt"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/inmemory/orderStorage"
 	"os"
 	"os/signal"
 	"syscall"
@@ -11,29 +10,19 @@ import (
 
 //файл для ловли сигналов завершения, чтобы не потерять данные
 
-func SygnalSearch(oS orderStorage.OrderStorageInterface, rS returnStorage.ReturnStorageInterface) error {
-	signalls := make(chan os.Signal, 1)
+func SignalSearch(oS orderStorage.OrderStorage, done chan struct{}) {
+	signals := make(chan os.Signal, 1)
 
-	signal.Notify(signalls, syscall.SIGINT, syscall.SIGTERM)
+	// Подписка на SIGINT и SIGTERM
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		<-signalls
+		<-signals
 		fmt.Println()
-		fmt.Println("exit")
-		err := oS.WriteToJSON()
-		if err != nil {
+		fmt.Println("Received interrupt signal, exiting...")
+		if err := oS.WriteToJSON(); err != nil {
 			fmt.Fprintf(os.Stderr, "failed to write order storage to JSON: %v\n", err)
-
-			return
 		}
-
-		err = rS.WriteToJSON()
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "failed to write return storage to JSON: %v\n", err)
-			return
-		}
-		os.Exit(1)
-
+		close(done) // сигнализируем о завершении
 	}()
-	return nil
 }

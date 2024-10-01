@@ -1,39 +1,27 @@
 package main
 
 import (
-	"fmt"
-	signals "gitlab.ozon.dev/akugnerevich/homework.git/cmd/signals"
+	"context"
+	"github.com/jackc/pgx/v5/pgxpool"
 	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
-	s "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
-	r "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	"log"
 )
 
 func main() {
-	orderStorage := s.NewOrderStorage()
-	returnStorage := r.NewReturnStorage()
-	err := orderStorage.ReadFromJSON()
+	const psqlDSN = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, psqlDSN)
 	if err != nil {
-		fmt.Println(err)
-		err = orderStorage.Create()
-		if err != nil {
-			fmt.Println(err)
-		}
+		log.Fatal(err)
 	}
-	err = returnStorage.ReadFromJSON()
-	if err != nil {
-		fmt.Println(err)
-		err = returnStorage.Create()
-		if err != nil {
-			fmt.Println(err)
-		}
-	}
-	err = signals.SygnalSearch(orderStorage, returnStorage)
+
+	defer pool.Close()
+	oS := storage.NewStorageFacade(pool)
+
+	err = c.Run(ctx, oS)
 	if err != nil {
 		return
 	}
 
-	err = c.Run(orderStorage, returnStorage)
-	if err != nil {
-		return
-	}
 }

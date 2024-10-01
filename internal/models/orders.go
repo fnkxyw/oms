@@ -4,11 +4,11 @@ import (
 	"time"
 )
 
-func (o *Order) CanReturned() error {
-	if o.State == ReturnedState || (o.KeepUntilDate.Before(time.Now()) && o.State == AcceptState) {
-		o.State = SoftDelete
+func (o *Order) CanBeReturned() error {
+	if o.State == RefundedState || (o.KeepUntilDate.Before(time.Now()) && o.State == AcceptState) {
+		return nil
 	} else {
 		return ErrCanReturned
 	}
-	return nil
+
 }

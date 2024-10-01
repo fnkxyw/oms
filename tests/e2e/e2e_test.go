@@ -1,23 +1,27 @@
 package e2e
 
 import (
+	"context"
 	"fmt"
+	"github.com/jackc/pgx/v5/pgxpool"
 	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
-	orderStorage "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	"log"
 	"os"
 	"testing"
 	"time"
 )
 
-func TestApp(t *testing.T) {
-	orderStorage := orderStorage.NewOrderStorage()
-	orderStorage.SetPath("e2e_order.json")
-	defer os.Remove(orderStorage.GetPath())
+const psqlDSN = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 
-	returnsStorage := returnStorage.NewReturnStorage()
-	returnsStorage.SetPath("e2e_returns.json")
-	defer os.Remove(returnsStorage.GetPath())
+func TestApp(t *testing.T) {
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, psqlDSN)
+	if err != nil {
+		log.Fatal(err)
+	}
+	storageFacade := storage.NewStorageFacade(pool)
 
 	originalStdin := os.Stdin
 	defer func() { os.Stdin = originalStdin }()
@@ -45,22 +49,22 @@ func TestApp(t *testing.T) {
 		})
 	}()
 
-	if err = c.Run(orderStorage, returnsStorage); err != nil {
+	if err = c.Run(ctx, storageFacade); err != nil {
 		t.Errorf("Ошибка в e2e тесте: %v", err)
 	}
-	if !orderStorage.IsConsist(10) {
-		t.Errorf("Ошибка: заказ с ID %d не найден в orderStorage", 10)
+	order, _ := storageFacade.GetItem(ctx, 10)
+	if order.State != models.SoftDelete {
+		t.Errorf("Ошибка: заказ с ID %d найден в orderStorage", 10)
 	}
 }
 
 func TestAppSecond(t *testing.T) {
-	orderStorage := orderStorage.NewOrderStorage()
-	orderStorage.SetPath("e2e_order2.json")
-	defer os.Remove(orderStorage.GetPath())
-
-	returnsStorage := returnStorage.NewReturnStorage()
-	returnsStorage.SetPath("e2e_returns2.json")
-	defer os.Remove(returnsStorage.GetPath())
+	ctx := context.Background()
+	pool, err := pgxpool.New(ctx, psqlDSN)
+	if err != nil {
+		log.Fatal(err)
+	}
+	storageFacade := storage.NewStorageFacade(pool)
 
 	originalStdin := os.Stdin
 	defer func() { os.Stdin = originalStdin }()
@@ -90,14 +94,14 @@ func TestAppSecond(t *testing.T) {
 		})
 	}()
 
-	if err = c.Run(orderStorage, returnsStorage); err != nil {
+	if err = c.Run(ctx, storageFacade); err != nil {
 		t.Errorf("Ошибка в e2e тесте: %v", err)
 	}
 
-	if !orderStorage.IsConsist(10) {
+	order, ok := storageFacade.GetItem(ctx, 10)
+	if !ok {
 		t.Errorf("Ошибка: заказ с ID %d не найден в orderStorage", 10)
 	}
-	order, _ := orderStorage.GetOrder(10)
 	if order.Weight != 10 {
 		t.Errorf("Данные в orderStorage неверные")
 	}
@@ -109,6 +113,6 @@ func executeCommands(writer *os.File, commands []string) {
 		if err != nil {
 			fmt.Printf("Ошибка записи команды %s: %v\n", cmd, err)
 		}
-		time.Sleep(1 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 	}
 }

@@ -1,15 +1,15 @@
 package controller
 
 import (
+	"context"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller/inputs"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/returns"
-	s "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/orderStorage"
-	r "gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/returnStorage"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 )
 
-func WAcceptOrder(s s.OrderStorageInterface) error {
+func WAcceptOrder(ctx context.Context, s storage.Facade) error {
 	order, packageType, needWrapping, err := inputs.CollectOrderInput()
 	if err != nil {
 		return err
@@ -20,7 +20,7 @@ func WAcceptOrder(s s.OrderStorageInterface) error {
 		return err
 	}
 
-	err = orders.AcceptOrder(s, order)
+	err = orders.AcceptOrder(ctx, s, order)
 	if err != nil {
 		return err
 	}
@@ -28,25 +28,25 @@ func WAcceptOrder(s s.OrderStorageInterface) error {
 	return nil
 }
 
-func WReturnOrder(s s.OrderStorageInterface) error {
+func WReturnOrder(ctx context.Context, s storage.Facade) error {
 	id, err := inputs.InputOrderID()
 	if err != nil {
 		return err
 	}
 
-	return orders.ReturnOrder(s, id)
+	return orders.ReturnOrder(ctx, s, id)
 }
 
-func WPlaceOrder(s s.OrderStorageInterface) error {
+func WPlaceOrder(ctx context.Context, s storage.Facade) error {
 	uintdata, err := inputs.InputOrderIDs()
 	if err != nil {
 		return err
 	}
 
-	return orders.PlaceOrder(s, uintdata)
+	return orders.PlaceOrder(ctx, s, uintdata)
 }
 
-func WListOrders(s s.OrderStorageInterface) error {
+func WListOrders(ctx context.Context, s storage.Facade) error {
 	id, err := inputs.InputUserID()
 	if err != nil {
 		return err
@@ -59,32 +59,32 @@ func WListOrders(s s.OrderStorageInterface) error {
 
 	switch temp {
 	case 1:
-		return orders.ListOrders(s, id, 0, true)
+		return orders.ListOrders(ctx, s, id, 0, true)
 	case 2:
 		n, err := inputs.InputN()
 		if err != nil {
 			return err
 		}
-		return orders.ListOrders(s, id, n, false)
+		return orders.ListOrders(ctx, s, id, n, false)
 	}
 
 	return nil
 }
 
-func WRefundOrder(rS r.ReturnStorageInterface, oS s.OrderStorageInterface) error {
+func WRefundOrder(ctx context.Context, oS storage.Facade) error {
 	orderId, userId, err := inputs.InputOrderAndUserID()
 	if err != nil {
 		return err
 	}
 
-	return returns.RefundOrder(rS, oS, orderId, userId)
+	return returns.RefundOrder(ctx, oS, orderId, userId)
 }
 
-func WListReturns(rs r.ReturnStorageInterface) error {
+func WListReturns(ctx context.Context, oS storage.Facade) error {
 	limit, page, err := inputs.InputReturnsPagination()
 	if err != nil {
 		return err
 	}
 
-	return returns.ListReturns(rs, limit, page)
+	return returns.ListReturns(ctx, oS, limit, page)
 }

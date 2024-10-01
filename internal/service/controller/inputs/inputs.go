@@ -106,8 +106,8 @@ func InputOrderIDs() ([]uint, error) {
 
 func InputListChoice() (int, error) {
 	var choice int
-	fmt.Println("1. List all orderStorage which consists on our PuP\n" +
-		"2. List last N orderStorage")
+	fmt.Println("1. List all orders which consists on our PuP\n" +
+		"2. List last N orders")
 	fmt.Print(">")
 	_, err := fmt.Scan(&choice)
 	if err != nil {
@@ -138,7 +138,7 @@ func InputOrderAndUserID() (uint, uint, error) {
 
 func InputReturnsPagination() (int, int, error) {
 	var limit, page int
-	fmt.Print("Input max Returns on one page and Page\n>")
+	fmt.Print("Input max Returns on one page and Page[1,2,...,n]\n>")
 	_, err := fmt.Scan(&limit, &page)
 	if err != nil {
 		return 0, 0, fmt.Errorf("Error scanning pagination input: %w", err)
