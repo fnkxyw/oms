@@ -3,6 +3,7 @@ package int_Postgres
 import (
 	"context"
 	"fmt"
+	"github.com/docker/go-connections/nat"
 	"github.com/stretchr/testify/assert"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
@@ -38,8 +39,12 @@ func TestSetup(t *testing.T) {
 		pl.WithUsername(dbUser),
 		pl.WithPassword(dbPassword),
 		testcontainers.WithWaitStrategy(
-			wait.ForLog("database system is ready to accept connections").
-				WithStartupTimeout(30*time.Second)),
+			wait.ForAll(
+				wait.ForLog("database system is ready to accept connections").
+					WithOccurrence(2),
+				wait.ForListeningPort(nat.Port("5432/tcp")),
+			),
+		),
 	)
 	if err != nil {
 		t.Fatalf("failed to open container: %s", err)
@@ -69,6 +74,7 @@ func TestSetup(t *testing.T) {
 	if err := seedTestData(ctx, pool); err != nil {
 		t.Fatalf("failed to seed test data: %s", err)
 	}
+
 }
 
 func seedTestData(ctx context.Context, pool *pgxpool.Pool) error {
@@ -131,10 +137,10 @@ func TestAcceptOrder(t *testing.T) {
 
 	err := storageFacade.AcceptOrder(context.Background(), order)
 	assert.NoError(t, err, "Expected no error when accepting order")
-
 	acceptedOrder, exists := storageFacade.GetItem(context.Background(), order.ID)
 	assert.True(t, exists)
 	assert.Equal(t, models.AcceptState, acceptedOrder.State)
+
 }
 
 func TestPlaceOrder(t *testing.T) {
