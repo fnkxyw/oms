@@ -16,7 +16,6 @@ type Facade interface {
 	ListOrders(ctx context.Context, id uint, inPuP bool) ([]models.Order, error)
 	RefundOrder(ctx context.Context, id uint, userId uint) error
 	ListReturns(ctx context.Context, limit, page int) ([]models.Order, error)
-	CheckIDsOrders(ctx context.Context, ids []uint) error
 }
 
 type storageFacade struct {
@@ -149,19 +148,4 @@ func (s storageFacade) ListReturns(ctx context.Context, limit, page int) ([]mode
 		return nil, err
 	}
 	return list, nil
-}
-
-func (s storageFacade) CheckIDsOrders(ctx context.Context, ids []uint) error {
-	order, ok := s.pgRepository.GetItem(ctx, ids[0])
-	if !ok {
-		return e.ErrNoConsist
-	}
-	temp := order.UserID
-	for _, id := range ids {
-		order, _ = s.pgRepository.GetItem(ctx, id)
-		if order.UserID != temp {
-			return e.ErrNotAllIDs
-		}
-	}
-	return nil
 }

@@ -16,10 +16,6 @@ func PlaceOrder(ctx context.Context, s storage.Facade, ids []uint) error {
 	if len(ids) == 0 {
 		return fmt.Errorf("Length of ids array is 0 ")
 	}
-	err := s.CheckIDsOrders(ctx, ids)
-	if err != nil {
-		return err
-	}
 
 	return s.PlaceOrder(ctx, ids)
 }
@@ -47,10 +43,6 @@ func ListOrders(ctx context.Context, s storage.Facade, id uint, n int, inPuP boo
 			v.ID, v.UserID, v.State, v.Price, v.KeepUntilDate)
 	}
 	return nil
-}
-
-func CheckIDsOrders(ctx context.Context, s storage.Facade, ids []uint) error {
-	return s.CheckIDsOrders(ctx, ids)
 }
 
 func SortOrders(o []models.Order) {
