@@ -50,7 +50,7 @@ func (s storageFacade) AcceptOrder(ctx context.Context, or *models.Order) error 
 }
 
 func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint) error {
-	return s.txManager.RunSerializable(ctx, func(ctxT context.Context) error {
+	return s.txManager.RunReadCommited(ctx, func(ctxT context.Context) error {
 		orders, exists := s.PgRepo.GetItems(ctxT, ids)
 		if !exists {
 			return e.ErrNoConsist
@@ -83,7 +83,7 @@ func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint) error {
 }
 
 func (s storageFacade) ReturnOrder(ctx context.Context, id uint) error {
-	return s.txManager.RunSerializable(ctx, func(ctxTx context.Context) error {
+	return s.txManager.RunReadCommited(ctx, func(ctxTx context.Context) error {
 
 		order, exists := s.PgRepo.GetItem(ctx, id)
 		if !exists {
@@ -112,7 +112,7 @@ func (s storageFacade) ListOrders(ctx context.Context, id uint, inPuP bool) ([]m
 }
 
 func (s storageFacade) RefundOrder(ctx context.Context, id uint, userId uint) error {
-	return s.txManager.RunSerializable(ctx, func(ctxTx context.Context) error {
+	return s.txManager.RunReadCommited(ctx, func(ctxTx context.Context) error {
 		order, exists := s.PgRepo.GetItem(ctx, id)
 
 		if !exists {
