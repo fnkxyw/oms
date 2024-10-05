@@ -113,6 +113,6 @@ func executeCommands(writer *os.File, commands []string) {
 		if err != nil {
 			fmt.Printf("Ошибка записи команды %s: %v\n", cmd, err)
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(120 * time.Millisecond)
 	}
 }
