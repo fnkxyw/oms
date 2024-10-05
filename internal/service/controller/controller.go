@@ -128,13 +128,13 @@ func WListReturns(ctx context.Context, oS storage.Facade, wp *wpool.WorkerPool, 
 }
 
 func WChangeNumOfWorkers(ctx context.Context, wp *wpool.WorkerPool, errChan chan error) error {
-	n, err := inputs.InputNumOfWorkers()
+	n, err := inputs.InputNumOfWorkers(wp)
 	if err != nil {
 		return err
 	}
 
 	wp.AddJob(ctx, func() {
-		if err := wpool.ChangeNumOfWorkers(wp, n); err != nil {
+		if err := wp.ChangeNumOfWorkers(n); err != nil {
 			errChan <- err
 		}
 		wp.PrintWorkers()

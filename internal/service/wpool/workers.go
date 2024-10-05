@@ -1,6 +1,6 @@
 package wpool
 
-func ChangeNumOfWorkers(wp *WorkerPool, numOfWorkers int) error {
+func (wp *WorkerPool) ChangeNumOfWorkers(numOfWorkers int) error {
 
 	if numOfWorkers > 0 {
 		return wp.AddWorker(numOfWorkers)

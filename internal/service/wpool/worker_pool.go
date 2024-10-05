@@ -10,10 +10,6 @@ import (
 )
 
 var (
-	numJobs = atomic.Int64{}
-)
-
-var (
 	ErrBadNumOfGoRoutines = errors.New("the number of goroutines cannot be like that")
 )
 
@@ -33,9 +29,10 @@ type WorkerPool struct {
 	wg           sync.WaitGroup
 	mu           sync.Mutex
 	numWorkers   int
+	numJobs      atomic.Int64
 	notification chan string
 	stopChan     chan struct{}
-	jobChan      chan *job
+	jobChan      chan job
 }
 
 func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string) (*WorkerPool, error) {
@@ -52,7 +49,7 @@ func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string
 		numWorkers:   numWorkers,
 		notification: notification,
 		stopChan:     make(chan struct{}),
-		jobChan:      make(chan *job, 100),
+		jobChan:      make(chan job, 100),
 	}, nil
 }
 
@@ -62,28 +59,21 @@ func (wp *WorkerPool) worker() {
 		select {
 		case <-wp.stopChan:
 			return
-		case job := <-wp.jobChan:
-			if job == nil {
-				select {
-				case <-wp.ctx.Done():
-					if numJobs.Load() == 0 {
-						return
-					}
-				default:
-					continue
-				}
+		case job, ok := <-wp.jobChan:
+			if !ok {
+				return
 			}
 
 			select {
 			case <-job.ctx.Done():
-				return
+				continue
 			default:
 			}
+
 			wp.notification <- fmt.Sprintf("work by name %s started", job.name)
 			job.task()
 			wp.notification <- fmt.Sprintf("work by name %s finished", job.name)
-
-			numJobs.Add(-1)
+			wp.numJobs.Add(-1)
 		}
 	}
 }
@@ -107,8 +97,8 @@ func (wp *WorkerPool) Stop() {
 }
 
 func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string) {
-	numJobs.Add(1)
-	job := &job{
+	wp.numJobs.Add(1)
+	job := job{
 		task: task,
 		ctx:  ctx,
 		name: name,
@@ -151,6 +141,8 @@ func (wp *WorkerPool) RemoveWorkers(n int) error {
 }
 
 func (wp *WorkerPool) PrintWorkers() {
+	wp.mu.Lock()
+	defer wp.mu.Unlock()
 	time.Sleep(10 * time.Millisecond)
 	fmt.Println("\nNum of workers: ", wp.numWorkers)
 }
