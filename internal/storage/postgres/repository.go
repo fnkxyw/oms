@@ -60,7 +60,7 @@ func (r *PgRepository) DeleteFromStorage(ctx context.Context, id uint) error {
 
 func (r *PgRepository) GetItem(ctx context.Context, id uint) (*models.Order, bool) {
 	tx := r.txManager.GetQueryEngine(ctx)
-	const query = `SELECT ` + orderFields + ` FROM orders WHERE id = $1`
+	const query = `SELECT ` + orderFields + ` FROM orders WHERE id = $1 FOR UPDATE`
 	rows, err := tx.Query(ctx, query, id)
 	if err != nil {
 		return nil, false
@@ -129,7 +129,7 @@ func (r *PgRepository) GetReturns(ctx context.Context, page, limit int) ([]model
 
 func (r *PgRepository) GetItems(ctx context.Context, ids []uint) ([]models.Order, bool) {
 	tx := r.txManager.GetQueryEngine(ctx)
-	const query = `SELECT ` + orderFields + ` FROM orders WHERE id = ANY($1)`
+	const query = `SELECT  ` + orderFields + ` FROM orders WHERE id = ANY($1) FOR UPDATE`
 
 	rows, err := tx.Query(ctx, query, ids)
 	if err != nil {

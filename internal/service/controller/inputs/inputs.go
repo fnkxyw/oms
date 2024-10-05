@@ -145,3 +145,13 @@ func InputReturnsPagination() (int, int, error) {
 	}
 	return limit, page, nil
 }
+
+func InputNumOfWorkers() (int, error) {
+	var n int
+	fmt.Print("Enter the number of workers to change( for ex [5] if you want to add 5 , [-6] if want to remove 6\n")
+	_, err := fmt.Scan(&n)
+	if err != nil {
+		return 0, fmt.Errorf("Error scanning number of workers: %w", err)
+	}
+	return n, nil
+}
