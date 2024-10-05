@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"sync/atomic"
 	"time"
 )
 
@@ -24,12 +23,12 @@ type job struct {
 }
 
 type WorkerPool struct {
-	ctx          context.Context
-	cancel       context.CancelFunc
-	wg           sync.WaitGroup
-	mu           sync.Mutex
-	numWorkers   int
-	numJobs      atomic.Int64
+	ctx        context.Context
+	cancel     context.CancelFunc
+	wg         sync.WaitGroup
+	mu         sync.Mutex
+	numWorkers int
+	//numJobs      atomic.Int64
 	notification chan string
 	stopChan     chan struct{}
 	jobChan      chan job
@@ -73,7 +72,6 @@ func (wp *WorkerPool) worker() {
 			wp.notification <- fmt.Sprintf("work by name %s started", job.name)
 			job.task()
 			wp.notification <- fmt.Sprintf("work by name %s finished", job.name)
-			wp.numJobs.Add(-1)
 		}
 	}
 }
@@ -82,7 +80,7 @@ func (wp *WorkerPool) Start() {
 	wp.mu.Lock()
 	defer wp.mu.Unlock()
 
-	for i := 1; i <= wp.numWorkers; i++ {
+	for i := 0; i < wp.numWorkers; i++ {
 		wp.wg.Add(1)
 		go wp.worker()
 	}
@@ -97,7 +95,6 @@ func (wp *WorkerPool) Stop() {
 }
 
 func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string) {
-	wp.numJobs.Add(1)
 	job := job{
 		task: task,
 		ctx:  ctx,
@@ -145,4 +142,17 @@ func (wp *WorkerPool) PrintWorkers() {
 	defer wp.mu.Unlock()
 	time.Sleep(10 * time.Millisecond)
 	fmt.Println("\nNum of workers: ", wp.numWorkers)
+}
+
+func (wp *WorkerPool) ChangeNumOfWorkers(numOfWorkers int) error {
+
+	if numOfWorkers > 0 {
+		return wp.AddWorker(numOfWorkers)
+	}
+	if numOfWorkers < 0 {
+		numOfWorkers *= -1
+		return wp.RemoveWorkers(numOfWorkers)
+
+	}
+	return nil
 }
