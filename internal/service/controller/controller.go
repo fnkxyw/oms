@@ -9,7 +9,6 @@ import (
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/returns"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/wpool"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
-	"time"
 )
 
 func WAcceptOrder(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, errChan chan error) error {
@@ -56,7 +55,6 @@ func WPlaceOrder(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, er
 	wp.AddJob(ctx, func() {
 
 		if err := orders.PlaceOrder(ctx, s, uintdata); err != nil {
-			time.Sleep(5 * time.Second)
 			errChan <- err
 
 		}
