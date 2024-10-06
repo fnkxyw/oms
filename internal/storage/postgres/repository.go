@@ -141,5 +141,9 @@ func (r *PgRepository) GetItems(ctx context.Context, ids []uint) ([]models.Order
 		return nil, false
 	}
 
+	if len(orders) != len(ids) {
+		return orders, false
+	}
+
 	return orders, true
 }

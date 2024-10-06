@@ -38,6 +38,8 @@ func Run(ctx context.Context, oS storage.Facade) error {
 
 	wg := sync.WaitGroup{}
 	errChan := make(chan error, 1)
+	//defer close(errChan)
+
 	notification := make(chan string, 1)
 
 	wg.Add(1)
@@ -61,6 +63,7 @@ func Run(ctx context.Context, oS storage.Facade) error {
 		select {
 		case <-ctx.Done():
 			cleanup(&wg, wp)
+			close(errChan)
 			return nil
 		default:
 		}
@@ -128,7 +131,6 @@ func listenChannels(ctx context.Context, errChan chan error, notification chan s
 			}
 			fmt.Println("\n", note)
 		case <-ctx.Done():
-			close(errChan)
 			return
 		}
 	}
