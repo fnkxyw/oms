@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"sync"
-	"time"
 )
 
 var (
@@ -140,7 +139,7 @@ func (wp *WorkerPool) RemoveWorkers(n int) error {
 func (wp *WorkerPool) PrintWorkers() {
 	wp.mu.Lock()
 	defer wp.mu.Unlock()
-	time.Sleep(10 * time.Millisecond)
+	//time.Sleep(10 * time.Millisecond)
 	fmt.Println("\nNum of workers: ", wp.numWorkers)
 }
 
