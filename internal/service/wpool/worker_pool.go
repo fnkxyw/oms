@@ -92,6 +92,9 @@ func (wp *WorkerPool) Start() {
 func (wp *WorkerPool) Stop() {
 	close(wp.stopChan)
 	wp.wg.Wait()
+	for len(wp.semaphore) > 0 {
+		<-wp.semaphore
+	}
 	close(wp.notification)
 }
 
