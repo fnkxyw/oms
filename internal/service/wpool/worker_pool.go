@@ -10,10 +10,12 @@ import (
 
 var (
 	ErrBadNumOfGoRoutines = errors.New("the number of goroutines cannot be like that")
+	ErrQueueFull          = errors.New("the job queue is full, please wait")
 )
 
 const (
 	maxGoRoutines = 100
+	maxQueueSize  = 50
 )
 
 type WorkerPool struct {
@@ -25,6 +27,7 @@ type WorkerPool struct {
 	notification chan string
 	jobQueue     PriorityQueue
 	stopChan     chan struct{}
+	maxQueueSize int
 }
 
 func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string) (*WorkerPool, error) {
@@ -90,10 +93,13 @@ func (wp *WorkerPool) Stop() {
 	close(wp.notification)
 }
 
-func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string, priority int) {
+func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string, priority int) error {
 	wp.mu.Lock()
 	defer wp.mu.Unlock()
 
+	if wp.jobQueue.Len() >= wp.maxQueueSize {
+		return ErrQueueFull
+	}
 	job := PriorityJob{
 		task:     task,
 		ctx:      ctx,
@@ -102,6 +108,7 @@ func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string, prio
 	}
 
 	heap.Push(&wp.jobQueue, job)
+	return nil
 }
 
 func (wp *WorkerPool) AddWorker(n int) error {
