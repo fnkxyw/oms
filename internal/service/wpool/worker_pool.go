@@ -64,13 +64,11 @@ func (wp *WorkerPool) worker() {
 
 				select {
 				case <-job.ctx.Done():
-					<-wp.semaphore
 					continue
 				default:
 					wp.notification <- fmt.Sprintf("work by name %s started", job.name)
 					job.task()
 					wp.notification <- fmt.Sprintf("work by name %s finished", job.name)
-					<-wp.semaphore
 				}
 			} else {
 				wp.mu.Unlock()
