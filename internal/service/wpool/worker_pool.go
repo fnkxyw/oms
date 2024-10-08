@@ -14,6 +14,7 @@ var (
 
 const (
 	maxGoRoutines = 100
+	maxQueueSize  = 100
 )
 
 type WorkerPool struct {
@@ -28,7 +29,7 @@ type WorkerPool struct {
 	semaphore    chan struct{}
 }
 
-func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string, maxQueueSize int) (*WorkerPool, error) {
+func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string) (*WorkerPool, error) {
 	if numWorkers <= 0 {
 		numWorkers = 1
 	}
