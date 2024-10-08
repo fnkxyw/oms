@@ -56,7 +56,7 @@ func (wp *WorkerPool) worker() {
 		select {
 		case <-wp.stopChan:
 			return
-		default:
+		case <-wp.semaphore:
 			wp.mu.Lock()
 			if wp.jobQueue.Len() > 0 {
 				job := heap.Pop(&wp.jobQueue).(PriorityJob)
