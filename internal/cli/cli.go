@@ -97,6 +97,8 @@ func Run(ctx context.Context, oS storage.Facade) error {
 			showHelp()
 		case "workers-num":
 			errChan <- controller.WChangeNumOfWorkers(ctx, wp, errChan)
+		case "":
+			continue
 		default:
 			fmt.Fprintln(out, "Unknown command")
 		}
