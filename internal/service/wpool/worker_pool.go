@@ -10,12 +10,10 @@ import (
 
 var (
 	ErrBadNumOfGoRoutines = errors.New("the number of goroutines cannot be like that")
-	ErrQueueFull          = errors.New("the job queue is full, please wait")
 )
 
 const (
 	maxGoRoutines = 100
-	maxQueueSize  = 50
 )
 
 type WorkerPool struct {
@@ -27,10 +25,10 @@ type WorkerPool struct {
 	notification chan string
 	jobQueue     PriorityQueue
 	stopChan     chan struct{}
-	maxQueueSize int
+	semaphore    chan struct{}
 }
 
-func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string) (*WorkerPool, error) {
+func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string, maxQueueSize int) (*WorkerPool, error) {
 	if numWorkers <= 0 {
 		numWorkers = 1
 	}
@@ -45,6 +43,7 @@ func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string
 		notification: notification,
 		jobQueue:     make(PriorityQueue, 0),
 		stopChan:     make(chan struct{}),
+		semaphore:    make(chan struct{}, maxQueueSize),
 	}
 	heap.Init(&wp.jobQueue)
 	return wp, nil
@@ -64,11 +63,13 @@ func (wp *WorkerPool) worker() {
 
 				select {
 				case <-job.ctx.Done():
+					<-wp.semaphore
 					continue
 				default:
 					wp.notification <- fmt.Sprintf("work by name %s started", job.name)
 					job.task()
 					wp.notification <- fmt.Sprintf("work by name %s finished", job.name)
+					<-wp.semaphore
 				}
 			} else {
 				wp.mu.Unlock()
@@ -93,13 +94,13 @@ func (wp *WorkerPool) Stop() {
 	close(wp.notification)
 }
 
-func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string, priority int) error {
+func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string, priority int) {
+
+	wp.semaphore <- struct{}{}
+
 	wp.mu.Lock()
 	defer wp.mu.Unlock()
 
-	if wp.jobQueue.Len() >= wp.maxQueueSize {
-		return ErrQueueFull
-	}
 	job := PriorityJob{
 		task:     task,
 		ctx:      ctx,
@@ -108,7 +109,6 @@ func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string, prio
 	}
 
 	heap.Push(&wp.jobQueue, job)
-	return nil
 }
 
 func (wp *WorkerPool) AddWorker(n int) error {

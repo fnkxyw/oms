@@ -17,7 +17,7 @@ func WAcceptOrder(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, e
 		return err
 	}
 
-	err = wp.AddJob(ctx, func() {
+	wp.AddJob(ctx, func() {
 		if err := packing.Packing(order, packageType, needWrapping); err != nil {
 			errChan <- err
 			return
@@ -27,9 +27,7 @@ func WAcceptOrder(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, e
 			errChan <- err
 		}
 	}, "Adding and Packaging Order", 6)
-	if err != nil {
-		fmt.Println(err)
-	}
+
 	return nil
 }
 
@@ -39,14 +37,12 @@ func WReturnOrder(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, e
 		return err
 	}
 
-	err = wp.AddJob(ctx, func() {
+	wp.AddJob(ctx, func() {
 		if err := orders.ReturnOrder(ctx, s, id); err != nil {
 			errChan <- err
 		}
 	}, "Returning Order", 3)
-	if err != nil {
-		fmt.Println(err)
-	}
+
 	return nil
 }
 
@@ -56,16 +52,14 @@ func WPlaceOrder(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, er
 		return err
 	}
 
-	err = wp.AddJob(ctx, func() {
+	wp.AddJob(ctx, func() {
 
 		if err := orders.PlaceOrder(ctx, s, uintdata); err != nil {
 			errChan <- err
 
 		}
 	}, "Placing Order", 5)
-	if err != nil {
-		fmt.Println(err)
-	}
+
 	return nil
 }
 
@@ -80,7 +74,7 @@ func WListOrders(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, er
 		return err
 	}
 
-	err = wp.AddJob(ctx, func() {
+	wp.AddJob(ctx, func() {
 		var result error
 		switch temp {
 		case 1:
@@ -101,9 +95,6 @@ func WListOrders(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, er
 			errChan <- result
 		}
 	}, "Listing Orders", 2)
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	return nil
 }
@@ -114,14 +105,11 @@ func WRefundOrder(ctx context.Context, oS storage.Facade, wp *wpool.WorkerPool, 
 		return err
 	}
 
-	err = wp.AddJob(ctx, func() {
+	wp.AddJob(ctx, func() {
 		if err := returns.RefundOrder(ctx, oS, orderId, userId); err != nil {
 			errChan <- err
 		}
 	}, "Refunding Order", 4)
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	return nil
 }
@@ -133,14 +121,11 @@ func WListReturns(ctx context.Context, oS storage.Facade, wp *wpool.WorkerPool, 
 		return err
 	}
 
-	err = wp.AddJob(ctx, func() {
+	wp.AddJob(ctx, func() {
 		if err := returns.ListReturns(ctx, oS, limit, page); err != nil {
 			errChan <- err
 		}
 	}, "Listing Returns", 1)
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	return nil
 }
@@ -151,15 +136,12 @@ func WChangeNumOfWorkers(ctx context.Context, wp *wpool.WorkerPool, errChan chan
 		return err
 	}
 
-	err = wp.AddJob(ctx, func() {
+	wp.AddJob(ctx, func() {
 		if err := wp.ChangeNumOfWorkers(n); err != nil {
 			errChan <- err
 		}
 		wp.PrintWorkers()
 	}, "Changing Number of Workers", 3)
-	if err != nil {
-		fmt.Println(err)
-	}
 
 	return nil
 }
