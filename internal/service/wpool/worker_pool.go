@@ -1,6 +1,7 @@
 package wpool
 
 import (
+	"container/heap"
 	"context"
 	"errors"
 	"fmt"
@@ -15,22 +16,15 @@ const (
 	maxGoRoutines = 100
 )
 
-type job struct {
-	task func()
-	ctx  context.Context
-	name string
-}
-
 type WorkerPool struct {
-	ctx        context.Context
-	cancel     context.CancelFunc
-	wg         sync.WaitGroup
-	mu         sync.Mutex
-	numWorkers int
-	//numJobs      atomic.Int64
+	ctx          context.Context
+	cancel       context.CancelFunc
+	wg           sync.WaitGroup
+	mu           sync.Mutex
+	numWorkers   int
 	notification chan string
+	jobQueue     PriorityQueue
 	stopChan     chan struct{}
-	jobChan      chan job
 }
 
 func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string) (*WorkerPool, error) {
@@ -41,14 +35,16 @@ func NewWorkerPool(ctx context.Context, numWorkers int, notification chan string
 		return nil, ErrBadNumOfGoRoutines
 	}
 	ctx, cancel := context.WithCancel(ctx)
-	return &WorkerPool{
+	wp := &WorkerPool{
 		ctx:          ctx,
 		cancel:       cancel,
 		numWorkers:   numWorkers,
 		notification: notification,
+		jobQueue:     make(PriorityQueue, 0),
 		stopChan:     make(chan struct{}),
-		jobChan:      make(chan job, 100),
-	}, nil
+	}
+	heap.Init(&wp.jobQueue)
+	return wp, nil
 }
 
 func (wp *WorkerPool) worker() {
@@ -57,20 +53,23 @@ func (wp *WorkerPool) worker() {
 		select {
 		case <-wp.stopChan:
 			return
-		case job, ok := <-wp.jobChan:
-			if !ok {
-				return
-			}
+		default:
+			wp.mu.Lock()
+			if wp.jobQueue.Len() > 0 {
+				job := heap.Pop(&wp.jobQueue).(PriorityJob)
+				wp.mu.Unlock()
 
-			select {
-			case <-job.ctx.Done():
-				continue
-			default:
+				select {
+				case <-job.ctx.Done():
+					continue
+				default:
+					wp.notification <- fmt.Sprintf("work by name %s started", job.name)
+					job.task()
+					wp.notification <- fmt.Sprintf("work by name %s finished", job.name)
+				}
+			} else {
+				wp.mu.Unlock()
 			}
-
-			wp.notification <- fmt.Sprintf("work by name %s started", job.name)
-			job.task()
-			wp.notification <- fmt.Sprintf("work by name %s finished", job.name)
 		}
 	}
 }
@@ -86,21 +85,23 @@ func (wp *WorkerPool) Start() {
 }
 
 func (wp *WorkerPool) Stop() {
-	wp.cancel()
 	close(wp.stopChan)
 	wp.wg.Wait()
 	close(wp.notification)
-	close(wp.jobChan)
 }
 
-func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string) {
-	job := job{
-		task: task,
-		ctx:  ctx,
-		name: name,
+func (wp *WorkerPool) AddJob(ctx context.Context, task func(), name string, priority int) {
+	wp.mu.Lock()
+	defer wp.mu.Unlock()
+
+	job := PriorityJob{
+		task:     task,
+		ctx:      ctx,
+		name:     name,
+		priority: priority,
 	}
 
-	wp.jobChan <- job
+	heap.Push(&wp.jobQueue, job)
 }
 
 func (wp *WorkerPool) AddWorker(n int) error {
@@ -132,26 +133,22 @@ func (wp *WorkerPool) RemoveWorkers(n int) error {
 	}
 
 	wp.numWorkers -= n
-
 	return nil
 }
 
 func (wp *WorkerPool) PrintWorkers() {
 	wp.mu.Lock()
 	defer wp.mu.Unlock()
-	//time.Sleep(10 * time.Millisecond)
 	fmt.Println("\nNum of workers: ", wp.numWorkers)
 }
 
 func (wp *WorkerPool) ChangeNumOfWorkers(numOfWorkers int) error {
-
 	if numOfWorkers > 0 {
 		return wp.AddWorker(numOfWorkers)
 	}
 	if numOfWorkers < 0 {
 		numOfWorkers *= -1
 		return wp.RemoveWorkers(numOfWorkers)
-
 	}
 	return nil
 }

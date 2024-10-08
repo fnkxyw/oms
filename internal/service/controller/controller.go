@@ -26,7 +26,7 @@ func WAcceptOrder(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, e
 		if err := orders.AcceptOrder(ctx, s, order); err != nil {
 			errChan <- err
 		}
-	}, "Adding and Packaging Order")
+	}, "Adding and Packaging Order", 6)
 
 	return nil
 }
@@ -41,7 +41,7 @@ func WReturnOrder(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, e
 		if err := orders.ReturnOrder(ctx, s, id); err != nil {
 			errChan <- err
 		}
-	}, "Returning Order")
+	}, "Returning Order", 3)
 
 	return nil
 }
@@ -58,7 +58,7 @@ func WPlaceOrder(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, er
 			errChan <- err
 
 		}
-	}, "Placing Order")
+	}, "Placing Order", 5)
 
 	return nil
 }
@@ -94,7 +94,7 @@ func WListOrders(ctx context.Context, s storage.Facade, wp *wpool.WorkerPool, er
 		if result != nil {
 			errChan <- result
 		}
-	}, "Listing Orders")
+	}, "Listing Orders", 2)
 
 	return nil
 }
@@ -109,7 +109,7 @@ func WRefundOrder(ctx context.Context, oS storage.Facade, wp *wpool.WorkerPool, 
 		if err := returns.RefundOrder(ctx, oS, orderId, userId); err != nil {
 			errChan <- err
 		}
-	}, "Refunding Order")
+	}, "Refunding Order", 4)
 
 	return nil
 }
@@ -125,7 +125,7 @@ func WListReturns(ctx context.Context, oS storage.Facade, wp *wpool.WorkerPool, 
 		if err := returns.ListReturns(ctx, oS, limit, page); err != nil {
 			errChan <- err
 		}
-	}, "Listing Returns")
+	}, "Listing Returns", 1)
 
 	return nil
 }
@@ -141,7 +141,7 @@ func WChangeNumOfWorkers(ctx context.Context, wp *wpool.WorkerPool, errChan chan
 			errChan <- err
 		}
 		wp.PrintWorkers()
-	}, "Changing Number of Workers")
+	}, "Changing Number of Workers", 3)
 
 	return nil
 }
