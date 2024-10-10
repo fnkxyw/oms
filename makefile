@@ -11,6 +11,9 @@ GOARCH := $(shell go env GOARCH)
 #стандартный ввод т.е просто "make"
 all: lint build
 
+build-race:
+	$(GOBUILD) --race -o app cmd/app/main.go
+
 build:
 	$(GOBUILD) -o app cmd/app/main.go
 
@@ -25,6 +28,9 @@ build-windows:
 #удалять бинарники
 clean:
 	rm -f ./app ./appL ./appM ./appW.exe coverage.out
+
+run-race:
+	$(GORUN) cmd/app/main.go --race
 
 run:
 	$(GORUN) cmd/app/main.go
@@ -87,4 +93,4 @@ goose-status:
 
 
 .PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura compose-up compose-down compose-ps compose-start compose-stop
-.PHONY: goose-install goose-add goose-up goose-status goose-dowm  compose-up-test compose-down-test
+.PHONY: goose-install goose-add goose-up goose-status goose-dowm  compose-up-test compose-down-test run-race build-race

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/wpool"
 	"os"
 	"strconv"
 	"strings"
@@ -144,4 +145,16 @@ func InputReturnsPagination() (int, int, error) {
 		return 0, 0, fmt.Errorf("Error scanning pagination input: %w", err)
 	}
 	return limit, page, nil
+}
+
+func InputNumOfWorkers(wp *wpool.WorkerPool) (int, error) {
+	var n int
+	wp.PrintWorkers()
+	fmt.Print("Enter the number of workers to change( for ex [5] if you want to add 5 , [-6] if want to remove 6)\n")
+	fmt.Print(">")
+	_, err := fmt.Scan(&n)
+	if err != nil {
+		return 0, fmt.Errorf("Error scanning number of workers: %w", err)
+	}
+	return n, nil
 }
