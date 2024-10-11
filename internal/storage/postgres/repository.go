@@ -74,7 +74,7 @@ func (r *PgRepository) GetItem(ctx context.Context, id uint) (*models.Order, boo
 	return &order, true
 }
 
-func (r *PgRepository) UpdateBeforePlace(ctx context.Context, ids []uint, t time.Time) error {
+func (r *PgRepository) UpdateBeforePlace(ctx context.Context, ids []uint32, t time.Time) error {
 	tx := r.txManager.GetQueryEngine(ctx)
 
 	query := `UPDATE orders	SET state = $1, place_date = $2	WHERE id = ANY($3)`
@@ -127,7 +127,7 @@ func (r *PgRepository) GetReturns(ctx context.Context, page, limit int) ([]model
 	return returns, nil
 }
 
-func (r *PgRepository) GetItems(ctx context.Context, ids []uint) ([]models.Order, bool) {
+func (r *PgRepository) GetItems(ctx context.Context, ids []uint32) ([]models.Order, bool) {
 	tx := r.txManager.GetQueryEngine(ctx)
 	const query = `SELECT  ` + orderFields + ` FROM orders WHERE id = ANY($1) FOR UPDATE`
 

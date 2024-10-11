@@ -85,7 +85,7 @@ func InputUserID() (uint, error) {
 	return id, nil
 }
 
-func InputOrderIDs() ([]uint, error) {
+func InputOrderIDs() ([]uint32, error) {
 	fmt.Print("Input all IDs that you want to place\n>")
 	reader := bufio.NewReader(os.Stdin)
 	temp, err := reader.ReadString('\n')
@@ -94,13 +94,13 @@ func InputOrderIDs() ([]uint, error) {
 	}
 
 	data := strings.Fields(temp)
-	var uintdata []uint
+	var uintdata []uint32
 	for _, v := range data {
 		uval, err := strconv.Atoi(v)
 		if err != nil {
 			return nil, fmt.Errorf("Error converting ID to integer: %w", err)
 		}
-		uintdata = append(uintdata, uint(uval))
+		uintdata = append(uintdata, uint32(uval))
 	}
 	return uintdata, nil
 }

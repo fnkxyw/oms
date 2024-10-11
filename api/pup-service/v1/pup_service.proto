@@ -30,9 +30,9 @@ service PupService{
       body: "*"
     };
   }
-  rpc ListOrder(ListOrdersRequest) returns (ListOrderResponse){
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse){
     option (google.api.http)= {
-      get: "/ListOrder"
+      get: "/ListOrders"
     };
   }
   rpc RefundOrder(RefundOrderRequest) returns (RefundOrderResponse){
@@ -51,7 +51,7 @@ service PupService{
 message Order {
   uint32 id = 1;
   uint32 user_id = 2;
-  OrderState state = 3;
+  string state = 3;
   int64 accept_time = 4;
   google.protobuf.Timestamp keep_until_date = 5;
   google.protobuf.Timestamp place_date = 6;
@@ -61,29 +61,29 @@ message Order {
 
 
 message AcceptOrderRequest{
-    uint32 order_id = 1 [
-      (validate.rules).uint32.gt = 0,
+    uint64 order_id = 1 [
+      (validate.rules).uint64.gt = 0,
       (google.api.field_behavior) = REQUIRED
     ];
-    uint32 user_id=2[
-      (validate.rules).uint32.gt = 0,
+    uint64 user_id=2[
+      (validate.rules).uint64.gt = 0,
       (google.api.field_behavior) = REQUIRED
     ];
     google.protobuf.Timestamp keep_until_date = 5[
       (google.api.field_behavior) = REQUIRED
     ];
-    int32 weight =7[
-      (validate.rules).int32.gt = 0,
+    int64 weight =7[
+      (validate.rules).int64.gt = 0,
       (google.api.field_behavior) = REQUIRED
     ];
-    int32 price = 8[
-      (validate.rules).int32.gt = 0,
+    int64 price = 8[
+      (validate.rules).int64.gt = 0,
       (google.api.field_behavior) = REQUIRED
     ];
 }
 
 message AcceptOrderResponse{
-  string message=1;
+
 }
 
 
@@ -96,7 +96,7 @@ message PlaceOrderRequest{
 }
 
 message PlaceOrderResponse{
-  string message=1;
+
 }
 
 message ReturnOrderRequest{
@@ -107,7 +107,7 @@ message ReturnOrderRequest{
 }
 
 message ReturnOrderResponse{
-  string message=1;
+
 }
 
 message ListOrdersRequest{
@@ -124,8 +124,8 @@ message ListOrdersRequest{
   ];
 }
 
-message ListOrderResponse{
-  repeated Order orders = 1;
+message ListOrdersResponse{
+  repeated OrderFromList orders = 1;
 }
 
 message RefundOrderRequest{
@@ -140,7 +140,7 @@ message RefundOrderRequest{
 }
 
 message RefundOrderResponse{
-  string message=1;
+
 }
 
 message ListReturnsRequest{
@@ -155,16 +155,20 @@ message ListReturnsRequest{
 }
 
 message ListReturnsResponse{
-  repeated Order orders = 1;
+  repeated Return returns = 1;
 }
 
 
 
-enum OrderState{
-  STATE_UNSPECIFIED = 0;
-  SOFT_DELETE = 1;        // ≈ State("soft_delete")
-  ACCEPT = 2;             // ≈ State("accept")
-  PLACE = 3;              // ≈ State("place")
-  REFUNDED = 4;           // ≈ State("refunded")
-  NEW_STATE = 5;          // ≈ State("new_state")
+message Return {
+  uint32 order_id = 1;
+  uint32 user_id =2;
+}
+
+message OrderFromList {
+  uint32 order_id = 1;
+  uint32 user_id =2;
+  string state = 3;
+  google.protobuf.Timestamp keep_until_date = 4;
+  int32 price = 5;
 }

@@ -48,14 +48,14 @@
         ]
       }
     },
-    "/ListOrder": {
+    "/ListOrders": {
       "get": {
-        "operationId": "PupService_ListOrder",
+        "operationId": "PupService_ListOrders",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pup_serviceListOrderResponse"
+              "$ref": "#/definitions/pup_serviceListOrdersResponse"
             }
           },
           "default": {
@@ -241,24 +241,24 @@
       "type": "object",
       "properties": {
         "orderId": {
-          "type": "integer",
-          "format": "int64"
+          "type": "string",
+          "format": "uint64"
         },
         "userId": {
-          "type": "integer",
-          "format": "int64"
+          "type": "string",
+          "format": "uint64"
         },
         "keepUntilDate": {
           "type": "string",
           "format": "date-time"
         },
         "weight": {
-          "type": "integer",
-          "format": "int32"
+          "type": "string",
+          "format": "int64"
         },
         "price": {
-          "type": "integer",
-          "format": "int32"
+          "type": "string",
+          "format": "int64"
         }
       },
       "required": [
@@ -270,21 +270,16 @@
       ]
     },
     "pup_serviceAcceptOrderResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      }
+      "type": "object"
     },
-    "pup_serviceListOrderResponse": {
+    "pup_serviceListOrdersResponse": {
       "type": "object",
       "properties": {
         "orders": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/pup_serviceOrder"
+            "$ref": "#/definitions/pup_serviceOrderFromList"
           }
         }
       }
@@ -292,19 +287,19 @@
     "pup_serviceListReturnsResponse": {
       "type": "object",
       "properties": {
-        "orders": {
+        "returns": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/pup_serviceOrder"
+            "$ref": "#/definitions/pup_serviceReturn"
           }
         }
       }
     },
-    "pup_serviceOrder": {
+    "pup_serviceOrderFromList": {
       "type": "object",
       "properties": {
-        "id": {
+        "orderId": {
           "type": "integer",
           "format": "int64"
         },
@@ -313,42 +308,17 @@
           "format": "int64"
         },
         "state": {
-          "$ref": "#/definitions/pup_serviceOrderState"
-        },
-        "acceptTime": {
-          "type": "string",
-          "format": "int64"
+          "type": "string"
         },
         "keepUntilDate": {
           "type": "string",
           "format": "date-time"
         },
-        "placeDate": {
-          "type": "string",
-          "format": "date-time"
-        },
-        "weight": {
-          "type": "string",
-          "format": "int64"
-        },
         "price": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         }
       }
-    },
-    "pup_serviceOrderState": {
-      "type": "string",
-      "enum": [
-        "STATE_UNSPECIFIED",
-        "SOFT_DELETE",
-        "ACCEPT",
-        "PLACE",
-        "REFUNDED",
-        "NEW_STATE"
-      ],
-      "default": "STATE_UNSPECIFIED",
-      "title": "- SOFT_DELETE: ≈ State(\"soft_delete\")\n - ACCEPT: ≈ State(\"accept\")\n - PLACE: ≈ State(\"place\")\n - REFUNDED: ≈ State(\"refunded\")\n - NEW_STATE: ≈ State(\"new_state\")"
     },
     "pup_servicePlaceOrderRequest": {
       "type": "object",
@@ -366,12 +336,7 @@
       ]
     },
     "pup_servicePlaceOrderResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      }
+      "type": "object"
     },
     "pup_serviceRefundOrderRequest": {
       "type": "object",
@@ -391,10 +356,18 @@
       ]
     },
     "pup_serviceRefundOrderResponse": {
+      "type": "object"
+    },
+    "pup_serviceReturn": {
       "type": "object",
       "properties": {
-        "message": {
-          "type": "string"
+        "orderId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "integer",
+          "format": "int64"
         }
       }
     },
@@ -411,12 +384,7 @@
       ]
     },
     "pup_serviceReturnOrderResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      }
+      "type": "object"
     },
     "rpcStatus": {
       "type": "object",

@@ -12,7 +12,7 @@ import (
 
 type Facade interface {
 	AcceptOrder(ctx context.Context, or *models.Order) error
-	PlaceOrder(ctx context.Context, ids []uint) error
+	PlaceOrder(ctx context.Context, ids []uint32) error
 	ReturnOrder(ctx context.Context, id uint) error
 	ListOrders(ctx context.Context, id uint, inPuP bool) ([]models.Order, error)
 	RefundOrder(ctx context.Context, id uint, userId uint) error
@@ -49,7 +49,7 @@ func (s storageFacade) AcceptOrder(ctx context.Context, or *models.Order) error 
 	return nil
 }
 
-func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint) error {
+func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint32) error {
 	return s.txManager.RunReadCommited(ctx, func(ctxT context.Context) error {
 		orders, exists := s.PgRepo.GetItems(ctxT, ids)
 		if !exists {
