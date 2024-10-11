@@ -259,6 +259,12 @@
         "price": {
           "type": "string",
           "format": "int64"
+        },
+        "packageType": {
+          "type": "string"
+        },
+        "needWrapping": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -266,7 +272,9 @@
         "userId",
         "keepUntilDate",
         "weight",
-        "price"
+        "price",
+        "packageType",
+        "needWrapping"
       ]
     },
     "pup_serviceAcceptOrderResponse": {

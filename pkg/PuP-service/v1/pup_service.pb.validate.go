@@ -126,6 +126,10 @@ func (m *Order) validate(all bool) error {
 
 	// no validation rules for Price
 
+	// no validation rules for PackageType
+
+	// no validation rules for NeedWrapping
+
 	if len(errors) > 0 {
 		return OrderMultiError(errors)
 	}
@@ -297,6 +301,19 @@ func (m *AcceptOrderRequest) validate(all bool) error {
 		}
 		errors = append(errors, err)
 	}
+
+	if l := utf8.RuneCountInString(m.GetPackageType()); l < 0 || l > 10 {
+		err := AcceptOrderRequestValidationError{
+			field:  "PackageType",
+			reason: "value length must be between 0 and 10 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for NeedWrapping
 
 	if len(errors) > 0 {
 		return AcceptOrderRequestMultiError(errors)
@@ -964,10 +981,10 @@ func (m *ListOrdersRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	if m.GetCount() <= 0 {
+	if m.GetCount() < 0 {
 		err := ListOrdersRequestValidationError{
 			field:  "Count",
-			reason: "value must be greater than 0",
+			reason: "value must be greater than or equal to 0",
 		}
 		if !all {
 			return err

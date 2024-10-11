@@ -57,6 +57,8 @@ message Order {
   google.protobuf.Timestamp place_date = 6;
   int64 weight = 7;
   int64 price = 8;
+  string package_type =9;
+  bool need_wrapping = 10;
 }
 
 
@@ -80,6 +82,16 @@ message AcceptOrderRequest{
       (validate.rules).int64.gt = 0,
       (google.api.field_behavior) = REQUIRED
     ];
+    string package_type =9[
+    (validate.rules).string = {
+      max_len : 10;
+      min_len : 0;
+    },
+       (google.api.field_behavior) = REQUIRED
+    ];
+    bool need_wrapping = 10[
+       (google.api.field_behavior) = REQUIRED
+  ];
 }
 
 message AcceptOrderResponse{
@@ -116,7 +128,7 @@ message ListOrdersRequest{
     (google.api.field_behavior) = REQUIRED
   ];
   int32 count = 2[
-    (validate.rules).int32.gt = 0,
+    (validate.rules).int32.gte = 0,
     (google.api.field_behavior) = REQUIRED
   ];
   bool in_pup=3[
