@@ -14,7 +14,7 @@ var (
 
 const (
 	maxGoRoutines = 100
-	maxQueueSize  = 1
+	maxQueueSize  = 100
 )
 
 type WorkerPool struct {

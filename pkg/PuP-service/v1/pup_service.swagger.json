@@ -1,0 +1,493 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "PuP-service/v1/pup_service.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "PupService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/AcceptOrder": {
+      "post": {
+        "operationId": "PupService_AcceptOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pup_serviceAcceptOrderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pup_serviceAcceptOrderRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PupService"
+        ]
+      }
+    },
+    "/ListOrder": {
+      "get": {
+        "operationId": "PupService_ListOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pup_serviceListOrderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "count",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "inPup",
+            "in": "query",
+            "required": true,
+            "type": "boolean"
+          }
+        ],
+        "tags": [
+          "PupService"
+        ]
+      }
+    },
+    "/ListReturns": {
+      "get": {
+        "operationId": "PupService_ListReturns",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pup_serviceListReturnsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": true,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "PupService"
+        ]
+      }
+    },
+    "/PlaceOrder": {
+      "patch": {
+        "operationId": "PupService_PlaceOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pup_servicePlaceOrderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pup_servicePlaceOrderRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PupService"
+        ]
+      }
+    },
+    "/RefundOrder": {
+      "patch": {
+        "operationId": "PupService_RefundOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pup_serviceRefundOrderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pup_serviceRefundOrderRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PupService"
+        ]
+      }
+    },
+    "/ReturnOrder": {
+      "patch": {
+        "operationId": "PupService_ReturnOrder",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pup_serviceReturnOrderResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pup_serviceReturnOrderRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PupService"
+        ]
+      }
+    },
+    "/WorkerNum": {
+      "put": {
+        "operationId": "PupService_WorkerNum",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pup_serviceWorkersNumResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pup_serviceWorkersNumRequest"
+            }
+          }
+        ],
+        "tags": [
+          "PupService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "pup_serviceAcceptOrderRequest": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "keepUntilDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "weight": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "price": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": [
+        "orderId",
+        "userId",
+        "keepUntilDate",
+        "weight",
+        "price"
+      ]
+    },
+    "pup_serviceAcceptOrderResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "pup_serviceListOrderResponse": {
+      "type": "object",
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pup_serviceOrder"
+          }
+        }
+      }
+    },
+    "pup_serviceListReturnsResponse": {
+      "type": "object",
+      "properties": {
+        "orders": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/pup_serviceOrder"
+          }
+        }
+      }
+    },
+    "pup_serviceOrder": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "state": {
+          "$ref": "#/definitions/pup_serviceOrderState"
+        },
+        "acceptTime": {
+          "type": "string",
+          "format": "int64"
+        },
+        "keepUntilDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "placeDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "weight": {
+          "type": "string",
+          "format": "int64"
+        },
+        "price": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pup_serviceOrderState": {
+      "type": "string",
+      "enum": [
+        "STATE_UNSPECIFIED",
+        "SOFT_DELETE",
+        "ACCEPT",
+        "PLACE",
+        "REFUNDED",
+        "NEW_STATE"
+      ],
+      "default": "STATE_UNSPECIFIED",
+      "title": "- SOFT_DELETE: ≈ State(\"soft_delete\")\n - ACCEPT: ≈ State(\"accept\")\n - PLACE: ≈ State(\"place\")\n - REFUNDED: ≈ State(\"refunded\")\n - NEW_STATE: ≈ State(\"new_state\")"
+    },
+    "pup_servicePlaceOrderRequest": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "required": [
+        "orderId"
+      ]
+    },
+    "pup_servicePlaceOrderResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "pup_serviceRefundOrderRequest": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "userId": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "orderId",
+        "userId"
+      ]
+    },
+    "pup_serviceRefundOrderResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "pup_serviceReturnOrderRequest": {
+      "type": "object",
+      "properties": {
+        "orderId": {
+          "type": "integer",
+          "format": "int64"
+        }
+      },
+      "required": [
+        "orderId"
+      ]
+    },
+    "pup_serviceReturnOrderResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "pup_serviceWorkersNumRequest": {
+      "type": "object",
+      "properties": {
+        "num": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "required": [
+        "num"
+      ]
+    },
+    "pup_serviceWorkersNumResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

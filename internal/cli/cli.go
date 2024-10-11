@@ -28,7 +28,7 @@ var helpText = `
     workers-num - allows you to change the number of workers
 `
 
-const num_workers = 1
+const num_workers = 5
 
 func Run(ctx context.Context, oS storage.Facade) error {
 	showHelp()

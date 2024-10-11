@@ -1,0 +1,187 @@
+syntax = "proto3";
+
+package pup_service;
+
+import "google/protobuf/timestamp.proto";
+import  "google/api/field_behavior.proto";
+import "google/api/annotations.proto";
+import "validate/validate.proto";
+
+
+option go_package = "homework/pkg/pup-service;pup_service";
+
+
+service PupService{
+  rpc AcceptOrder(AcceptOrderRequest) returns (AcceptOrderResponse) {
+    option (google.api.http) = {
+      post: "/AcceptOrder"
+      body: "*"
+    };
+  }
+  rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse) {
+   option (google.api.http) = {
+     patch: "/PlaceOrder"
+     body: "*"
+   };
+  }
+  rpc ReturnOrder(ReturnOrderRequest) returns (ReturnOrderResponse){
+    option (google.api.http) = {
+      patch: "/ReturnOrder"
+      body: "*"
+    };
+  }
+  rpc ListOrder(ListOrdersRequest) returns (ListOrderResponse){
+    option (google.api.http)= {
+      get: "/ListOrder"
+    };
+  }
+  rpc RefundOrder(RefundOrderRequest) returns (RefundOrderResponse){
+    option (google.api.http) = {
+      patch: "/RefundOrder"
+      body: "*"
+    };
+  }
+  rpc ListReturns(ListReturnsRequest) returns (ListReturnsResponse){
+    option (google.api.http) = {
+      get: "/ListReturns"
+    };
+  }
+  rpc WorkerNum(WorkersNumRequest) returns (WorkersNumResponse){
+    option (google.api.http) = {
+      put: "/WorkerNum"
+      body: "*"
+    };
+  }
+}
+
+message Order {
+  uint32 id = 1;
+  uint32 user_id = 2;
+  OrderState state = 3;
+  int64 accept_time = 4;
+  google.protobuf.Timestamp keep_until_date = 5;
+  google.protobuf.Timestamp place_date = 6;
+  int64 weight = 7;
+  int64 price = 8;
+}
+
+
+message AcceptOrderRequest{
+    uint32 order_id = 1 [
+      (validate.rules).uint32.gt = 0,
+      (google.api.field_behavior) = REQUIRED
+    ];
+    uint32 user_id=2[
+      (validate.rules).uint32.gt = 0,
+      (google.api.field_behavior) = REQUIRED
+    ];
+    google.protobuf.Timestamp keep_until_date = 5[
+      (google.api.field_behavior) = REQUIRED
+    ];
+    int32 weight =7[
+      (validate.rules).int32.gt = 0,
+      (google.api.field_behavior) = REQUIRED
+    ];
+    int32 price = 8[
+      (validate.rules).int32.gt = 0,
+      (google.api.field_behavior) = REQUIRED
+    ];
+}
+
+message AcceptOrderResponse{
+  string message=1;
+}
+
+
+message PlaceOrderRequest{
+  repeated uint32 order_id = 1[
+    (validate.rules).repeated.min_items = 1,
+    (validate.rules).repeated.unique = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message PlaceOrderResponse{
+  string message=1;
+}
+
+message ReturnOrderRequest{
+  uint32 order_id=1[
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message ReturnOrderResponse{
+  string message=1;
+}
+
+message ListOrdersRequest{
+  uint32 user_id=1[
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  int32 count = 2[
+    (validate.rules).int32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  bool in_pup=3[
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message ListOrderResponse{
+  repeated Order orders = 1;
+}
+
+message RefundOrderRequest{
+  uint32 order_id =1[
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  uint32 user_id=2[
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message RefundOrderResponse{
+  string message=1;
+}
+
+message ListReturnsRequest{
+  int32 limit = 1[
+    (validate.rules).int32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  int32 page = 2[
+    (validate.rules).int32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message ListReturnsResponse{
+  repeated Order orders = 1;
+}
+
+message WorkersNumRequest{
+  int32 num = 1[
+    (validate.rules).int32.gt = 0,
+    (validate.rules).int32.lt = 100,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message WorkersNumResponse{
+  string message =1;
+}
+
+
+enum OrderState{
+  STATE_UNSPECIFIED = 0;
+  SOFT_DELETE = 1;        // ≈ State("soft_delete")
+  ACCEPT = 2;             // ≈ State("accept")
+  PLACE = 3;              // ≈ State("place")
+  REFUNDED = 4;           // ≈ State("refunded")
+  NEW_STATE = 5;          // ≈ State("new_state")
+}
