@@ -25,7 +25,6 @@ const (
 	PupService_ListOrder_FullMethodName   = "/pup_service.PupService/ListOrder"
 	PupService_RefundOrder_FullMethodName = "/pup_service.PupService/RefundOrder"
 	PupService_ListReturns_FullMethodName = "/pup_service.PupService/ListReturns"
-	PupService_WorkerNum_FullMethodName   = "/pup_service.PupService/WorkerNum"
 )
 
 // PupServiceClient is the client API for PupService service.
@@ -38,7 +37,6 @@ type PupServiceClient interface {
 	ListOrder(ctx context.Context, in *ListOrdersRequest, opts ...grpc.CallOption) (*ListOrderResponse, error)
 	RefundOrder(ctx context.Context, in *RefundOrderRequest, opts ...grpc.CallOption) (*RefundOrderResponse, error)
 	ListReturns(ctx context.Context, in *ListReturnsRequest, opts ...grpc.CallOption) (*ListReturnsResponse, error)
-	WorkerNum(ctx context.Context, in *WorkersNumRequest, opts ...grpc.CallOption) (*WorkersNumResponse, error)
 }
 
 type pupServiceClient struct {
@@ -109,16 +107,6 @@ func (c *pupServiceClient) ListReturns(ctx context.Context, in *ListReturnsReque
 	return out, nil
 }
 
-func (c *pupServiceClient) WorkerNum(ctx context.Context, in *WorkersNumRequest, opts ...grpc.CallOption) (*WorkersNumResponse, error) {
-	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(WorkersNumResponse)
-	err := c.cc.Invoke(ctx, PupService_WorkerNum_FullMethodName, in, out, cOpts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // PupServiceServer is the server API for PupService service.
 // All implementations must embed UnimplementedPupServiceServer
 // for forward compatibility.
@@ -129,7 +117,6 @@ type PupServiceServer interface {
 	ListOrder(context.Context, *ListOrdersRequest) (*ListOrderResponse, error)
 	RefundOrder(context.Context, *RefundOrderRequest) (*RefundOrderResponse, error)
 	ListReturns(context.Context, *ListReturnsRequest) (*ListReturnsResponse, error)
-	WorkerNum(context.Context, *WorkersNumRequest) (*WorkersNumResponse, error)
 	mustEmbedUnimplementedPupServiceServer()
 }
 
@@ -157,9 +144,6 @@ func (UnimplementedPupServiceServer) RefundOrder(context.Context, *RefundOrderRe
 }
 func (UnimplementedPupServiceServer) ListReturns(context.Context, *ListReturnsRequest) (*ListReturnsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListReturns not implemented")
-}
-func (UnimplementedPupServiceServer) WorkerNum(context.Context, *WorkersNumRequest) (*WorkersNumResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method WorkerNum not implemented")
 }
 func (UnimplementedPupServiceServer) mustEmbedUnimplementedPupServiceServer() {}
 func (UnimplementedPupServiceServer) testEmbeddedByValue()                    {}
@@ -290,24 +274,6 @@ func _PupService_ListReturns_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PupService_WorkerNum_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(WorkersNumRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(PupServiceServer).WorkerNum(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: PupService_WorkerNum_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PupServiceServer).WorkerNum(ctx, req.(*WorkersNumRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // PupService_ServiceDesc is the grpc.ServiceDesc for PupService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -338,10 +304,6 @@ var PupService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListReturns",
 			Handler:    _PupService_ListReturns_Handler,
-		},
-		{
-			MethodName: "WorkerNum",
-			Handler:    _PupService_WorkerNum_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

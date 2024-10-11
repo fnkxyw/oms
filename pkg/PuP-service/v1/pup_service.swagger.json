@@ -225,38 +225,6 @@
           "PupService"
         ]
       }
-    },
-    "/WorkerNum": {
-      "put": {
-        "operationId": "PupService_WorkerNum",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/pup_serviceWorkersNumResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/pup_serviceWorkersNumRequest"
-            }
-          }
-        ],
-        "tags": [
-          "PupService"
-        ]
-      }
     }
   },
   "definitions": {
@@ -443,26 +411,6 @@
       ]
     },
     "pup_serviceReturnOrderResponse": {
-      "type": "object",
-      "properties": {
-        "message": {
-          "type": "string"
-        }
-      }
-    },
-    "pup_serviceWorkersNumRequest": {
-      "type": "object",
-      "properties": {
-        "num": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "required": [
-        "num"
-      ]
-    },
-    "pup_serviceWorkersNumResponse": {
       "type": "object",
       "properties": {
         "message": {

@@ -46,12 +46,6 @@ service PupService{
       get: "/ListReturns"
     };
   }
-  rpc WorkerNum(WorkersNumRequest) returns (WorkersNumResponse){
-    option (google.api.http) = {
-      put: "/WorkerNum"
-      body: "*"
-    };
-  }
 }
 
 message Order {
@@ -164,17 +158,6 @@ message ListReturnsResponse{
   repeated Order orders = 1;
 }
 
-message WorkersNumRequest{
-  int32 num = 1[
-    (validate.rules).int32.gt = 0,
-    (validate.rules).int32.lt = 100,
-    (google.api.field_behavior) = REQUIRED
-  ];
-}
-
-message WorkersNumResponse{
-  string message =1;
-}
 
 
 enum OrderState{
