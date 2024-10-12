@@ -18,7 +18,7 @@ func (i *Implementation) AcceptOrder(ctx context.Context, req *desc.AcceptOrderR
 		ID:            uint(req.OrderId),
 		UserID:        uint(req.UserId),
 		State:         "",
-		AcceptTime:    time.Now().Unix(),
+		AcceptTime:    time.Time{}.Unix(),
 		KeepUntilDate: req.KeepUntilDate.AsTime(),
 		PlaceDate:     time.Time{},
 		Weight:        int(req.Weight),

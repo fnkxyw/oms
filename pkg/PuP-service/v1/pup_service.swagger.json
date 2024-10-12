@@ -241,24 +241,24 @@
       "type": "object",
       "properties": {
         "orderId": {
-          "type": "string",
-          "format": "uint64"
+          "type": "integer",
+          "format": "int64"
         },
         "userId": {
-          "type": "string",
-          "format": "uint64"
+          "type": "integer",
+          "format": "int64"
         },
         "keepUntilDate": {
           "type": "string",
           "format": "date-time"
         },
         "weight": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "price": {
-          "type": "string",
-          "format": "int64"
+          "type": "integer",
+          "format": "int32"
         },
         "packageType": {
           "type": "string"

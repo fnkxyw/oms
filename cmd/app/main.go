@@ -2,25 +2,28 @@ package main
 
 import (
 	"context"
-	"github.com/jackc/pgx/v5/pgxpool"
+	pup_service "gitlab.ozon.dev/akugnerevich/homework.git/pkg/PuP-service/v1"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	c "gitlab.ozon.dev/akugnerevich/homework.git/internal/cli"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
 	"log"
 )
 
+const grpcHost = "localhost:7001"
+
 func main() {
-	const psqlDSN = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
 	ctx, _ := context.WithCancel(context.Background())
 
-	pool, err := pgxpool.New(ctx, psqlDSN)
+	conn, err := grpc.NewClient(grpcHost, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("failed to create grpc client: %v", err)
 	}
-	defer pool.Close()
-	oS := storage.NewStorageFacade(pool)
+	defer conn.Close()
 
-	err = c.Run(ctx, oS)
+	pupServiceClient := pup_service.NewPupServiceClient(conn)
+
+	err = c.Run(ctx, pupServiceClient)
 	if err != nil {
 		log.Printf("Error in Run: %v", err)
 	}
