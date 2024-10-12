@@ -10,13 +10,18 @@ GOARCH := $(shell go env GOARCH)
 LOCAL_BIN := $(CURDIR)/bin
 OUT_PATH := $(CURDIR)/pkg
 #стандартный ввод т.е просто "make"
-all: deps generate build run
+
+# запуск сервера из proto-файла
+all: deps generate build-server run-server
 
 build-race:
 	$(GOBUILD) --race -o app cmd/app/main.go
 
-build:
-	$(GOBUILD) -o app cmd/app/main.go
+build-server:
+	$(GOBUILD) -o server_app cmd/grpc-pup/pup-service/main.go
+
+build-client:
+	$(GOBUILD) -o client_app cmd/app/main.go
 
 #лишним не будет как посчитал
 build-linux:
@@ -28,13 +33,22 @@ build-windows:
 
 #удалять бинарники
 clean:
-	rm -f ./app ./appL ./appM ./appW.exe coverage.out
+	rm -f ./client_app ./appL ./appM ./appW.exe coverage.out ./server_app
 
 run-race:
 	$(GORUN) cmd/app/main.go --race
+#запуск сервера
+run-server:
+	$(GORUN) cmd/grpc-pup/pup-service/main.go
+
+#запуска клиента к серверу
+run-client:
+	$(GORUN) cmd/app/main.go
 
 run:
-	$(GORUN) cmd/app/main.go
+	$(GORUN) cmd/grpc-pup/pup-service/main.go & \
+	$(GORUN) cmd/app/main.go & \
+	wait
 
 deps:
 	$(GOMOD) tidy
@@ -166,5 +180,5 @@ generate:
 		rm -rf vendor.protogen/tmp
 
 
-.PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura compose-up compose-down compose-ps compose-start compose-stop
+.PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura compose-up compose-down compose-ps compose-start compose-stop run-server run-client run
 .PHONY: goose-install goose-add goose-up goose-status goose-dowm  compose-up-test compose-down-test run-race build-race generate .vendor-proto .vendor-proto/google/api .vendor-proto/google/protobuf .vendor-proto/protoc-gen-openapiv2/options .vendor-proto/validate
