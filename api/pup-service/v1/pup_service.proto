@@ -6,47 +6,104 @@ import "google/protobuf/timestamp.proto";
 import  "google/api/field_behavior.proto";
 import "google/api/annotations.proto";
 import "validate/validate.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
 
 
 option go_package = "homework/pkg/pup-service;pup_service";
 
 
-service PupService{
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "ПВЗ";
+    version: "1.0.0";
+    description: "Сервис выполняет функции ПВЗ и доставки для множества пользователей";
+  };
+  host: "localhost:7001";
+  schemes: HTTP;
+  consumes: "application/json";
+  produces: "application/json";
+  security_definitions: {
+    security: {
+      key: "api-token",
+      value: {
+        in: IN_HEADER;
+        type: TYPE_API_KEY;
+        name: "x-api-token";
+        description: "Авторизационный токен";
+      }
+    };
+  };
+};
+
+
+service PupService {
   rpc AcceptOrder(AcceptOrderRequest) returns (AcceptOrderResponse) {
     option (google.api.http) = {
       post: "/AcceptOrder"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Принять заказ";
+      description: "Принимает Order Id, User Id, Дату хранения, Вес, Цену, Тип упаковки и необходимость упаковки о заказе и создает новый заказ.";
+    };
   }
+
   rpc PlaceOrder(PlaceOrderRequest) returns (PlaceOrderResponse) {
-   option (google.api.http) = {
-     patch: "/PlaceOrder"
-     body: "*"
-   };
+    option (google.api.http) = {
+      patch: "/PlaceOrder"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Доставить заказ";
+      description: "Принимает на вход множество Order IDs, необходимо чтобы все ID принадлежали одному пользователю";
+    };
   }
-  rpc ReturnOrder(ReturnOrderRequest) returns (ReturnOrderResponse){
+
+  rpc ReturnOrder(ReturnOrderRequest) returns (ReturnOrderResponse) {
     option (google.api.http) = {
       patch: "/ReturnOrder"
       body: "*"
     };
-  }
-  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse){
-    option (google.api.http)= {
-      get: "/ListOrders"
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Вернуть заказ курьеру";
+      description: "Принимает на вход Order ID и возвращает заказ курьеру";
     };
   }
-  rpc RefundOrder(RefundOrderRequest) returns (RefundOrderResponse){
+
+  rpc ListOrders(ListOrdersRequest) returns (ListOrdersResponse) {
+    option (google.api.http) = {
+      get: "/ListOrders"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Список заказов";
+      description: "Принимает на вход User ID и два опциональных параметра"
+          "1-Количество заказов. Передается в случае если нужно показать n последних всевозможных заказов"
+          "2-inPuP. Передается в случае если нужно показать ВСЕ заказы находящиеся на ПВЗ"
+    };
+  }
+
+  rpc RefundOrder(RefundOrderRequest) returns (RefundOrderResponse) {
     option (google.api.http) = {
       patch: "/RefundOrder"
       body: "*"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Возврат заказа";
+      description: "Принимает на вход OrderId и UserId. Возвращает заказ на ПВЗ";
+    };
   }
-  rpc ListReturns(ListReturnsRequest) returns (ListReturnsResponse){
+
+  rpc ListReturns(ListReturnsRequest) returns (ListReturnsResponse) {
     option (google.api.http) = {
       get: "/ListReturns"
     };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Список возвратов";
+      description: "Передается limit и page для пагинации. Показывает все возвраты от клиента на ПВЗ";
+    };
   }
 }
+
 
 message Order {
   uint32 id = 1;

@@ -7,6 +7,7 @@ require (
 	github.com/containerd/containerd v1.7.18
 	github.com/docker/go-connections v0.5.0
 	github.com/envoyproxy/protoc-gen-validate v1.0.4
+	github.com/go-chi/chi/v5 v5.1.0
 	github.com/gojuno/minimock/v3 v3.4.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.16.0
 	github.com/jackc/pgx/v5 v5.7.1

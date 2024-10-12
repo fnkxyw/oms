@@ -10,7 +10,7 @@ import (
 	"log"
 )
 
-const grpcHost = "localhost:7001"
+const grpcHost = "localhost:7002"
 
 func main() {
 	ctx, _ := context.WithCancel(context.Background())

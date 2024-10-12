@@ -1,13 +1,18 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "PuP-service/v1/pup_service.proto",
-    "version": "version not set"
+    "title": "ПВЗ",
+    "description": "Сервис выполняет функции ПВЗ и доставки для множества пользователей",
+    "version": "1.0.0"
   },
   "tags": [
     {
       "name": "PupService"
     }
+  ],
+  "host": "localhost:7001",
+  "schemes": [
+    "http"
   ],
   "consumes": [
     "application/json"
@@ -18,6 +23,8 @@
   "paths": {
     "/AcceptOrder": {
       "post": {
+        "summary": "Принять заказ",
+        "description": "Принимает Order Id, User Id, Дату хранения, Вес, Цену, Тип упаковки и необходимость упаковки о заказе и создает новый заказ.",
         "operationId": "PupService_AcceptOrder",
         "responses": {
           "200": {
@@ -50,6 +57,8 @@
     },
     "/ListOrders": {
       "get": {
+        "summary": "Список заказов",
+        "description": "Принимает на вход User ID и два опциональных параметра1-Количество заказов. Передается в случае если нужно показать n последних всевозможных заказов2-inPuP. Передается в случае если нужно показать ВСЕ заказы находящиеся на ПВЗ",
         "operationId": "PupService_ListOrders",
         "responses": {
           "200": {
@@ -94,6 +103,8 @@
     },
     "/ListReturns": {
       "get": {
+        "summary": "Список возвратов",
+        "description": "Передается limit и page для пагинации. Показывает все возвраты от клиента на ПВЗ",
         "operationId": "PupService_ListReturns",
         "responses": {
           "200": {
@@ -132,6 +143,8 @@
     },
     "/PlaceOrder": {
       "patch": {
+        "summary": "Доставить заказ",
+        "description": "Принимает на вход множество Order IDs, необходимо чтобы все ID принадлежали одному пользователю",
         "operationId": "PupService_PlaceOrder",
         "responses": {
           "200": {
@@ -164,6 +177,8 @@
     },
     "/RefundOrder": {
       "patch": {
+        "summary": "Возврат заказа",
+        "description": "Принимает на вход OrderId и UserId. Возвращает заказ на ПВЗ",
         "operationId": "PupService_RefundOrder",
         "responses": {
           "200": {
@@ -196,6 +211,8 @@
     },
     "/ReturnOrder": {
       "patch": {
+        "summary": "Вернуть заказ курьеру",
+        "description": "Принимает на вход Order ID и возвращает заказ курьеру",
         "operationId": "PupService_ReturnOrder",
         "responses": {
           "200": {
@@ -412,6 +429,14 @@
           }
         }
       }
+    }
+  },
+  "securityDefinitions": {
+    "api-token": {
+      "type": "apiKey",
+      "description": "Авторизационный токен",
+      "name": "x-api-token",
+      "in": "header"
     }
   }
 }

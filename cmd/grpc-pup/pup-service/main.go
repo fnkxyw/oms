@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/go-chi/chi/v5"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
 	pup_service "gitlab.ozon.dev/akugnerevich/homework.git/internal/grpc-pup/app"
@@ -14,12 +15,14 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 )
 
 const (
-	psqlDBN  = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
-	grpcHost = "localhost:7001"
-	httpHost = "localhost:7000"
+	psqlDBN   = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+	adminHost = "localhost:7003"
+	grpcHost  = "localhost:7002"
+	httpHost  = "localhost:7001"
 )
 
 func main() {
@@ -55,6 +58,28 @@ func main() {
 	go func() {
 		if err := http.ListenAndServe(httpHost, mux); err != nil {
 			log.Fatalf("failed to listen and serve pup service handler: %v", err)
+		}
+	}()
+
+	go func() {
+		adminServer := chi.NewMux()
+
+		adminServer.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
+			b, err := os.ReadFile("./pkg/PuP-service/v1/pup_service.swagger.json")
+			if err != nil {
+				http.Error(w, "Could not read swagger file", http.StatusInternalServerError)
+				return
+			}
+			w.Header().Set("Content-Type", "application/json")
+			w.Write(b)
+		})
+
+		adminServer.Get("/swagger-ui", func(w http.ResponseWriter, r *http.Request) {
+			http.ServeFile(w, r, "./swagger_ui.html")
+		})
+
+		if err := http.ListenAndServe(adminHost, adminServer); err != nil {
+			log.Fatalf("failed to listen and serve admin server: %v", err)
 		}
 	}()
 
