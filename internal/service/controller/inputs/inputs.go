@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/wpool"
 	"os"
 	"strconv"
@@ -12,37 +13,56 @@ import (
 	"time"
 )
 
-func CollectOrderInput() (*models.Order, string, bool, error) {
+func StringToPackageType(pkg string) (packing.PackageType, error) {
+	switch pkg {
+	case "box":
+		return packing.PackageType_BOX, nil
+	case "bundle":
+		return packing.PackageType_BUNDLE, nil
+	case "wrap":
+		return packing.PackageType_BUNDLE, nil
+	default:
+		return packing.PackageType_PACKAGE_UNKNOWN, errors.New("invalid package type")
+	}
+}
+
+func CollectOrderInput() (*models.Order, packing.PackageType, bool, error) {
 	scanner := bufio.NewScanner(os.Stdin)
 	var order models.Order
-	var packageType string
+	var packageTypeStr string
 	var dateString string
 
 	fmt.Println("Input OrderID _ UserID _ Date(form[2024-12(m)-12(d)])")
 	fmt.Print(">")
 	if !scanner.Scan() {
-		return nil, "", false, fmt.Errorf("Input error: failed to read line")
+		return nil, packing.PackageType_PACKAGE_UNKNOWN, false, fmt.Errorf("Input error: failed to read line")
 	}
 	input := scanner.Text()
 	_, err := fmt.Sscanf(input, "%d %d %s", &order.ID, &order.UserID, &dateString)
 	if err != nil {
-		return nil, "", false, fmt.Errorf("Input parse Err: %w", err)
+		return nil, packing.PackageType_PACKAGE_UNKNOWN, false, fmt.Errorf("Input parse Err: %w", err)
 	}
 
 	order.KeepUntilDate, err = time.Parse("2006-01-02", dateString)
 	if err != nil {
-		return nil, "", false, fmt.Errorf("Date parse Err: %w", err)
+		return nil, packing.PackageType_PACKAGE_UNKNOWN, false, fmt.Errorf("Date parse Err: %w", err)
 	}
 
 	fmt.Println("Input weight[kg], price[₽], package type [box, bundle, wrap]")
 	fmt.Print(">")
 	if !scanner.Scan() {
-		return nil, "", false, fmt.Errorf("Input error: failed to read line")
+		return nil, packing.PackageType_PACKAGE_UNKNOWN, false, fmt.Errorf("Input error: failed to read line")
 	}
 	input = scanner.Text()
-	_, err = fmt.Sscanf(input, "%d %d %s", &order.Weight, &order.Price, &packageType)
+	_, err = fmt.Sscanf(input, "%d %d %s", &order.Weight, &order.Price, &packageTypeStr)
 	if err != nil {
-		return nil, "", false, fmt.Errorf("Input parse Err: %w", err)
+		return nil, packing.PackageType_PACKAGE_UNKNOWN, false, fmt.Errorf("Input parse Err: %w", err)
+	}
+
+	// Преобразование строки в PackageType
+	packageType, err := StringToPackageType(packageTypeStr)
+	if err != nil {
+		return nil, packing.PackageType_PACKAGE_UNKNOWN, false, err
 	}
 
 	var answer string
@@ -50,7 +70,7 @@ func CollectOrderInput() (*models.Order, string, bool, error) {
 	fmt.Println("Would you like to add a wrap to your package? ['y' - yes, 'n' - no]")
 	_, err = fmt.Scan(&answer)
 	if err != nil {
-		return nil, "", false, fmt.Errorf("Error scaning answer %w", err)
+		return nil, packing.PackageType_PACKAGE_UNKNOWN, false, fmt.Errorf("Error scanning answer %w", err)
 	}
 	switch answer {
 	case "y":
@@ -58,11 +78,10 @@ func CollectOrderInput() (*models.Order, string, bool, error) {
 	case "n":
 		needWrapping = false
 	default:
-		return &models.Order{}, "", false, errors.New("invalid input")
+		return &models.Order{}, packing.PackageType_PACKAGE_UNKNOWN, false, errors.New("invalid input")
 	}
 
 	return &order, packageType, needWrapping, nil
-
 }
 
 func InputOrderID() (uint, error) {

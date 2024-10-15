@@ -6,6 +6,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/postgres"
 	"time"
 )
@@ -14,7 +15,7 @@ type Facade interface {
 	AcceptOrder(ctx context.Context, or *models.Order) error
 	PlaceOrder(ctx context.Context, ids []uint32) error
 	ReturnOrder(ctx context.Context, id uint) error
-	ListOrders(ctx context.Context, id uint, inPuP bool) ([]models.Order, error)
+	ListOrders(ctx context.Context, id uint, inPuP bool, count int) ([]models.Order, error)
 	RefundOrder(ctx context.Context, id uint, userId uint) error
 	ListReturns(ctx context.Context, limit, page int) ([]models.Order, error)
 	GetItem(ctx context.Context, id uint) (*models.Order, bool)
@@ -102,10 +103,20 @@ func (s storageFacade) ReturnOrder(ctx context.Context, id uint) error {
 	})
 }
 
-func (s storageFacade) ListOrders(ctx context.Context, id uint, inPuP bool) ([]models.Order, error) {
+func (s storageFacade) ListOrders(ctx context.Context, id uint, inPuP bool, count int) ([]models.Order, error) {
 	list, err := s.PgRepo.GetUserOrders(ctx, id, inPuP)
 	if err != nil {
 		return nil, err
+	}
+	orders.SortOrders(list)
+	if count < 1 {
+		count = 1
+	} else if count > len(list) {
+		count = len(list)
+
+	}
+	if !inPuP {
+		list = list[:count]
 	}
 
 	return list, nil

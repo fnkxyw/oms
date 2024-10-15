@@ -3,7 +3,7 @@
   "info": {
     "title": "ПВЗ",
     "description": "Сервис выполняет функции ПВЗ и доставкидля множества пользователей",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "tags": [
     {
@@ -21,16 +21,16 @@
     "application/json"
   ],
   "paths": {
-    "/AcceptOrder": {
+    "/v1/AcceptOrder": {
       "post": {
-        "summary": "Принять заказ",
+        "summary": "Принять заказ (v1)",
         "description": "Принимает Order Id, User Id, Дату хранения, Вес, Цену, Тип упаковки и необходимость упаковки о заказе и создает новый заказ",
-        "operationId": "PupService_AcceptOrder",
+        "operationId": "PupService_AcceptOrderV1",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pup_serviceAcceptOrderResponse"
+              "$ref": "#/definitions/v1AcceptOrderV1Response"
             }
           },
           "default": {
@@ -46,7 +46,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/pup_serviceAcceptOrderRequest"
+              "$ref": "#/definitions/v1AcceptOrderV1Request"
             }
           }
         ],
@@ -55,16 +55,16 @@
         ]
       }
     },
-    "/ListOrders": {
+    "/v1/ListOrders": {
       "get": {
-        "summary": "Список заказов",
+        "summary": "Список заказов (v1)",
         "description": "Принимает на вход User ID и два опциональных параметра:\n1 - Количество заказов. Передается в случае если нужно показать n последних всевозможных заказов\n2 - inPuP. Передается в случае если нужно показать ВСЕ заказы, находящиеся на ПВЗ.",
-        "operationId": "PupService_ListOrders",
+        "operationId": "PupService_ListOrdersV1",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pup_serviceListOrdersResponse"
+              "$ref": "#/definitions/v1ListOrdersV1Response"
             }
           },
           "default": {
@@ -101,16 +101,16 @@
         ]
       }
     },
-    "/ListReturns": {
+    "/v1/ListReturns": {
       "get": {
-        "summary": "Список возвратов",
+        "summary": "Список возвратов (v1)",
         "description": "Передается limit и page для пагинации.Показывает все возвраты от клиента на ПВЗ",
-        "operationId": "PupService_ListReturns",
+        "operationId": "PupService_ListReturnsV1",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pup_serviceListReturnsResponse"
+              "$ref": "#/definitions/v1ListReturnsV1Response"
             }
           },
           "default": {
@@ -141,16 +141,16 @@
         ]
       }
     },
-    "/PlaceOrder": {
+    "/v1/PlaceOrder": {
       "patch": {
-        "summary": "Доставить заказ",
+        "summary": "Доставить заказ (v1)",
         "description": "Принимает на вход множество Order ID, необходимо чтобы все ID принадлежали одному пользователю",
-        "operationId": "PupService_PlaceOrder",
+        "operationId": "PupService_PlaceOrderV1",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pup_servicePlaceOrderResponse"
+              "$ref": "#/definitions/v1PlaceOrderV1Response"
             }
           },
           "default": {
@@ -166,7 +166,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/pup_servicePlaceOrderRequest"
+              "$ref": "#/definitions/v1PlaceOrderV1Request"
             }
           }
         ],
@@ -175,16 +175,16 @@
         ]
       }
     },
-    "/RefundOrder": {
+    "/v1/RefundOrder": {
       "patch": {
-        "summary": "Возврат заказа",
-        "description": "Принимает на вход OrderId и UserId.Возвращает заказ на ПВЗ",
-        "operationId": "PupService_RefundOrder",
+        "summary": "Возврат заказа (v1)",
+        "description": "Принимает на вход OrderId и UserId. Возвращает заказ на ПВЗ",
+        "operationId": "PupService_RefundOrderV1",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pup_serviceRefundOrderResponse"
+              "$ref": "#/definitions/v1RefundOrderV1Response"
             }
           },
           "default": {
@@ -200,7 +200,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/pup_serviceRefundOrderRequest"
+              "$ref": "#/definitions/v1RefundOrderV1Request"
             }
           }
         ],
@@ -209,16 +209,16 @@
         ]
       }
     },
-    "/ReturnOrder": {
+    "/v1/ReturnOrder": {
       "patch": {
-        "summary": "Вернуть заказ курьеру",
+        "summary": "Вернуть заказ курьеру (v1)",
         "description": "Принимает на вход Order ID и возвращает заказ курьеру",
-        "operationId": "PupService_ReturnOrder",
+        "operationId": "PupService_ReturnOrderV1",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pup_serviceReturnOrderResponse"
+              "$ref": "#/definitions/v1ReturnOrderV1Response"
             }
           },
           "default": {
@@ -234,7 +234,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/pup_serviceReturnOrderRequest"
+              "$ref": "#/definitions/v1ReturnOrderV1Request"
             }
           }
         ],
@@ -254,7 +254,26 @@
       },
       "additionalProperties": {}
     },
-    "pup_serviceAcceptOrderRequest": {
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "v1AcceptOrderV1Request": {
       "type": "object",
       "properties": {
         "orderId": {
@@ -278,7 +297,7 @@
           "format": "int32"
         },
         "packageType": {
-          "type": "string"
+          "$ref": "#/definitions/v1PackageType"
         },
         "needWrapping": {
           "type": "boolean"
@@ -294,34 +313,34 @@
         "needWrapping"
       ]
     },
-    "pup_serviceAcceptOrderResponse": {
+    "v1AcceptOrderV1Response": {
       "type": "object"
     },
-    "pup_serviceListOrdersResponse": {
+    "v1ListOrdersV1Response": {
       "type": "object",
       "properties": {
         "orders": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/pup_serviceOrderFromList"
+            "$ref": "#/definitions/v1OrderFromListV1"
           }
         }
       }
     },
-    "pup_serviceListReturnsResponse": {
+    "v1ListReturnsV1Response": {
       "type": "object",
       "properties": {
         "returns": {
           "type": "array",
           "items": {
             "type": "object",
-            "$ref": "#/definitions/pup_serviceReturn"
+            "$ref": "#/definitions/v1ReturnV1"
           }
         }
       }
     },
-    "pup_serviceOrderFromList": {
+    "v1OrderFromListV1": {
       "type": "object",
       "properties": {
         "orderId": {
@@ -345,7 +364,17 @@
         }
       }
     },
-    "pup_servicePlaceOrderRequest": {
+    "v1PackageType": {
+      "type": "string",
+      "enum": [
+        "PACKAGE_UNKNOWN",
+        "BOX",
+        "BUNDLE",
+        "WRAP"
+      ],
+      "default": "PACKAGE_UNKNOWN"
+    },
+    "v1PlaceOrderV1Request": {
       "type": "object",
       "properties": {
         "orderIds": {
@@ -360,10 +389,10 @@
         "orderIds"
       ]
     },
-    "pup_servicePlaceOrderResponse": {
+    "v1PlaceOrderV1Response": {
       "type": "object"
     },
-    "pup_serviceRefundOrderRequest": {
+    "v1RefundOrderV1Request": {
       "type": "object",
       "properties": {
         "orderId": {
@@ -380,23 +409,10 @@
         "userId"
       ]
     },
-    "pup_serviceRefundOrderResponse": {
+    "v1RefundOrderV1Response": {
       "type": "object"
     },
-    "pup_serviceReturn": {
-      "type": "object",
-      "properties": {
-        "orderId": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "userId": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "pup_serviceReturnOrderRequest": {
+    "v1ReturnOrderV1Request": {
       "type": "object",
       "properties": {
         "orderId": {
@@ -408,35 +424,21 @@
         "orderId"
       ]
     },
-    "pup_serviceReturnOrderResponse": {
+    "v1ReturnOrderV1Response": {
       "type": "object"
     },
-    "rpcStatus": {
+    "v1ReturnV1": {
       "type": "object",
       "properties": {
-        "code": {
+        "orderId": {
           "type": "integer",
-          "format": "int32"
+          "format": "int64"
         },
-        "message": {
-          "type": "string"
-        },
-        "details": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "$ref": "#/definitions/protobufAny"
-          }
+        "userId": {
+          "type": "integer",
+          "format": "int64"
         }
       }
-    }
-  },
-  "securityDefinitions": {
-    "api-token": {
-      "type": "apiKey",
-      "description": "Авторизационный токен",
-      "name": "x-api-token",
-      "in": "header"
     }
   }
 }

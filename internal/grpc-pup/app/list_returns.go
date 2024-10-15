@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (i *Implementation) ListReturns(ctx context.Context, req *desc.ListReturnsRequest) (*desc.ListReturnsResponse, error) {
+func (i *Implementation) ListReturnsV1(ctx context.Context, req *desc.ListReturnsV1Request) (*desc.ListReturnsV1Response, error) {
 	if err := req.Validate(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -15,9 +15,9 @@ func (i *Implementation) ListReturns(ctx context.Context, req *desc.ListReturnsR
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	response := &desc.ListReturnsResponse{}
+	response := &desc.ListReturnsV1Response{}
 	for _, order := range list {
-		response.Returns = append(response.Returns, &desc.Return{
+		response.Returns = append(response.Returns, &desc.ReturnV1{
 			OrderId: uint32(order.ID),
 			UserId:  uint32(order.UserID),
 		})

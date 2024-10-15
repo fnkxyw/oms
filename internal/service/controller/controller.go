@@ -27,18 +27,18 @@ func WAcceptOrder(ctx context.Context, pup pup_service.PupServiceClient, wp *wpo
 		return err
 	}
 
-	req := &pup_service.AcceptOrderRequest{
+	req := &pup_service.AcceptOrderV1Request{
 		OrderId:       uint32(order.ID),
 		UserId:        uint32(order.UserID),
 		KeepUntilDate: protobuf.ToTimestamp(order.KeepUntilDate),
 		Weight:        int32(order.Weight),
 		Price:         int32(order.Price),
-		PackageType:   PackageType,
+		PackageType:   pup_service.PackageType(PackageType),
 		NeedWrapping:  NeedWrapping,
 	}
 
 	wp.AddJob(ctx, func() {
-		resp, err := pup.AcceptOrder(ctx, req)
+		resp, err := pup.AcceptOrderV1(ctx, req)
 		logResponse(resp, err)
 	}, "Adding and Packaging Order", 6)
 
@@ -50,9 +50,9 @@ func WReturnOrder(ctx context.Context, pup pup_service.PupServiceClient, wp *wpo
 	if err != nil {
 		return err
 	}
-	req := &pup_service.ReturnOrderRequest{OrderId: uint32(id)}
+	req := &pup_service.ReturnOrderV1Request{OrderId: uint32(id)}
 	wp.AddJob(ctx, func() {
-		resp, err := pup.ReturnOrder(ctx, req)
+		resp, err := pup.ReturnOrderV1(ctx, req)
 		logResponse(resp, err)
 	}, "Returning Order", 3)
 
@@ -65,10 +65,10 @@ func WPlaceOrder(ctx context.Context, pup pup_service.PupServiceClient, wp *wpoo
 		return err
 	}
 
-	req := &pup_service.PlaceOrderRequest{OrderIds: uintdata}
+	req := &pup_service.PlaceOrderV1Request{OrderIds: uintdata}
 
 	wp.AddJob(ctx, func() {
-		resp, err := pup.PlaceOrder(ctx, req)
+		resp, err := pup.PlaceOrderV1(ctx, req)
 		logResponse(resp, err)
 	}, "Placing Order", 5)
 
@@ -88,24 +88,24 @@ func WListOrders(ctx context.Context, pup pup_service.PupServiceClient, wp *wpoo
 	wp.AddJob(ctx, func() {
 		switch temp {
 		case 1:
-			req := &pup_service.ListOrdersRequest{
+			req := &pup_service.ListOrdersV1Request{
 				UserId: uint32(id),
 				Count:  0,
 				InPup:  true,
 			}
-			resp, err := pup.ListOrders(ctx, req)
+			resp, err := pup.ListOrdersV1(ctx, req)
 			logResponse(resp, err)
 		case 2:
 			n, err := inputs.InputN()
 			if err != nil {
 				log.Printf("listOrders input failed: %v", err)
 			}
-			req := &pup_service.ListOrdersRequest{
+			req := &pup_service.ListOrdersV1Request{
 				UserId: uint32(id),
 				Count:  int32(n),
 				InPup:  false,
 			}
-			resp, err := pup.ListOrders(ctx, req)
+			resp, err := pup.ListOrdersV1(ctx, req)
 			logResponse(resp, err)
 		default:
 			log.Printf("invalid input")
@@ -123,14 +123,14 @@ func WRefundOrder(ctx context.Context, pup pup_service.PupServiceClient, wp *wpo
 		return err
 	}
 
-	req := &pup_service.RefundOrderRequest{
+	req := &pup_service.RefundOrderV1Request{
 		OrderId: uint32(orderId),
 		UserId:  uint32(userId),
 	}
 
 	wp.AddJob(ctx, func() {
 
-		resp, err := pup.RefundOrder(ctx, req)
+		resp, err := pup.RefundOrderV1(ctx, req)
 		logResponse(resp, err)
 	}, "Refunding Order", 4)
 
@@ -144,14 +144,14 @@ func WListReturns(ctx context.Context, pup pup_service.PupServiceClient, wp *wpo
 		return err
 	}
 
-	req := &pup_service.ListReturnsRequest{
+	req := &pup_service.ListReturnsV1Request{
 		Limit: int32(limit),
 		Page:  int32(page),
 	}
 
 	wp.AddJob(ctx, func() {
 
-		resp, err := pup.ListReturns(ctx, req)
+		resp, err := pup.ListReturnsV1(ctx, req)
 		logResponse(resp, err)
 	}, "Listing Returns", 1)
 

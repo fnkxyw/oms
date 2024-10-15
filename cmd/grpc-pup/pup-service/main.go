@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	_ "embed"
 	"github.com/go-chi/chi/v5"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -15,7 +16,6 @@ import (
 	"log"
 	"net"
 	"net/http"
-	"os"
 )
 
 const (
@@ -24,6 +24,12 @@ const (
 	grpcHost  = "localhost:7002"
 	httpHost  = "localhost:7001"
 )
+
+//go:embed swagger/pup_service.swagger.json
+var swaggerJSON []byte
+
+//go:embed swagger/swagger_ui.html
+var swaggerUI []byte
 
 func main() {
 	ctx := context.Background()
@@ -65,17 +71,13 @@ func main() {
 		adminServer := chi.NewMux()
 
 		adminServer.HandleFunc("/swagger.json", func(w http.ResponseWriter, r *http.Request) {
-			b, err := os.ReadFile("./pkg/PuP-service/v1/pup_service.swagger.json")
-			if err != nil {
-				http.Error(w, "Could not read swagger file", http.StatusInternalServerError)
-				return
-			}
 			w.Header().Set("Content-Type", "application/json")
-			w.Write(b)
+			w.Write(swaggerJSON)
 		})
 
 		adminServer.Get("/swagger-ui", func(w http.ResponseWriter, r *http.Request) {
-			http.ServeFile(w, r, "./swagger_ui.html")
+			w.Header().Set("Content-Type", "text/html")
+			w.Write(swaggerUI)
 		})
 
 		if err := http.ListenAndServe(adminHost, adminServer); err != nil {
@@ -83,6 +85,7 @@ func main() {
 		}
 	}()
 
+	// Запуск gRPC сервера
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}

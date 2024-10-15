@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func (i *Implementation) AcceptOrder(ctx context.Context, req *desc.AcceptOrderRequest) (*desc.AcceptOrderResponse, error) {
+func (i *Implementation) AcceptOrderV1(ctx context.Context, req *desc.AcceptOrderV1Request) (*desc.AcceptOrderV1Response, error) {
 	if err := req.Validate(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -25,7 +25,7 @@ func (i *Implementation) AcceptOrder(ctx context.Context, req *desc.AcceptOrderR
 		Price:         int(req.Price),
 	}
 
-	err := packing.Packing(order, req.PackageType, req.NeedWrapping)
+	err := packing.Packing(order, packing.PackageType(req.PackageType), req.NeedWrapping)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
@@ -34,5 +34,5 @@ func (i *Implementation) AcceptOrder(ctx context.Context, req *desc.AcceptOrderR
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &desc.AcceptOrderResponse{}, nil
+	return &desc.AcceptOrderV1Response{}, nil
 }

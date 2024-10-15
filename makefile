@@ -12,7 +12,7 @@ OUT_PATH := $(CURDIR)/pkg
 #стандартный ввод т.е просто "make"
 
 # запуск сервера из proto-файла
-all: deps generate build-server run-server
+all: deps bin-deps generate build-server run-server
 
 build-race:
 	$(GOBUILD) --race -o app cmd/app/main.go
@@ -80,7 +80,7 @@ coverage-cobertura:
 # Поднятие Docker-контейнера
 # ---------------------------
 compose-up:
-	docker-compose up -d postgres-master
+	docker-compose up -d postgres-primary
 
 compose-down:
 	docker-compose down
@@ -137,6 +137,7 @@ generate:
 		--plugin=protoc-gen-openapiv2=$(LOCAL_BIN)/protoc-gen-openapiv2 --openapiv2_out=${OUT_PATH} \
 		--plugin=protoc-gen-validate=$(LOCAL_BIN)/protoc-gen-validate --validate_out="lang=go,paths=source_relative:${OUT_PATH}" \
 		./api/PuP-service/v1/pup_service.proto
+	mv ${OUT_PATH}/PuP-service/v1/pup_service.swagger.json $(CURDIR)/cmd/grpc-pup/pup-service/swagger
 
 .vendor-proto: .vendor-proto/google/protobuf .vendor-proto/google/api .vendor-proto/protoc-gen-openapiv2/options .vendor-proto/validate
 

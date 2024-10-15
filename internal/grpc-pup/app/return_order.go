@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (i *Implementation) ReturnOrder(ctx context.Context, req *desc.ReturnOrderRequest) (*desc.ReturnOrderResponse, error) {
+func (i *Implementation) ReturnOrderV1(ctx context.Context, req *desc.ReturnOrderV1Request) (*desc.ReturnOrderV1Response, error) {
 	if err := req.Validate(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}

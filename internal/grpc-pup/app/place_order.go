@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (i *Implementation) PlaceOrder(ctx context.Context, req *desc.PlaceOrderRequest) (*desc.PlaceOrderResponse, error) {
+func (i *Implementation) PlaceOrderV1(ctx context.Context, req *desc.PlaceOrderV1Request) (*desc.PlaceOrderV1Response, error) {
 	if err := req.Validate(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
@@ -16,5 +16,5 @@ func (i *Implementation) PlaceOrder(ctx context.Context, req *desc.PlaceOrderReq
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
-	return &desc.PlaceOrderResponse{}, nil
+	return &desc.PlaceOrderV1Response{}, nil
 }

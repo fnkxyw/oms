@@ -4,7 +4,7 @@
 // - protoc             v5.28.2
 // source: PuP-service/v1/pup_service.proto
 
-package pup_service
+package pup_service_v1
 
 import (
 	context "context"
@@ -19,24 +19,24 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	PupService_AcceptOrder_FullMethodName = "/pup_service.PupService/AcceptOrder"
-	PupService_PlaceOrder_FullMethodName  = "/pup_service.PupService/PlaceOrder"
-	PupService_ReturnOrder_FullMethodName = "/pup_service.PupService/ReturnOrder"
-	PupService_ListOrders_FullMethodName  = "/pup_service.PupService/ListOrders"
-	PupService_RefundOrder_FullMethodName = "/pup_service.PupService/RefundOrder"
-	PupService_ListReturns_FullMethodName = "/pup_service.PupService/ListReturns"
+	PupService_AcceptOrderV1_FullMethodName = "/pup_service.v1.PupService/AcceptOrderV1"
+	PupService_PlaceOrderV1_FullMethodName  = "/pup_service.v1.PupService/PlaceOrderV1"
+	PupService_ReturnOrderV1_FullMethodName = "/pup_service.v1.PupService/ReturnOrderV1"
+	PupService_ListOrdersV1_FullMethodName  = "/pup_service.v1.PupService/ListOrdersV1"
+	PupService_RefundOrderV1_FullMethodName = "/pup_service.v1.PupService/RefundOrderV1"
+	PupService_ListReturnsV1_FullMethodName = "/pup_service.v1.PupService/ListReturnsV1"
 )
 
 // PupServiceClient is the client API for PupService service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PupServiceClient interface {
-	AcceptOrder(ctx context.Context, in *AcceptOrderRequest, opts ...grpc.CallOption) (*AcceptOrderResponse, error)
-	PlaceOrder(ctx context.Context, in *PlaceOrderRequest, opts ...grpc.CallOption) (*PlaceOrderResponse, error)
-	ReturnOrder(ctx context.Context, in *ReturnOrderRequest, opts ...grpc.CallOption) (*ReturnOrderResponse, error)
-	ListOrders(ctx context.Context, in *ListOrdersRequest, opts ...grpc.CallOption) (*ListOrdersResponse, error)
-	RefundOrder(ctx context.Context, in *RefundOrderRequest, opts ...grpc.CallOption) (*RefundOrderResponse, error)
-	ListReturns(ctx context.Context, in *ListReturnsRequest, opts ...grpc.CallOption) (*ListReturnsResponse, error)
+	AcceptOrderV1(ctx context.Context, in *AcceptOrderV1Request, opts ...grpc.CallOption) (*AcceptOrderV1Response, error)
+	PlaceOrderV1(ctx context.Context, in *PlaceOrderV1Request, opts ...grpc.CallOption) (*PlaceOrderV1Response, error)
+	ReturnOrderV1(ctx context.Context, in *ReturnOrderV1Request, opts ...grpc.CallOption) (*ReturnOrderV1Response, error)
+	ListOrdersV1(ctx context.Context, in *ListOrdersV1Request, opts ...grpc.CallOption) (*ListOrdersV1Response, error)
+	RefundOrderV1(ctx context.Context, in *RefundOrderV1Request, opts ...grpc.CallOption) (*RefundOrderV1Response, error)
+	ListReturnsV1(ctx context.Context, in *ListReturnsV1Request, opts ...grpc.CallOption) (*ListReturnsV1Response, error)
 }
 
 type pupServiceClient struct {
@@ -47,60 +47,60 @@ func NewPupServiceClient(cc grpc.ClientConnInterface) PupServiceClient {
 	return &pupServiceClient{cc}
 }
 
-func (c *pupServiceClient) AcceptOrder(ctx context.Context, in *AcceptOrderRequest, opts ...grpc.CallOption) (*AcceptOrderResponse, error) {
+func (c *pupServiceClient) AcceptOrderV1(ctx context.Context, in *AcceptOrderV1Request, opts ...grpc.CallOption) (*AcceptOrderV1Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(AcceptOrderResponse)
-	err := c.cc.Invoke(ctx, PupService_AcceptOrder_FullMethodName, in, out, cOpts...)
+	out := new(AcceptOrderV1Response)
+	err := c.cc.Invoke(ctx, PupService_AcceptOrderV1_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *pupServiceClient) PlaceOrder(ctx context.Context, in *PlaceOrderRequest, opts ...grpc.CallOption) (*PlaceOrderResponse, error) {
+func (c *pupServiceClient) PlaceOrderV1(ctx context.Context, in *PlaceOrderV1Request, opts ...grpc.CallOption) (*PlaceOrderV1Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(PlaceOrderResponse)
-	err := c.cc.Invoke(ctx, PupService_PlaceOrder_FullMethodName, in, out, cOpts...)
+	out := new(PlaceOrderV1Response)
+	err := c.cc.Invoke(ctx, PupService_PlaceOrderV1_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *pupServiceClient) ReturnOrder(ctx context.Context, in *ReturnOrderRequest, opts ...grpc.CallOption) (*ReturnOrderResponse, error) {
+func (c *pupServiceClient) ReturnOrderV1(ctx context.Context, in *ReturnOrderV1Request, opts ...grpc.CallOption) (*ReturnOrderV1Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ReturnOrderResponse)
-	err := c.cc.Invoke(ctx, PupService_ReturnOrder_FullMethodName, in, out, cOpts...)
+	out := new(ReturnOrderV1Response)
+	err := c.cc.Invoke(ctx, PupService_ReturnOrderV1_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *pupServiceClient) ListOrders(ctx context.Context, in *ListOrdersRequest, opts ...grpc.CallOption) (*ListOrdersResponse, error) {
+func (c *pupServiceClient) ListOrdersV1(ctx context.Context, in *ListOrdersV1Request, opts ...grpc.CallOption) (*ListOrdersV1Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListOrdersResponse)
-	err := c.cc.Invoke(ctx, PupService_ListOrders_FullMethodName, in, out, cOpts...)
+	out := new(ListOrdersV1Response)
+	err := c.cc.Invoke(ctx, PupService_ListOrdersV1_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *pupServiceClient) RefundOrder(ctx context.Context, in *RefundOrderRequest, opts ...grpc.CallOption) (*RefundOrderResponse, error) {
+func (c *pupServiceClient) RefundOrderV1(ctx context.Context, in *RefundOrderV1Request, opts ...grpc.CallOption) (*RefundOrderV1Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(RefundOrderResponse)
-	err := c.cc.Invoke(ctx, PupService_RefundOrder_FullMethodName, in, out, cOpts...)
+	out := new(RefundOrderV1Response)
+	err := c.cc.Invoke(ctx, PupService_RefundOrderV1_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *pupServiceClient) ListReturns(ctx context.Context, in *ListReturnsRequest, opts ...grpc.CallOption) (*ListReturnsResponse, error) {
+func (c *pupServiceClient) ListReturnsV1(ctx context.Context, in *ListReturnsV1Request, opts ...grpc.CallOption) (*ListReturnsV1Response, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
-	out := new(ListReturnsResponse)
-	err := c.cc.Invoke(ctx, PupService_ListReturns_FullMethodName, in, out, cOpts...)
+	out := new(ListReturnsV1Response)
+	err := c.cc.Invoke(ctx, PupService_ListReturnsV1_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -111,12 +111,12 @@ func (c *pupServiceClient) ListReturns(ctx context.Context, in *ListReturnsReque
 // All implementations must embed UnimplementedPupServiceServer
 // for forward compatibility.
 type PupServiceServer interface {
-	AcceptOrder(context.Context, *AcceptOrderRequest) (*AcceptOrderResponse, error)
-	PlaceOrder(context.Context, *PlaceOrderRequest) (*PlaceOrderResponse, error)
-	ReturnOrder(context.Context, *ReturnOrderRequest) (*ReturnOrderResponse, error)
-	ListOrders(context.Context, *ListOrdersRequest) (*ListOrdersResponse, error)
-	RefundOrder(context.Context, *RefundOrderRequest) (*RefundOrderResponse, error)
-	ListReturns(context.Context, *ListReturnsRequest) (*ListReturnsResponse, error)
+	AcceptOrderV1(context.Context, *AcceptOrderV1Request) (*AcceptOrderV1Response, error)
+	PlaceOrderV1(context.Context, *PlaceOrderV1Request) (*PlaceOrderV1Response, error)
+	ReturnOrderV1(context.Context, *ReturnOrderV1Request) (*ReturnOrderV1Response, error)
+	ListOrdersV1(context.Context, *ListOrdersV1Request) (*ListOrdersV1Response, error)
+	RefundOrderV1(context.Context, *RefundOrderV1Request) (*RefundOrderV1Response, error)
+	ListReturnsV1(context.Context, *ListReturnsV1Request) (*ListReturnsV1Response, error)
 	mustEmbedUnimplementedPupServiceServer()
 }
 
@@ -127,23 +127,23 @@ type PupServiceServer interface {
 // pointer dereference when methods are called.
 type UnimplementedPupServiceServer struct{}
 
-func (UnimplementedPupServiceServer) AcceptOrder(context.Context, *AcceptOrderRequest) (*AcceptOrderResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method AcceptOrder not implemented")
+func (UnimplementedPupServiceServer) AcceptOrderV1(context.Context, *AcceptOrderV1Request) (*AcceptOrderV1Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method AcceptOrderV1 not implemented")
 }
-func (UnimplementedPupServiceServer) PlaceOrder(context.Context, *PlaceOrderRequest) (*PlaceOrderResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method PlaceOrder not implemented")
+func (UnimplementedPupServiceServer) PlaceOrderV1(context.Context, *PlaceOrderV1Request) (*PlaceOrderV1Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PlaceOrderV1 not implemented")
 }
-func (UnimplementedPupServiceServer) ReturnOrder(context.Context, *ReturnOrderRequest) (*ReturnOrderResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ReturnOrder not implemented")
+func (UnimplementedPupServiceServer) ReturnOrderV1(context.Context, *ReturnOrderV1Request) (*ReturnOrderV1Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ReturnOrderV1 not implemented")
 }
-func (UnimplementedPupServiceServer) ListOrders(context.Context, *ListOrdersRequest) (*ListOrdersResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListOrders not implemented")
+func (UnimplementedPupServiceServer) ListOrdersV1(context.Context, *ListOrdersV1Request) (*ListOrdersV1Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListOrdersV1 not implemented")
 }
-func (UnimplementedPupServiceServer) RefundOrder(context.Context, *RefundOrderRequest) (*RefundOrderResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RefundOrder not implemented")
+func (UnimplementedPupServiceServer) RefundOrderV1(context.Context, *RefundOrderV1Request) (*RefundOrderV1Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RefundOrderV1 not implemented")
 }
-func (UnimplementedPupServiceServer) ListReturns(context.Context, *ListReturnsRequest) (*ListReturnsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method ListReturns not implemented")
+func (UnimplementedPupServiceServer) ListReturnsV1(context.Context, *ListReturnsV1Request) (*ListReturnsV1Response, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListReturnsV1 not implemented")
 }
 func (UnimplementedPupServiceServer) mustEmbedUnimplementedPupServiceServer() {}
 func (UnimplementedPupServiceServer) testEmbeddedByValue()                    {}
@@ -166,110 +166,110 @@ func RegisterPupServiceServer(s grpc.ServiceRegistrar, srv PupServiceServer) {
 	s.RegisterService(&PupService_ServiceDesc, srv)
 }
 
-func _PupService_AcceptOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(AcceptOrderRequest)
+func _PupService_AcceptOrderV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AcceptOrderV1Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PupServiceServer).AcceptOrder(ctx, in)
+		return srv.(PupServiceServer).AcceptOrderV1(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PupService_AcceptOrder_FullMethodName,
+		FullMethod: PupService_AcceptOrderV1_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PupServiceServer).AcceptOrder(ctx, req.(*AcceptOrderRequest))
+		return srv.(PupServiceServer).AcceptOrderV1(ctx, req.(*AcceptOrderV1Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PupService_PlaceOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PlaceOrderRequest)
+func _PupService_PlaceOrderV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PlaceOrderV1Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PupServiceServer).PlaceOrder(ctx, in)
+		return srv.(PupServiceServer).PlaceOrderV1(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PupService_PlaceOrder_FullMethodName,
+		FullMethod: PupService_PlaceOrderV1_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PupServiceServer).PlaceOrder(ctx, req.(*PlaceOrderRequest))
+		return srv.(PupServiceServer).PlaceOrderV1(ctx, req.(*PlaceOrderV1Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PupService_ReturnOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ReturnOrderRequest)
+func _PupService_ReturnOrderV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReturnOrderV1Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PupServiceServer).ReturnOrder(ctx, in)
+		return srv.(PupServiceServer).ReturnOrderV1(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PupService_ReturnOrder_FullMethodName,
+		FullMethod: PupService_ReturnOrderV1_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PupServiceServer).ReturnOrder(ctx, req.(*ReturnOrderRequest))
+		return srv.(PupServiceServer).ReturnOrderV1(ctx, req.(*ReturnOrderV1Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PupService_ListOrders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListOrdersRequest)
+func _PupService_ListOrdersV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListOrdersV1Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PupServiceServer).ListOrders(ctx, in)
+		return srv.(PupServiceServer).ListOrdersV1(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PupService_ListOrders_FullMethodName,
+		FullMethod: PupService_ListOrdersV1_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PupServiceServer).ListOrders(ctx, req.(*ListOrdersRequest))
+		return srv.(PupServiceServer).ListOrdersV1(ctx, req.(*ListOrdersV1Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PupService_RefundOrder_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RefundOrderRequest)
+func _PupService_RefundOrderV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RefundOrderV1Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PupServiceServer).RefundOrder(ctx, in)
+		return srv.(PupServiceServer).RefundOrderV1(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PupService_RefundOrder_FullMethodName,
+		FullMethod: PupService_RefundOrderV1_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PupServiceServer).RefundOrder(ctx, req.(*RefundOrderRequest))
+		return srv.(PupServiceServer).RefundOrderV1(ctx, req.(*RefundOrderV1Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _PupService_ListReturns_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ListReturnsRequest)
+func _PupService_ListReturnsV1_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListReturnsV1Request)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(PupServiceServer).ListReturns(ctx, in)
+		return srv.(PupServiceServer).ListReturnsV1(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: PupService_ListReturns_FullMethodName,
+		FullMethod: PupService_ListReturnsV1_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PupServiceServer).ListReturns(ctx, req.(*ListReturnsRequest))
+		return srv.(PupServiceServer).ListReturnsV1(ctx, req.(*ListReturnsV1Request))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -278,32 +278,32 @@ func _PupService_ListReturns_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var PupService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "pup_service.PupService",
+	ServiceName: "pup_service.v1.PupService",
 	HandlerType: (*PupServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "AcceptOrder",
-			Handler:    _PupService_AcceptOrder_Handler,
+			MethodName: "AcceptOrderV1",
+			Handler:    _PupService_AcceptOrderV1_Handler,
 		},
 		{
-			MethodName: "PlaceOrder",
-			Handler:    _PupService_PlaceOrder_Handler,
+			MethodName: "PlaceOrderV1",
+			Handler:    _PupService_PlaceOrderV1_Handler,
 		},
 		{
-			MethodName: "ReturnOrder",
-			Handler:    _PupService_ReturnOrder_Handler,
+			MethodName: "ReturnOrderV1",
+			Handler:    _PupService_ReturnOrderV1_Handler,
 		},
 		{
-			MethodName: "ListOrders",
-			Handler:    _PupService_ListOrders_Handler,
+			MethodName: "ListOrdersV1",
+			Handler:    _PupService_ListOrdersV1_Handler,
 		},
 		{
-			MethodName: "RefundOrder",
-			Handler:    _PupService_RefundOrder_Handler,
+			MethodName: "RefundOrderV1",
+			Handler:    _PupService_RefundOrderV1_Handler,
 		},
 		{
-			MethodName: "ListReturns",
-			Handler:    _PupService_ListReturns_Handler,
+			MethodName: "ListReturnsV1",
+			Handler:    _PupService_ListReturnsV1_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
