@@ -65,7 +65,7 @@ func WPlaceOrder(ctx context.Context, pup pup_service.PupServiceClient, wp *wpoo
 		return err
 	}
 
-	req := &pup_service.PlaceOrderRequest{OrderId: uintdata}
+	req := &pup_service.PlaceOrderRequest{OrderIds: uintdata}
 
 	wp.AddJob(ctx, func() {
 		resp, err := pup.PlaceOrder(ctx, req)

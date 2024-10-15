@@ -2,7 +2,7 @@
   "swagger": "2.0",
   "info": {
     "title": "ПВЗ",
-    "description": "Сервис выполняет функции ПВЗ и доставки для множества пользователей",
+    "description": "Сервис выполняет функции ПВЗ и доставкидля множества пользователей",
     "version": "1.0.0"
   },
   "tags": [
@@ -24,7 +24,7 @@
     "/AcceptOrder": {
       "post": {
         "summary": "Принять заказ",
-        "description": "Принимает Order Id, User Id, Дату хранения, Вес, Цену, Тип упаковки и необходимость упаковки о заказе и создает новый заказ.",
+        "description": "Принимает Order Id, User Id, Дату хранения, Вес, Цену, Тип упаковки и необходимость упаковки о заказе и создает новый заказ",
         "operationId": "PupService_AcceptOrder",
         "responses": {
           "200": {
@@ -58,7 +58,7 @@
     "/ListOrders": {
       "get": {
         "summary": "Список заказов",
-        "description": "Принимает на вход User ID и два опциональных параметра1-Количество заказов. Передается в случае если нужно показать n последних всевозможных заказов2-inPuP. Передается в случае если нужно показать ВСЕ заказы находящиеся на ПВЗ",
+        "description": "Принимает на вход User ID и два опциональных параметра:\n1 - Количество заказов. Передается в случае если нужно показать n последних всевозможных заказов\n2 - inPuP. Передается в случае если нужно показать ВСЕ заказы, находящиеся на ПВЗ.",
         "operationId": "PupService_ListOrders",
         "responses": {
           "200": {
@@ -104,7 +104,7 @@
     "/ListReturns": {
       "get": {
         "summary": "Список возвратов",
-        "description": "Передается limit и page для пагинации. Показывает все возвраты от клиента на ПВЗ",
+        "description": "Передается limit и page для пагинации.Показывает все возвраты от клиента на ПВЗ",
         "operationId": "PupService_ListReturns",
         "responses": {
           "200": {
@@ -144,7 +144,7 @@
     "/PlaceOrder": {
       "patch": {
         "summary": "Доставить заказ",
-        "description": "Принимает на вход множество Order IDs, необходимо чтобы все ID принадлежали одному пользователю",
+        "description": "Принимает на вход множество Order ID, необходимо чтобы все ID принадлежали одному пользователю",
         "operationId": "PupService_PlaceOrder",
         "responses": {
           "200": {
@@ -178,7 +178,7 @@
     "/RefundOrder": {
       "patch": {
         "summary": "Возврат заказа",
-        "description": "Принимает на вход OrderId и UserId. Возвращает заказ на ПВЗ",
+        "description": "Принимает на вход OrderId и UserId.Возвращает заказ на ПВЗ",
         "operationId": "PupService_RefundOrder",
         "responses": {
           "200": {
@@ -348,7 +348,7 @@
     "pup_servicePlaceOrderRequest": {
       "type": "object",
       "properties": {
-        "orderId": {
+        "orderIds": {
           "type": "array",
           "items": {
             "type": "integer",
@@ -357,7 +357,7 @@
         }
       },
       "required": [
-        "orderId"
+        "orderIds"
       ]
     },
     "pup_servicePlaceOrderResponse": {

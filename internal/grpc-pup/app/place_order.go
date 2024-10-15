@@ -12,7 +12,7 @@ func (i *Implementation) PlaceOrder(ctx context.Context, req *desc.PlaceOrderReq
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	err := i.storage.PlaceOrder(ctx, req.OrderId)
+	err := i.storage.PlaceOrder(ctx, req.OrderIds)
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}

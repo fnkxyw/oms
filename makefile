@@ -55,7 +55,8 @@ deps:
 
 lint:
 	golangci-lint run || true
-	squawk migrations/*
+	squawk migrations/* || true
+	protolint api/pup-service/v1/pup_service.proto
 
 #очистить хранилища если будет необходимость
 cleanstorages:

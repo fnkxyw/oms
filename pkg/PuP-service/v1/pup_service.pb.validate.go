@@ -519,9 +519,9 @@ func (m *PlaceOrderRequest) validate(all bool) error {
 
 	var errors []error
 
-	if len(m.GetOrderId()) < 1 {
+	if len(m.GetOrderIds()) < 1 {
 		err := PlaceOrderRequestValidationError{
-			field:  "OrderId",
+			field:  "OrderIds",
 			reason: "value must contain at least 1 item(s)",
 		}
 		if !all {
@@ -530,14 +530,14 @@ func (m *PlaceOrderRequest) validate(all bool) error {
 		errors = append(errors, err)
 	}
 
-	_PlaceOrderRequest_OrderId_Unique := make(map[uint32]struct{}, len(m.GetOrderId()))
+	_PlaceOrderRequest_OrderIds_Unique := make(map[uint32]struct{}, len(m.GetOrderIds()))
 
-	for idx, item := range m.GetOrderId() {
+	for idx, item := range m.GetOrderIds() {
 		_, _ = idx, item
 
-		if _, exists := _PlaceOrderRequest_OrderId_Unique[item]; exists {
+		if _, exists := _PlaceOrderRequest_OrderIds_Unique[item]; exists {
 			err := PlaceOrderRequestValidationError{
-				field:  fmt.Sprintf("OrderId[%v]", idx),
+				field:  fmt.Sprintf("OrderIds[%v]", idx),
 				reason: "repeated value must contain unique items",
 			}
 			if !all {
@@ -545,10 +545,10 @@ func (m *PlaceOrderRequest) validate(all bool) error {
 			}
 			errors = append(errors, err)
 		} else {
-			_PlaceOrderRequest_OrderId_Unique[item] = struct{}{}
+			_PlaceOrderRequest_OrderIds_Unique[item] = struct{}{}
 		}
 
-		// no validation rules for OrderId[idx]
+		// no validation rules for OrderIds[idx]
 	}
 
 	if len(errors) > 0 {

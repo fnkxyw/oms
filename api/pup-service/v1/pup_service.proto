@@ -2,11 +2,11 @@ syntax = "proto3";
 
 package pup_service;
 
-import "google/protobuf/timestamp.proto";
-import  "google/api/field_behavior.proto";
 import "google/api/annotations.proto";
-import "validate/validate.proto";
+import  "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
+import "validate/validate.proto";
 
 
 option go_package = "homework/pkg/pup-service;pup_service";
@@ -16,7 +16,8 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info: {
     title: "ПВЗ";
     version: "1.0.0";
-    description: "Сервис выполняет функции ПВЗ и доставки для множества пользователей";
+    description: "Сервис выполняет функции ПВЗ и доставки"
+    "для множества пользователей";
   };
   host: "localhost:7001";
   schemes: HTTP;
@@ -44,7 +45,8 @@ service PupService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Принять заказ";
-      description: "Принимает Order Id, User Id, Дату хранения, Вес, Цену, Тип упаковки и необходимость упаковки о заказе и создает новый заказ.";
+      description: "Принимает Order Id, User Id, Дату хранения, Вес, Цену, Тип "
+          "упаковки и необходимость упаковки о заказе и создает новый заказ";
     };
   }
 
@@ -55,7 +57,8 @@ service PupService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Доставить заказ";
-      description: "Принимает на вход множество Order IDs, необходимо чтобы все ID принадлежали одному пользователю";
+      description: "Принимает на вход множество Order ID, необходимо чтобы все "
+          "ID принадлежали одному пользователю";
     };
   }
 
@@ -76,9 +79,11 @@ service PupService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Список заказов";
-      description: "Принимает на вход User ID и два опциональных параметра"
-          "1-Количество заказов. Передается в случае если нужно показать n последних всевозможных заказов"
-          "2-inPuP. Передается в случае если нужно показать ВСЕ заказы находящиеся на ПВЗ"
+      description: "Принимает на вход User ID и два опциональных параметра:\n"
+          "1 - Количество заказов. Передается в случае если нужно показать n "
+          "последних всевозможных заказов\n"
+          "2 - inPuP. Передается в случае если нужно показать ВСЕ заказы, "
+          "находящиеся на ПВЗ.";
     };
   }
 
@@ -89,7 +94,7 @@ service PupService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Возврат заказа";
-      description: "Принимает на вход OrderId и UserId. Возвращает заказ на ПВЗ";
+      description: "Принимает на вход OrderId и UserId.Возвращает заказ на ПВЗ";
     };
   }
 
@@ -99,54 +104,42 @@ service PupService {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       summary: "Список возвратов";
-      description: "Передается limit и page для пагинации. Показывает все возвраты от клиента на ПВЗ";
+      description: "Передается limit и page для пагинации."
+          "Показывает все возвраты от клиента на ПВЗ";
     };
   }
 }
 
 
-message Order {
-  uint32 id = 1;
-  uint32 user_id = 2;
-  string state = 3;
-  int64 accept_time = 4;
-  google.protobuf.Timestamp keep_until_date = 5;
-  google.protobuf.Timestamp place_date = 6;
-  int64 weight = 7;
-  int64 price = 8;
-  string package_type =9;
-  bool need_wrapping = 10;
-}
-
 
 message AcceptOrderRequest{
-    uint32 order_id = 1 [
+  uint32 order_id = 1 [
       (validate.rules).uint32.gt = 0,
       (google.api.field_behavior) = REQUIRED
     ];
-    uint32 user_id=2[
+  uint32 user_id=2[
       (validate.rules).uint32.gt = 0,
       (google.api.field_behavior) = REQUIRED
     ];
-    google.protobuf.Timestamp keep_until_date = 5[
+  google.protobuf.Timestamp keep_until_date = 5[
       (google.api.field_behavior) = REQUIRED
     ];
-    int32 weight =7[
+  int32 weight =7[
       (validate.rules).int32.gt = 0,
       (google.api.field_behavior) = REQUIRED
     ];
-    int32 price = 8[
+  int32 price = 8[
       (validate.rules).int32.gt = 0,
       (google.api.field_behavior) = REQUIRED
     ];
-    string package_type =9[
+  string package_type =9[
     (validate.rules).string = {
       max_len : 10;
       min_len : 0;
     },
        (google.api.field_behavior) = REQUIRED
     ];
-    bool need_wrapping = 10[
+  bool need_wrapping = 10[
        (google.api.field_behavior) = REQUIRED
   ];
 }
@@ -157,7 +150,7 @@ message AcceptOrderResponse{
 
 
 message PlaceOrderRequest{
-  repeated uint32 order_id = 1[
+  repeated uint32 order_ids = 1[
     (validate.rules).repeated.min_items = 1,
     (validate.rules).repeated.unique = true,
     (google.api.field_behavior) = REQUIRED
