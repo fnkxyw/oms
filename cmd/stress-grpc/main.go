@@ -2,9 +2,8 @@ package main
 
 import (
 	"context"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
 	"log"
-	"os"
-	"runtime/pprof"
 	"sync"
 	"time"
 
@@ -15,8 +14,8 @@ import (
 )
 
 const (
-	numClients     = 1
-	numRequests    = 100000
+	numClients     = 5
+	numRequests    = 10000
 	requestTimeout = 5 * time.Second
 )
 
@@ -37,17 +36,17 @@ func stressTestAcceptOrder(address string, wg *sync.WaitGroup, goroutineID int) 
 		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 		defer cancel()
 
-		req := &pb.AcceptOrderRequest{
+		req := &pb.AcceptOrderV1Request{
 			OrderId:       uint32(uniqueID),
 			UserId:        uint32(uniqueID),
 			KeepUntilDate: timestamppb.New(time.Now().Add(24 * time.Hour)),
 			Weight:        1,
 			Price:         1,
-			PackageType:   "box",
+			PackageType:   pb.PackageType(packing.PackageType_BOX),
 			NeedWrapping:  false,
 		}
 
-		_, err := client.AcceptOrder(ctx, req)
+		_, err := client.AcceptOrderV1(ctx, req)
 		if err != nil {
 			log.Printf("AcceptOrder request failed: %v", err)
 		}
@@ -71,13 +70,13 @@ func stressTestListOrders(address string, wg *sync.WaitGroup, goroutineID int) {
 		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 		defer cancel()
 
-		req := &pb.ListOrdersRequest{
+		req := &pb.ListOrdersV1Request{
 			UserId: uint32(uniqueID),
 			InPup:  true,
 			Count:  int32(0),
 		}
 
-		_, err := client.ListOrders(ctx, req)
+		_, err := client.ListOrdersV1(ctx, req)
 		if err != nil {
 			log.Printf("ListOrders request failed: %v", err)
 		}
@@ -85,19 +84,7 @@ func stressTestListOrders(address string, wg *sync.WaitGroup, goroutineID int) {
 }
 
 func main() {
-	cpuProfile, err := os.Create("cpu.prof")
-	if err != nil {
-		log.Fatalf("could not create CPU profile: %v", err)
-	}
-	defer cpuProfile.Close()
-
-	if err := pprof.StartCPUProfile(cpuProfile); err != nil {
-		log.Fatalf("could not start CPU profile: %v", err)
-	}
-	defer pprof.StopCPUProfile()
-
 	var wg sync.WaitGroup
-
 	start := time.Now()
 	for i := 0; i < numClients; i++ {
 		wg.Add(1)
@@ -121,16 +108,6 @@ func main() {
 	rpsListOrders := float64(numClients*numRequests) / durationListOrders.Seconds()
 	log.Printf("RPS ListOrders: %.2f", rpsListOrders)
 	log.Printf("Общее время выполнения на чтение: %v", durationListOrders)
-
-	memProfile, err := os.Create("mem.prof")
-	if err != nil {
-		log.Fatalf("could not create memory profile: %v", err)
-	}
-	defer memProfile.Close()
-
-	if err := pprof.WriteHeapProfile(memProfile); err != nil {
-		log.Fatalf("could not write memory profile: %v", err)
-	}
 
 	log.Println("Профилирование завершено. Профили сохранены в файлы cpu.prof и mem.prof")
 }

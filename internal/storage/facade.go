@@ -6,8 +6,8 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/postgres"
+	"sort"
 	"time"
 )
 
@@ -108,7 +108,7 @@ func (s storageFacade) ListOrders(ctx context.Context, id uint, inPuP bool, coun
 	if err != nil {
 		return nil, err
 	}
-	orders.SortOrders(list)
+	SortOrders(list)
 	if count < 1 {
 		count = 1
 	} else if count > len(list) {
@@ -159,4 +159,10 @@ func (s storageFacade) ListReturns(ctx context.Context, limit, page int) ([]mode
 
 func (s storageFacade) GetItem(ctx context.Context, id uint) (*models.Order, bool) {
 	return s.PgRepo.GetItem(ctx, id)
+}
+
+func SortOrders(o []models.Order) {
+	sort.Slice(o, func(i, j int) bool {
+		return o[i].AcceptTime > o[j].AcceptTime
+	})
 }

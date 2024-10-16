@@ -3,6 +3,11 @@ package main
 import (
 	"context"
 	_ "embed"
+	"log"
+	"net"
+	"net/http"
+	_ "net/http/pprof"
+
 	"github.com/go-chi/chi/v5"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -13,9 +18,6 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
-	"log"
-	"net"
-	"net/http"
 )
 
 const (
@@ -32,6 +34,9 @@ var swaggerJSON []byte
 var swaggerUI []byte
 
 func main() {
+	go func() {
+		log.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	ctx := context.Background()
 	pool, err := pgxpool.New(ctx, psqlDBN)
 	if err != nil {
@@ -85,7 +90,6 @@ func main() {
 		}
 	}()
 
-	// Запуск gRPC сервера
 	if err := grpcServer.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
