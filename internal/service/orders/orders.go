@@ -12,7 +12,7 @@ func AcceptOrder(ctx context.Context, s storage.Facade, or *models.Order) error 
 	return s.AcceptOrder(ctx, or)
 }
 
-func PlaceOrder(ctx context.Context, s storage.Facade, ids []uint) error {
+func PlaceOrder(ctx context.Context, s storage.Facade, ids []uint32) error {
 	if len(ids) == 0 {
 		return fmt.Errorf("Length of ids array is 0 ")
 	}
@@ -25,7 +25,7 @@ func ReturnOrder(ctx context.Context, s storage.Facade, id uint) error {
 }
 
 func ListOrders(ctx context.Context, s storage.Facade, id uint, n int, inPuP bool) error {
-	list, err := s.ListOrders(ctx, id, inPuP)
+	list, err := s.ListOrders(ctx, id, inPuP, n)
 	if err != nil {
 		return err
 	}

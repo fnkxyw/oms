@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/controller"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/wpool"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	pup_service "gitlab.ozon.dev/akugnerevich/homework.git/pkg/PuP-service/v1"
 	"log"
 	"os"
 	"os/signal"
@@ -28,9 +28,9 @@ var helpText = `
     workers-num - allows you to change the number of workers
 `
 
-const num_workers = 2
+const num_workers = 5
 
-func Run(ctx context.Context, oS storage.Facade) error {
+func Run(ctx context.Context, pup pup_service.PupServiceClient) error {
 	showHelp()
 
 	ctx, cancel := context.WithCancel(ctx)
@@ -38,12 +38,11 @@ func Run(ctx context.Context, oS storage.Facade) error {
 
 	wg := sync.WaitGroup{}
 	errChan := make(chan error, 1)
-	//defer close(errChan)
 
 	notification := make(chan string, 1)
 
 	wg.Add(1)
-	go listenChannels(ctx, errChan, notification, &wg)
+	go listenChannels(ctx, notification, &wg)
 
 	wp, err := wpool.NewWorkerPool(ctx, num_workers, notification)
 	if err != nil {
@@ -82,26 +81,32 @@ func Run(ctx context.Context, oS storage.Facade) error {
 			cleanup(&wg, wp)
 			return nil
 		case "acceptOrder":
-			errChan <- controller.WAcceptOrder(ctx, oS, wp, errChan)
+			handleErr(controller.WAcceptOrder(ctx, pup, wp))
 		case "returnOrder":
-			errChan <- controller.WReturnOrder(ctx, oS, wp, errChan)
+			handleErr(controller.WReturnOrder(ctx, pup, wp))
 		case "placeOrder":
-			errChan <- controller.WPlaceOrder(ctx, oS, wp, errChan)
+			handleErr(controller.WPlaceOrder(ctx, pup, wp))
 		case "listOrders":
-			errChan <- controller.WListOrders(ctx, oS, wp, errChan)
+			handleErr(controller.WListOrders(ctx, pup, wp))
 		case "refundOrder":
-			errChan <- controller.WRefundOrder(ctx, oS, wp, errChan)
+			handleErr(controller.WRefundOrder(ctx, pup, wp))
 		case "listReturns":
-			errChan <- controller.WListReturns(ctx, oS, wp, errChan)
+			handleErr(controller.WListReturns(ctx, pup, wp))
 		case "help":
 			showHelp()
 		case "workers-num":
-			errChan <- controller.WChangeNumOfWorkers(ctx, wp, errChan)
+			handleErr(controller.WChangeNumOfWorkers(ctx, wp))
 		case "":
 			continue
 		default:
 			fmt.Fprintln(out, "Unknown command")
 		}
+	}
+}
+
+func handleErr(err error) {
+	if err != nil {
+		fmt.Println(err)
 	}
 }
 
@@ -113,19 +118,11 @@ func readInput(in *bufio.Reader) (string, error) {
 	return strings.TrimSpace(input), nil
 }
 
-func listenChannels(ctx context.Context, errChan chan error, notification chan string, wg *sync.WaitGroup) {
+func listenChannels(ctx context.Context, notification chan string, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for {
 		select {
-		case err, ok := <-errChan:
-			if !ok {
-				fmt.Println("Error channel closed")
-				return
-			}
-			if err != nil {
-				fmt.Println("\n", err)
-			}
 		case note, ok := <-notification:
 			if !ok {
 				fmt.Println("Notification channel closed")

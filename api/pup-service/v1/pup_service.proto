@@ -1,0 +1,212 @@
+syntax = "proto3";
+
+package pup_service.v1;
+
+import "google/api/annotations.proto";
+import "google/api/field_behavior.proto";
+import "google/protobuf/timestamp.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+import "validate/validate.proto";
+
+option go_package = "homework/pkg/pup-service/v1;pup_service_v1";
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "ПВЗ";
+    version: "1.0.0";
+    description: "Сервис выполняет функции ПВЗ и доставки"
+        "для множества пользователей";
+  };
+  host: "localhost:7001";
+  schemes: HTTP;
+  consumes: "application/json";
+  produces: "application/json";
+};
+
+service PupService {
+  rpc AcceptOrderV1(AcceptOrderV1Request) returns (AcceptOrderV1Response) {
+    option (google.api.http) = {
+      post: "/v1/AcceptOrder"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Принять заказ (v1)";
+      description: "Принимает Order Id, User Id, Дату хранения, Вес, Цену, Тип "
+          "упаковки и необходимость упаковки о заказе и создает новый заказ";
+    };
+  }
+
+  rpc PlaceOrderV1(PlaceOrderV1Request) returns (PlaceOrderV1Response) {
+    option (google.api.http) = {
+      patch: "/v1/PlaceOrder"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Доставить заказ (v1)";
+      description: "Принимает на вход множество Order ID, необходимо чтобы все "
+          "ID принадлежали одному пользователю";
+    };
+  }
+
+  rpc ReturnOrderV1(ReturnOrderV1Request) returns (ReturnOrderV1Response) {
+    option (google.api.http) = {
+      patch: "/v1/ReturnOrder"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Вернуть заказ курьеру (v1)";
+      description: "Принимает на вход Order ID и возвращает заказ курьеру";
+    };
+  }
+
+  rpc ListOrdersV1(ListOrdersV1Request) returns (ListOrdersV1Response) {
+    option (google.api.http) = {
+      get: "/v1/ListOrders"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Список заказов (v1)";
+      description: "Принимает на вход User ID и два опциональных параметра:\n"
+          "1 - Количество заказов. Передается в случае если нужно показать n "
+          "последних всевозможных заказов\n"
+          "2 - inPuP. Передается в случае если нужно показать ВСЕ заказы, "
+          "находящиеся на ПВЗ.";
+    };
+  }
+
+  rpc RefundOrderV1(RefundOrderV1Request) returns (RefundOrderV1Response) {
+    option (google.api.http) = {
+      patch: "/v1/RefundOrder"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Возврат заказа (v1)";
+      description: "Принимает на вход OrderId и UserId. Возвращает заказ на ПВЗ";
+    };
+  }
+
+  rpc ListReturnsV1(ListReturnsV1Request) returns (ListReturnsV1Response) {
+    option (google.api.http) = {
+      get: "/v1/ListReturns"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      summary: "Список возвратов (v1)";
+      description: "Передается limit и page для пагинации."
+          "Показывает все возвраты от клиента на ПВЗ";
+    };
+  }
+}
+
+message AcceptOrderV1Request {
+  uint32 order_id = 1 [
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  uint32 user_id = 2 [
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  google.protobuf.Timestamp keep_until_date = 5 [
+    (google.api.field_behavior) = REQUIRED
+  ];
+  int32 weight = 7 [
+    (validate.rules).int32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  int32 price = 8 [
+    (validate.rules).int32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  PackageType package_type = 9 [
+    (google.api.field_behavior) = REQUIRED
+  ];
+  bool need_wrapping = 10 [
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message AcceptOrderV1Response {}
+
+message PlaceOrderV1Request {
+  repeated uint32 order_ids = 1 [
+    (validate.rules).repeated.min_items = 1,
+    (validate.rules).repeated.unique = true,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message PlaceOrderV1Response {}
+
+message ReturnOrderV1Request {
+  uint32 order_id = 1 [
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message ReturnOrderV1Response {}
+
+message ListOrdersV1Request {
+  uint32 user_id = 1 [
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  int32 count = 2 [
+    (validate.rules).int32.gte = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  bool in_pup = 3 [
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message ListOrdersV1Response {
+  repeated OrderFromListV1 orders = 1;
+}
+
+message RefundOrderV1Request {
+  uint32 order_id = 1 [
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  uint32 user_id = 2 [
+    (validate.rules).uint32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message RefundOrderV1Response {}
+
+message ListReturnsV1Request {
+  int32 limit = 1 [
+    (validate.rules).int32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+  int32 page = 2 [
+    (validate.rules).int32.gt = 0,
+    (google.api.field_behavior) = REQUIRED
+  ];
+}
+
+message ListReturnsV1Response {
+  repeated ReturnV1 returns = 1;
+}
+
+message ReturnV1 {
+  uint32 order_id = 1;
+  uint32 user_id = 2;
+}
+
+message OrderFromListV1 {
+  uint32 order_id = 1;
+  uint32 user_id = 2;
+  string state = 3;
+  google.protobuf.Timestamp keep_until_date = 4;
+  int32 price = 5;
+}
+
+enum PackageType {
+  PACKAGE_UNKNOWN = 0;
+  BOX = 1;
+  BUNDLE =2;
+  WRAP = 3;
+}
