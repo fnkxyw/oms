@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	_ "embed"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/kafka"
 	"log"
 	"net"
 	"net/http"
@@ -25,6 +26,7 @@ const (
 	adminHost = "localhost:7003"
 	grpcHost  = "localhost:7002"
 	httpHost  = "localhost:7001"
+	kafkaHost = "localhost:9092"
 )
 
 //go:embed swagger/pup_service.swagger.json
@@ -44,7 +46,11 @@ func main() {
 	}
 	defer pool.Close()
 
-	storageFacade := storage.NewStorageFacade(pool)
+	producer, err := kafka.NewAsyncProducer([]string{kafkaHost}, "pup-topic")
+	if err != nil {
+		log.Fatalf("failed to create kafka producer: %v", err)
+	}
+	storageFacade := storage.NewStorageFacade(pool, producer)
 	pupService := pup_service.NewImplementation(storageFacade)
 
 	lis, err := net.Listen("tcp", grpcHost)

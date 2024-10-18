@@ -80,7 +80,7 @@ coverage-cobertura:
 # Поднятие Docker-контейнера
 # ---------------------------
 compose-up:
-	docker-compose up -d postgres-primary
+	docker-compose up -d
 
 compose-down:
 	docker-compose down

@@ -4,11 +4,16 @@ import (
 	"context"
 	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/kafka"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	e "gitlab.ozon.dev/akugnerevich/homework.git/internal/service/errors"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage/postgres"
 	"sort"
 	"time"
+)
+
+var (
+	ErrLogEvent = fmt.Errorf("error logging event")
 )
 
 type Facade interface {
@@ -22,18 +27,20 @@ type Facade interface {
 }
 
 type storageFacade struct {
+	producer  kafka.KafkaProducer
 	txManager postgres.TransactionManager
 	PgRepo    *postgres.PgRepository
 	PgReplica *postgres.PgRepository
 }
 
-func NewStorageFacade(pool *pgxpool.Pool) *storageFacade {
+func NewStorageFacade(pool *pgxpool.Pool, producer kafka.KafkaProducer) *storageFacade {
 	txManager := postgres.NewTxManager(pool)
 	PgRepo := postgres.NewPgRepository(txManager)
 
 	return &storageFacade{
 		txManager: txManager,
 		PgRepo:    PgRepo,
+		producer:  producer,
 	}
 }
 
@@ -47,6 +54,12 @@ func (s storageFacade) AcceptOrder(ctx context.Context, or *models.Order) error 
 	if err != nil {
 		return err
 	}
+
+	err = s.producer.SendMessage(*or, models.AcceptEvent)
+	if err != nil {
+		return ErrLogEvent
+	}
+
 	return nil
 }
 
@@ -78,7 +91,10 @@ func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint32) error {
 		if err := s.PgRepo.UpdateBeforePlace(ctxT, ids, time.Now()); err != nil {
 			return err
 		}
-
+		err := s.producer.SendMessages(orders, models.PlaceEvent)
+		if err != nil {
+			return ErrLogEvent
+		}
 		return nil
 	})
 }
@@ -97,6 +113,10 @@ func (s storageFacade) ReturnOrder(ctx context.Context, id uint) error {
 		err = s.PgRepo.DeleteFromStorage(ctx, order.ID)
 		if err != nil {
 			return err
+		}
+		err = s.producer.SendMessage(*order, models.ReturnEvent)
+		if err != nil {
+			return ErrLogEvent
 		}
 
 		return nil
@@ -142,6 +162,10 @@ func (s storageFacade) RefundOrder(ctx context.Context, id uint, userId uint) er
 		err := s.PgRepo.UpdateState(ctx, id, models.RefundedState)
 		if err != nil {
 			return err
+		}
+		err = s.producer.SendMessage(*order, models.RefundEvent)
+		if err != nil {
+			return ErrLogEvent
 		}
 
 		return nil

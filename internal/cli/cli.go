@@ -28,7 +28,9 @@ var helpText = `
     workers-num - allows you to change the number of workers
 `
 
-const num_workers = 5
+const (
+	num_workers = 5
+)
 
 func Run(ctx context.Context, pup pup_service.PupServiceClient) error {
 	showHelp()
