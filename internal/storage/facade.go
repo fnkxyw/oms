@@ -27,13 +27,13 @@ type Facade interface {
 }
 
 type storageFacade struct {
-	producer  kafka.KafkaProducer
+	producer  kafka.Producer
 	txManager postgres.TransactionManager
 	PgRepo    *postgres.PgRepository
 	PgReplica *postgres.PgRepository
 }
 
-func NewStorageFacade(pool *pgxpool.Pool, producer kafka.KafkaProducer) *storageFacade {
+func NewStorageFacade(pool *pgxpool.Pool, producer kafka.Producer) *storageFacade {
 	txManager := postgres.NewTxManager(pool)
 	PgRepo := postgres.NewPgRepository(txManager)
 
@@ -55,7 +55,7 @@ func (s storageFacade) AcceptOrder(ctx context.Context, or *models.Order) error 
 		return err
 	}
 
-	err = s.producer.SendMessage(*or, models.AcceptEvent)
+	err = s.producer.SendMessage(ctx, *or, models.AcceptEvent)
 	if err != nil {
 		return ErrLogEvent
 	}
@@ -91,7 +91,7 @@ func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint32) error {
 		if err := s.PgRepo.UpdateBeforePlace(ctxT, ids, time.Now()); err != nil {
 			return err
 		}
-		err := s.producer.SendMessages(orders, models.PlaceEvent)
+		err := s.producer.SendMessages(ctx, orders, models.PlaceEvent)
 		if err != nil {
 			return ErrLogEvent
 		}
@@ -114,7 +114,7 @@ func (s storageFacade) ReturnOrder(ctx context.Context, id uint) error {
 		if err != nil {
 			return err
 		}
-		err = s.producer.SendMessage(*order, models.ReturnEvent)
+		err = s.producer.SendMessage(ctx, *order, models.ReturnEvent)
 		if err != nil {
 			return ErrLogEvent
 		}
@@ -163,7 +163,7 @@ func (s storageFacade) RefundOrder(ctx context.Context, id uint, userId uint) er
 		if err != nil {
 			return err
 		}
-		err = s.producer.SendMessage(*order, models.RefundEvent)
+		err = s.producer.SendMessage(ctx, *order, models.RefundEvent)
 		if err != nil {
 			return ErrLogEvent
 		}

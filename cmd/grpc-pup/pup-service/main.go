@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	_ "embed"
-	"gitlab.ozon.dev/akugnerevich/homework.git/internal/kafka"
+	kafka "gitlab.ozon.dev/akugnerevich/homework.git/internal/kafka/sync_producer"
 	"log"
 	"net"
 	"net/http"
@@ -46,10 +46,11 @@ func main() {
 	}
 	defer pool.Close()
 
-	producer, err := kafka.NewAsyncProducer([]string{kafkaHost}, "pup-topic")
+	producer, err := kafka.NewSyncProducer([]string{kafkaHost}, "pup-topic")
 	if err != nil {
 		log.Fatalf("failed to create kafka producer: %v", err)
 	}
+	defer producer.Close()
 	storageFacade := storage.NewStorageFacade(pool, producer)
 	pupService := pup_service.NewImplementation(storageFacade)
 

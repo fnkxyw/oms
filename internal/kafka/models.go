@@ -1,10 +1,14 @@
 package kafka
 
-import "gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+import (
+	"context"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
+)
 
-type KafkaProducer interface {
-	SendMessage(order models.Order, state models.Event) error
-	SendMessages(orders []models.Order, event models.Event) error
+type Producer interface {
+	SendMessage(ctx context.Context, order models.Order, event models.Event) error
+	SendMessages(ctx context.Context, orders []models.Order, event models.Event) error
+	Close() error
 }
 
 type Message struct {
