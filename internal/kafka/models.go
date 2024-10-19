@@ -11,6 +11,10 @@ type Producer interface {
 	Close() error
 }
 
+type Consumer interface {
+	ConsumeMessage(ctx context.Context)
+}
+
 type Message struct {
 	OrderID uint
 	UserId  uint

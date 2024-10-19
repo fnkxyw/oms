@@ -11,6 +11,8 @@ import (
 	"time"
 )
 
+const hubID int = 1010 // условно номер пвз куда отправляем извещения
+
 type SyncProducer struct {
 	producer sarama.SyncProducer
 	topic    string
@@ -52,7 +54,7 @@ func (k *SyncProducer) SendMessage(ctx context.Context, order models.Order, even
 
 	msg := &sarama.ProducerMessage{
 		Topic:     k.topic,
-		Key:       sarama.StringEncoder(strconv.Itoa(int(order.ID))),
+		Key:       sarama.StringEncoder(strconv.Itoa(hubID)),
 		Value:     sarama.ByteEncoder(bytes),
 		Timestamp: time.Now(),
 	}

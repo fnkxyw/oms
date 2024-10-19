@@ -46,7 +46,7 @@ func main() {
 	}
 	defer pool.Close()
 
-	producer, err := kafka.NewSyncProducer([]string{kafkaHost}, "pup-topic")
+	producer, err := kafka.NewSyncProducer([]string{kafkaHost}, "pvz.events-log")
 	if err != nil {
 		log.Fatalf("failed to create kafka producer: %v", err)
 	}

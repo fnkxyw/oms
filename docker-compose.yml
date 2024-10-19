@@ -53,7 +53,7 @@ services:
       - postgres_primary
 
   kafka-ui:
-    container_name: pup-kafka-ui
+    container_name: kafka-ui
     image: provectuslabs/kafka-ui:latest
     ports:
       - 8080:8080
@@ -63,8 +63,10 @@ services:
       DYNAMIC_CONFIG_ENABLED: "true"
 
   kafka0:
-      container_name: pup-kafka
-      image: confluentinc/cp-kafka:7.7.1.arm64
+      container_name: kafka0
+      volumes:
+        - kafka-data:/var/lib/kafka/data
+      image: confluentinc/cp-kafka:latest
       ports:
         - 9092:9092
       environment:
@@ -79,13 +81,37 @@ services:
         KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka0:29093"
         KAFKA_PROCESS_ROLES: "broker,controller"
         KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
-        CLUSTER_ID: '8KkIOUfvTw2WdTLRY50Lqw'
+        CLUSTER_ID: 'NzhjNjk4OGU4ZDcwMTFlZm'
 
   kafka-init-topics:
-      container_name: pup-init-topics
-      image: confluentinc/cp-kafka:7.7.1.arm64
+      container_name: kafka-init-topics
+      image: confluentinc/cp-kafka:latest
       depends_on:
         - kafka0
       command: "bash -c 'echo Waiting for Kafka to be ready... && \
         cub kafka-ready -b kafka0:29092 1 30 && \
-        kafka-topics --create --topic pup-topic --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server kafka0:29092'"
+        kafka-topics --create --topic pvz.events-log --partitions 1 --replication-factor 1 --if-not-exists --bootstrap-server kafka0:29092'"
+
+  notifier-1:
+    container_name: first_notifier
+    depends_on:
+      kafka-init-topics:
+        condition: service_completed_successfully
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+       KAFKA_BROKER_ADDRESS: kafka0:29092
+    restart: always
+
+  notifier-2:
+    container_name: second_notifier
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - notifier-1
+
+
+volumes:
+    kafka-data:
