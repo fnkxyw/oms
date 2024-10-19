@@ -3,6 +3,7 @@ module gitlab.ozon.dev/akugnerevich/homework.git
 go 1.22
 
 require (
+	github.com/IBM/sarama v1.43.3
 	github.com/brianvoe/gofakeit/v7 v7.0.4
 	github.com/containerd/containerd v1.7.18
 	github.com/docker/go-connections v0.5.0
@@ -23,7 +24,6 @@ require (
 require (
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/Azure/go-ansiterm v0.0.0-20210617225240-d185dfc1b5a1 // indirect
-	github.com/IBM/sarama v1.43.3 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/cenkalti/backoff/v4 v4.2.1 // indirect
 	github.com/containerd/log v0.1.0 // indirect
