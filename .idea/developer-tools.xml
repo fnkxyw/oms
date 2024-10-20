@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DeveloperToolsToolWindowSettingsV1" lastSelectedContentNodeId="base64-encoder-decoder">
+    <developerToolsConfigurations>
+      <developerToolConfiguration developerToolId="base64-encoder-decoder" id="0a6cc4a2-3856-4653-8180-022a1cf22d5b" name="Workbench">
+        <properties>
+          <property key="liveConversion" type="CONFIGURATION" value="kotlin.Boolean|false" />
+          <property key="sourceText" type="INPUT" value="kotlin.String|123" />
+          <property key="targetText" type="INPUT" value="kotlin.String|MTIz" />
+        </properties>
+      </developerToolConfiguration>
+    </developerToolsConfigurations>
+  </component>
+</project>

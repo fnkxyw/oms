@@ -26,3 +26,12 @@ var (
 	RefundedState = State("refunded")
 	NewState      = State("new_state")
 )
+
+type Event string
+
+var (
+	AcceptEvent = Event("accept")
+	PlaceEvent  = Event("place")
+	ReturnEvent = Event("return")
+	RefundEvent = Event("refund")
+)
