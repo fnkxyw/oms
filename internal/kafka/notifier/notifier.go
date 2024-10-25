@@ -26,6 +26,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 		}
 
 		session.MarkMessage(message, "")
+		session.Commit()
 
 	}
 	return nil
