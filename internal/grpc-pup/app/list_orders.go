@@ -2,6 +2,7 @@ package pup_service
 
 import (
 	"context"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/metrics"
 	desc "gitlab.ozon.dev/akugnerevich/homework.git/pkg/PuP-service/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -27,5 +28,7 @@ func (i *Implementation) ListOrdersV1(ctx context.Context, req *desc.ListOrdersV
 			KeepUntilDate: timestamppb.New(order.KeepUntilDate),
 		})
 	}
+	metrics.IncOrderTotalOperations("list_orders")
+
 	return response, nil
 }

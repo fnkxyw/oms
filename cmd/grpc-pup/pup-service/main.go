@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	_ "embed"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	kafka "gitlab.ozon.dev/akugnerevich/homework.git/internal/kafka/sync_producer"
 	"log"
 	"net"
@@ -22,11 +23,12 @@ import (
 )
 
 const (
-	psqlDBN   = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
-	adminHost = "localhost:7003"
-	grpcHost  = "localhost:7002"
-	httpHost  = "localhost:7001"
-	kafkaHost = "localhost:9092"
+	psqlDBN     = "postgres://postgres:postgres@localhost:5432/postgres?sslmode=disable"
+	adminHost   = "localhost:7003"
+	grpcHost    = "localhost:7002"
+	httpHost    = "localhost:7001"
+	kafkaHost   = "localhost:9092"
+	metricsHost = "localhost:7005"
 )
 
 //go:embed swagger/pup_service.swagger.json
@@ -76,6 +78,13 @@ func main() {
 	go func() {
 		if err := http.ListenAndServe(httpHost, mux); err != nil {
 			log.Fatalf("failed to listen and serve pup service handler: %v", err)
+		}
+	}()
+
+	go func() {
+		http.Handle("/metrics", promhttp.Handler())
+		if err := http.ListenAndServe(metricsHost, nil); err != nil {
+			log.Fatalf("failed to listen and serve metrics: %v", err)
 		}
 	}()
 

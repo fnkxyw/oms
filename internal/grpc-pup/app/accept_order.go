@@ -2,6 +2,7 @@ package pup_service
 
 import (
 	"context"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/metrics"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
 	desc "gitlab.ozon.dev/akugnerevich/homework.git/pkg/PuP-service/v1"
@@ -34,5 +35,6 @@ func (i *Implementation) AcceptOrderV1(ctx context.Context, req *desc.AcceptOrde
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	metrics.IncOrderTotalOperations("accept")
 	return &desc.AcceptOrderV1Response{}, nil
 }

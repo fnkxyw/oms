@@ -2,6 +2,7 @@ package pup_service
 
 import (
 	"context"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/metrics"
 	desc "gitlab.ozon.dev/akugnerevich/homework.git/pkg/PuP-service/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -16,5 +17,7 @@ func (i *Implementation) PlaceOrderV1(ctx context.Context, req *desc.PlaceOrderV
 	if err != nil {
 		return nil, status.Error(codes.Internal, err.Error())
 	}
+	metrics.IncOrderTotalOperations("place")
+
 	return &desc.PlaceOrderV1Response{}, nil
 }

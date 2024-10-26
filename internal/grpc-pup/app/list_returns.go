@@ -2,6 +2,7 @@ package pup_service
 
 import (
 	"context"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/metrics"
 	desc "gitlab.ozon.dev/akugnerevich/homework.git/pkg/PuP-service/v1"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -22,5 +23,7 @@ func (i *Implementation) ListReturnsV1(ctx context.Context, req *desc.ListReturn
 			UserId:  uint32(order.UserID),
 		})
 	}
+	metrics.IncOrderTotalOperations("list_returns")
+
 	return response, nil
 }

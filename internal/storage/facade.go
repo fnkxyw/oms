@@ -77,7 +77,7 @@ func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint32) error {
 		var missingIDs []uint32
 		for _, id := range ids {
 			if order, found := s.cache.Get(strconv.Itoa(int(id))); found {
-				orders = append(orders, order.(models.Order))
+				orders = append(orders, *order.(*models.Order))
 			} else {
 				missingIDs = append(missingIDs, id)
 			}
@@ -89,7 +89,7 @@ func (s storageFacade) PlaceOrder(ctx context.Context, ids []uint32) error {
 				return e.ErrNoConsist
 			}
 			for _, order := range dbOrders {
-				s.cache.Set(strconv.Itoa(int(order.ID)), order, 30*time.Second)
+				s.cache.Set(strconv.Itoa(int(order.ID)), &order, 30*time.Second)
 				orders = append(orders, order)
 			}
 		}
@@ -133,7 +133,7 @@ func (s storageFacade) ReturnOrder(ctx context.Context, id uint) error {
 			if !exists {
 				return e.ErrNoConsist
 			}
-			s.cache.Set(strconv.Itoa(int(order.ID)), order, 30*time.Second)
+			s.cache.Set(strconv.Itoa(int(order.ID)), order, 5*time.Second)
 		}
 
 		err := order.CanBeReturned()
@@ -179,7 +179,7 @@ func (s storageFacade) ListOrders(ctx context.Context, id uint, inPuP bool, coun
 		list = list[:count]
 	}
 
-	s.cache.Set(cacheKey, list, 30*time.Second)
+	s.cache.Set(cacheKey, list, 5*time.Second)
 
 	return list, nil
 }
@@ -213,7 +213,7 @@ func (s storageFacade) RefundOrder(ctx context.Context, id uint, userId uint) er
 			return err
 		}
 
-		s.cache.Set(strconv.Itoa(int(order.ID)), order, 30*time.Second)
+		s.cache.Set(strconv.Itoa(int(order.ID)), order, 5*time.Second)
 
 		err = s.producer.SendMessage(ctx, *order, models.RefundEvent)
 		if err != nil {
