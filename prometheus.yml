@@ -12,4 +12,4 @@ scrape_configs:
     scrape_interval: 5s
 
     static_configs:
-      - targets: [ 'localhost:7001' ]
+      - targets: ['localhost:7005']

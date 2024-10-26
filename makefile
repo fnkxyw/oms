@@ -182,5 +182,10 @@ generate:
 		rm -rf vendor.protogen/tmp
 
 
+.PHONY: run-prometheus
+run-prometheus:
+	prometheus --config.file prometheus.yml
+
+
 .PHONY:all build deps run  build-linux build-mac build-windows сlean lint cleanstorages coverage coverage-html coverage-cobertura compose-up compose-down compose-ps compose-start compose-stop run-server run-client run
 .PHONY: goose-install goose-add goose-up goose-status goose-dowm  compose-up-test compose-down-test run-race build-race generate .vendor-proto .vendor-proto/google/api .vendor-proto/google/protobuf .vendor-proto/protoc-gen-openapiv2/options .vendor-proto/validate

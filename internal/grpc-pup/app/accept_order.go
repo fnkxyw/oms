@@ -2,6 +2,7 @@ package pup_service
 
 import (
 	"context"
+	"github.com/opentracing/opentracing-go"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/metrics"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
@@ -12,6 +13,8 @@ import (
 )
 
 func (i *Implementation) AcceptOrderV1(ctx context.Context, req *desc.AcceptOrderV1Request) (*desc.AcceptOrderV1Response, error) {
+	span, ctx := opentracing.StartSpanFromContext(ctx, "AcceptOrderV1")
+	defer span.Finish()
 	if err := req.Validate(); err != nil {
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}

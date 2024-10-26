@@ -5,6 +5,7 @@ import (
 	_ "embed"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	kafka "gitlab.ozon.dev/akugnerevich/homework.git/internal/kafka/sync_producer"
+	tracer2 "gitlab.ozon.dev/akugnerevich/homework.git/internal/tracer"
 	"log"
 	"net"
 	"net/http"
@@ -47,7 +48,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer pool.Close()
-
+	tracer2.MustSetup(ctx, "pup-service")
 	producer, err := kafka.NewSyncProducer([]string{kafkaHost}, "pvz.events-log")
 	if err != nil {
 		log.Fatalf("failed to create kafka producer: %v", err)
