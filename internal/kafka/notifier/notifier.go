@@ -1,8 +1,9 @@
 package notifier
 
 import (
+	"context"
 	"github.com/IBM/sarama"
-	"log"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/logger"
 	"time"
 )
 
@@ -17,11 +18,12 @@ func (consumer *Consumer) Cleanup(_ sarama.ConsumerGroupSession) error {
 }
 
 func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, claim sarama.ConsumerGroupClaim) error {
+	ctx := context.Background()
 	for message := range claim.Messages() {
-		log.Printf("Message received: key=%s value=%s", string(message.Key), string(message.Value))
+		logger.Debugf(ctx, "Message received: key=%s value=%s", string(message.Key), string(message.Value))
 
-		if err := processMessage(message); err != nil {
-			log.Printf("Error processing message: %v", err)
+		if err := processMessage(ctx, message); err != nil {
+			logger.Errorf(ctx, "Error processing message: %v", err)
 			continue
 		}
 
@@ -32,7 +34,7 @@ func (consumer *Consumer) ConsumeClaim(session sarama.ConsumerGroupSession, clai
 	return nil
 }
 
-func processMessage(msg *sarama.ConsumerMessage) error {
-	log.Printf("[%s] Processing message: %s", time.Now().Format(time.RFC3339), string(msg.Value))
+func processMessage(ctx context.Context, msg *sarama.ConsumerMessage) error {
+	logger.Infof(ctx, "[%s] Processing message: %s", time.Now().Format(time.RFC3339), string(msg.Value))
 	return nil
 }

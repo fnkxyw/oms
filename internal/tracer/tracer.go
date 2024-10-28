@@ -2,7 +2,7 @@ package tracer
 
 import (
 	"context"
-	"log"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/logger"
 	"sync"
 
 	"github.com/opentracing/opentracing-go"
@@ -25,14 +25,16 @@ func MustSetup(ctx context.Context, serviceName string) {
 
 	tracer, closer, err := cfg.NewTracer(traceconfig.Logger(jaeger.StdLogger), traceconfig.Metrics(prometheus.New()))
 	if err != nil {
-		log.Fatalf("ERROR: cannot init Jaeger %s", err)
+		logger.Errorf(ctx, "ERROR: cannot init Jaeger %s", err)
+		return
 	}
 
 	go func() {
 		onceCloser := sync.OnceFunc(func() {
-			log.Println("closing tracer")
+			logger.Infof(ctx, "closing tracer")
 			if err = closer.Close(); err != nil {
-				log.Printf("error closing tracer: %s", err)
+				logger.Errorf(ctx, "error closing tracer: %s", err)
+				return
 			}
 		})
 

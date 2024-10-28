@@ -3,24 +3,23 @@ package main
 import (
 	"context"
 	_ "embed"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
-	kafka "gitlab.ozon.dev/akugnerevich/homework.git/internal/kafka/sync_producer"
-	tracer2 "gitlab.ozon.dev/akugnerevich/homework.git/internal/tracer"
-	"log"
-	"net"
-	"net/http"
-	_ "net/http/pprof"
-
 	"github.com/go-chi/chi/v5"
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	pup_service "gitlab.ozon.dev/akugnerevich/homework.git/internal/grpc-pup/app"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/grpc-pup/mw"
+	kafka "gitlab.ozon.dev/akugnerevich/homework.git/internal/kafka/sync_producer"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/storage"
+	tracer2 "gitlab.ozon.dev/akugnerevich/homework.git/internal/tracer"
 	desc "gitlab.ozon.dev/akugnerevich/homework.git/pkg/PuP-service/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/reflection"
+	"log"
+	"net"
+	"net/http"
+	_ "net/http/pprof"
 )
 
 const (

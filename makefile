@@ -39,7 +39,7 @@ run-race:
 	$(GORUN) cmd/app/main.go --race
 #запуск сервера
 run-server:
-	$(GORUN) cmd/grpc-pup/pup-service/main.go
+	LOG_LEVEL=debug LOG_HANDLER=text ./server_app
 
 #запуска клиента к серверу
 run-client:

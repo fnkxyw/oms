@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"github.com/IBM/sarama"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/kafka"
+	"gitlab.ozon.dev/akugnerevich/homework.git/internal/logger"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/models"
-	"log"
 	"strconv"
 	"time"
 )
@@ -61,10 +61,10 @@ func (k *SyncProducer) SendMessage(ctx context.Context, order models.Order, even
 
 	partition, offset, err := k.producer.SendMessage(msg)
 	if err != nil {
-		log.Printf("Failed to send message: %v\n", err)
+		logger.Errorf(ctx, "Failed to send message: %v\n", err)
 		return err
 	}
-	log.Printf("[KafkaProducer] Message sent successfully to partition: %d, offset: %d\n", partition, offset)
+	logger.Infof(ctx, "[KafkaProducer] Message sent successfully to partition: %d, offset: %d\n", partition, offset)
 
 	return nil
 }
