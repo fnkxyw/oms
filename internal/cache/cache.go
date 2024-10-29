@@ -2,6 +2,8 @@ package cache
 
 import (
 	"container/list"
+	"context"
+	"github.com/opentracing/opentracing-go"
 	"sync"
 	"time"
 )
@@ -46,7 +48,13 @@ func NewCache[K comparable, V any](capacity int) *Cache[K, V] {
 	return c
 }
 
-func (c *Cache[K, V]) Set(key K, value V, ttl time.Duration) {
+func (c *Cache[K, V]) Set(ctx context.Context, key K, value V, ttl time.Duration) {
+	parentSpan := opentracing.SpanFromContext(ctx)
+	cacheSpan := parentSpan.Tracer().StartSpan("Cache.Set", opentracing.ChildOf(parentSpan.Context()))
+	defer cacheSpan.Finish()
+
+	cacheSpan.LogKV("action", "Set", "key", key)
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
@@ -55,37 +63,50 @@ func (c *Cache[K, V]) Set(key K, value V, ttl time.Duration) {
 		cacheItem.value = value
 		cacheItem.expiry = time.Now().Add(ttl)
 		c.order.MoveToFront(element)
+		cacheSpan.LogKV("info", "updated existing item")
 		return
 	}
 
 	if c.order.Len() >= c.capacity {
 		c.removeOldest()
+		cacheSpan.LogKV("info", "removed oldest item to maintain capacity")
 	}
 
 	cacheItem := &item[K, V]{key: key, value: value, expiry: time.Now().Add(ttl)}
 	listElement := c.order.PushFront(cacheItem)
 	c.items[key] = listElement
 
+	cacheSpan.LogKV("info", "added new item")
 }
 
-func (c *Cache[K, V]) Get(key K) (V, bool) {
+func (c *Cache[K, V]) Get(ctx context.Context, key K) (V, bool) {
+	parentSpan := opentracing.SpanFromContext(ctx)
+	cacheSpan := parentSpan.Tracer().StartSpan("Cache.Get", opentracing.ChildOf(parentSpan.Context()))
+	defer cacheSpan.Finish()
+
+	cacheSpan.LogKV("action", "Get", "key", key)
+
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
 	element, found := c.items[key]
 	if !found {
+		cacheSpan.LogKV("info", "item not found")
 		var zero V
 		return zero, false
 	}
 
 	cacheItem := element.Value.(*item[K, V])
+
 	if cacheItem.isExpired() {
 		c.removeElement(element)
+		cacheSpan.LogKV("info", "item expired and removed")
 		var zero V
 		return zero, false
 	}
 
 	c.order.MoveToFront(element)
+	cacheSpan.LogKV("info", "item accessed and moved to front")
 	return cacheItem.value, true
 }
 
