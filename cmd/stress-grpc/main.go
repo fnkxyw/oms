@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	numClients     = 5
-	numRequests    = 10000
+	numClients     = 1
+	numRequests    = 1000
 	requestTimeout = 5 * time.Second
 )
 
