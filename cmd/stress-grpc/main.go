@@ -4,6 +4,7 @@ import (
 	"context"
 	"gitlab.ozon.dev/akugnerevich/homework.git/internal/service/orders/packing"
 	"log"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -14,9 +15,9 @@ import (
 )
 
 const (
-	numClients     = 1
+	numClients     = 5
 	numRequests    = 1000
-	requestTimeout = 5 * time.Second
+	requestTimeout = 50 * time.Second
 )
 
 func stressTestAcceptOrder(address string, wg *sync.WaitGroup, goroutineID int) {
@@ -65,13 +66,12 @@ func stressTestListOrders(address string, wg *sync.WaitGroup, goroutineID int) {
 	client := pb.NewPupServiceClient(conn)
 
 	for i := 1; i <= numRequests; i++ {
-		uniqueID := (goroutineID * numRequests) + i
 
 		ctx, cancel := context.WithTimeout(context.Background(), requestTimeout)
 		defer cancel()
 
 		req := &pb.ListOrdersV1Request{
-			UserId: uint32(uniqueID),
+			UserId: 1 + rand.Uint32()%(5-1+1),
 			InPup:  true,
 			Count:  int32(0),
 		}

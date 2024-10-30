@@ -36,7 +36,7 @@ func NewCache[K comparable, V any](capacity int) *Cache[K, V] {
 	}
 
 	go func() {
-		for range time.Tick(1 * time.Minute) {
+		for range time.Tick(5 * time.Minute) {
 			c.cleanupExpired()
 		}
 	}()
@@ -48,10 +48,10 @@ func (c *Cache[K, V]) Set(ctx context.Context, key K, value V, ttl time.Duration
 	cacheSpan, ctx := opentracing.StartSpanFromContext(ctx, "Cache.Set")
 	defer cacheSpan.Finish()
 
-	cacheSpan.LogKV("action", "Set", "key", key)
-
 	c.mu.Lock()
 	defer c.mu.Unlock()
+
+	cacheSpan.LogKV("action", "Set", "key", key)
 
 	if element, exists := c.items[key]; exists {
 		cacheItem := element.Value.(*item[K, V])
@@ -179,8 +179,6 @@ func (c *Cache[K, V]) removeFromTagIndex(key K, tags []string) {
 }
 
 func (c *Cache[K, V]) updateTagIndex(key K, tags []string) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
 
 	if oldElement, found := c.items[key]; found {
 		cacheItem := oldElement.Value.(*item[K, V])

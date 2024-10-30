@@ -38,7 +38,7 @@ type storageFacade struct {
 func NewStorageFacade(pool *pgxpool.Pool, producer kafka.Producer) *storageFacade {
 	txManager := postgres.NewTxManager(pool)
 	PgRepo := postgres.NewPgRepository(txManager)
-	ch := cache.NewCache[string, any](5)
+	ch := cache.NewCache[string, any](10000)
 	return &storageFacade{
 		txManager: txManager,
 		PgRepo:    PgRepo,
